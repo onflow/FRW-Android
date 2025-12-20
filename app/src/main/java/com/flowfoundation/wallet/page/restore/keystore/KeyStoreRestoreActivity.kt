@@ -94,7 +94,16 @@ class KeyStoreRestoreActivity : BaseActivity() {
     private fun onOptionChange(option: KeyStoreOption) {
         val transition = createTransition(currentOption, option)
         val fragment = when (option) {
-            KeyStoreOption.INPUT_KEYSTORE_INFO -> PrivateKeyStoreInfoFragment()
+            KeyStoreOption.INPUT_KEYSTORE_INFO -> {
+                val keystoreJson = intent.getStringExtra(EXTRA_KEYSTORE_JSON)
+                PrivateKeyStoreInfoFragment().apply {
+                    if (keystoreJson != null) {
+                        arguments = Bundle().apply {
+                            putString("keystore_json", keystoreJson)
+                        }
+                    }
+                }
+            }
             KeyStoreOption.INPUT_PRIVATE_KEY_INFO -> {
                 val pdfUri = intent.getStringExtra(EXTRA_PDF_URI)
                 PrivateKeyInfoFragment().apply {
@@ -149,9 +158,12 @@ class KeyStoreRestoreActivity : BaseActivity() {
         private const val EXTRA_RESTORE_PRIVATE_KEY = "extra_restore_private_key"
         private const val EXTRA_RESTORE_SEED_PHRASE = "extra_restore_seed_phrase"
         const val EXTRA_PDF_URI = "extra_pdf_uri"
+        const val EXTRA_KEYSTORE_JSON = "extra_keystore_json"
 
-        fun launchKeyStore(context: Context) {
-            context.startActivity(Intent(context, KeyStoreRestoreActivity::class.java))
+        fun launchKeyStore(context: Context, keystoreJson: String? = null) {
+            context.startActivity(Intent(context, KeyStoreRestoreActivity::class.java).apply {
+                keystoreJson?.let { putExtra(EXTRA_KEYSTORE_JSON, it) }
+            })
         }
 
         fun launchPrivateKey(context: Context, pdfUri: String? = null) {

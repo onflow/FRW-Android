@@ -109,7 +109,7 @@
         android:layout_marginHorizontal="24dp"
         android:layout_marginTop="24dp"
         android:fontFamily="@font/inter"
-        android:text="This PDF is password protected. Please enter your password to extract the private key."
+        android:text="@string/pdf_password_protected_info"
         android:textSize="14sp"
         android:textColor="@color/text_2"
         android:visibility="gone"

@@ -725,4 +725,18 @@
     <string name="import_from_pdf">Aus PDF importieren</string>
     <string name="pdf_parse_error_message">Ungültiges Keystore-JSON-Format. Bitte laden Sie die Flow Wallet Extension herunter, um Ihre Keystore-Datei korrekt zu exportieren.</string>
     <string name="extension_download_url">https://chromewebstore.google.com/detail/flow-wallet/hpclkefagolihohboafpheddmmgdffjm?hl=en</string>
+    
+    <!-- PDF Import Feature - TODO: Translate -->
+    <string name="pdf_password_hint">Geben Sie Ihr PDF-Passwort ein</string>
+    <string name="pdf_password_protected_info">Diese PDF ist passwortgeschützt. Bitte geben Sie Ihr Passwort ein, um den privaten Schlüssel zu extrahieren.</string>
+    <string name="extract_private_key_from_pdf">Privaten Schlüssel aus PDF extrahieren</string>
+    <string name="pdf_file_not_found">PDF-Datei nicht gefunden</string>
+    <string name="pdf_extract_json_failed">JSON konnte nicht aus PDF extrahiert werden</string>
+    <string name="pdf_private_key_extracted">Privater Schlüssel aus PDF extrahiert. Überprüfen und Import drücken.</string>
+    <string name="pdf_contains_keystore">Diese PDF enthält einen Keystore. Bitte verwenden Sie die Keystore-Import-Option.</string>
+    <string name="pdf_unknown_format">Unbekanntes JSON-Format in PDF. Erwartet private_key oder Keystore-Format.</string>
+    <string name="pdf_password_incorrect">Passwort ist falsch. Bitte überprüfen Sie Ihr Passwort und versuchen Sie es erneut.</string>
+    <string name="pdf_extract_failed">PDF-Extraktion fehlgeschlagen: %1$s</string>
+    <string name="pdf_keystore_extracted">Keystore aus PDF extrahiert. Passwort eingeben und Import drücken.</string>
+    <string name="pdf_imported_success">PDF erfolgreich importiert: %1$s</string>
 </resources>

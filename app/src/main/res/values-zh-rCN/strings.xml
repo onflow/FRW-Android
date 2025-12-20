@@ -724,4 +724,18 @@
     <string name="import_from_pdf">从 PDF 导入</string>
     <string name="pdf_parse_error_message">密钥库 JSON 格式无效。请下载 Flow Wallet Extension 以正确导出您的密钥库文件。</string>
     <string name="extension_download_url">https://chromewebstore.google.com/detail/flow-wallet/hpclkefagolihohboafpheddmmgdffjm?hl=en</string>
+    
+    <!-- PDF Import Feature -->
+    <string name="pdf_password_hint">输入您的 PDF 密码</string>
+    <string name="pdf_password_protected_info">此 PDF 受密码保护。请输入密码以提取私钥。</string>
+    <string name="extract_private_key_from_pdf">从 PDF 提取私钥</string>
+    <string name="pdf_file_not_found">未找到 PDF 文件</string>
+    <string name="pdf_extract_json_failed">无法从 PDF 提取 JSON</string>
+    <string name="pdf_private_key_extracted">已从 PDF 提取私钥。请查看并按导入继续。</string>
+    <string name="pdf_contains_keystore">此 PDF 包含密钥库。请使用密钥库导入选项。</string>
+    <string name="pdf_unknown_format">PDF 中的 JSON 格式未知。需要 private_key 或密钥库格式。</string>
+    <string name="pdf_password_incorrect">密码错误。请检查您的密码并重试。</string>
+    <string name="pdf_extract_failed">PDF 提取失败: %1$s</string>
+    <string name="pdf_keystore_extracted">已从 PDF 提取密钥库。输入密码并按导入。</string>
+    <string name="pdf_imported_success">PDF 导入成功: %1$s</string>
 </resources>

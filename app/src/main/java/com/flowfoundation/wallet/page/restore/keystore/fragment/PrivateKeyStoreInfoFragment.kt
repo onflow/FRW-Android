@@ -60,6 +60,13 @@ class PrivateKeyStoreInfoFragment: Fragment() {
         // Initialize document picker
         documentPicker = DocumentPickerManager(requireActivity())
 
+        // Check if keystore JSON was passed from another screen (e.g., PDF extracted from private key screen)
+        val prefilledJson = arguments?.getString("keystore_json")
+        if (prefilledJson != null) {
+            binding.etJson.setText(prefilledJson)
+            toast(msg = getString(R.string.pdf_keystore_extracted))
+        }
+
         with(binding) {
             etJson.addTextChangedListener(object : SimpleTextWatcher() {
                 override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
@@ -104,7 +111,7 @@ class PrivateKeyStoreInfoFragment: Fragment() {
             Instabug.addPrivateViews(etJson)
             Instabug.addPrivateViews(etPassword)
         }
-        
+
         // Observe keystore format errors from ViewModel
         restoreViewModel.keystoreFormatErrorLiveData.observe(viewLifecycleOwner) { showError ->
             if (showError) {
@@ -165,7 +172,7 @@ class PrivateKeyStoreInfoFragment: Fragment() {
                 binding.etJson.setText(jsonData)
                 // Hide error message on success
                 binding.tvPdfError.visibility = View.GONE
-                toast(msg = "PDF imported successfully: $fileName")
+                toast(msg = getString(R.string.pdf_imported_success, fileName))
             }
 
             override fun onError(error: String) {

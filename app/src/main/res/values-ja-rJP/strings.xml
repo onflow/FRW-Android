@@ -725,4 +725,18 @@ Secure Enclave は、デバイスのハードウェア レベルのセキュリ�
     <string name="import_from_pdf">PDFからインポート</string>
     <string name="pdf_parse_error_message">キーストアJSONフォーマットが無効です。Flow Wallet Extensionをダウンロードして、キーストアファイルを正しくエクスポートしてください。</string>
     <string name="extension_download_url">https://chromewebstore.google.com/detail/flow-wallet/hpclkefagolihohboafpheddmmgdffjm?hl=en</string>
+    
+    <!-- PDF Import Feature -->
+    <string name="pdf_password_hint">PDFパスワードを入力</string>
+    <string name="pdf_password_protected_info">このPDFはパスワードで保護されています。秘密鍵を抽出するにはパスワードを入力してください。</string>
+    <string name="extract_private_key_from_pdf">PDFから秘密鍵を抽出</string>
+    <string name="pdf_file_not_found">PDFファイルが見つかりません</string>
+    <string name="pdf_extract_json_failed">PDFからJSONの抽出に失敗しました</string>
+    <string name="pdf_private_key_extracted">PDFから秘密鍵を抽出しました。確認してインポートを押してください。</string>
+    <string name="pdf_contains_keystore">このPDFにはキーストアが含まれています。キーストアインポートオプションを使用してください。</string>
+    <string name="pdf_unknown_format">PDFのJSONフォーマットが不明です。private_keyまたはキーストアフォーマットが必要です。</string>
+    <string name="pdf_password_incorrect">パスワードが正しくありません。パスワードを確認して再試行してください。</string>
+    <string name="pdf_extract_failed">PDF抽出に失敗: %1$s</string>
+    <string name="pdf_keystore_extracted">PDFからキーストアを抽出しました。パスワードを入力してインポートを押してください。</string>
+    <string name="pdf_imported_success">PDFのインポートに成功: %1$s</string>
 </resources>
