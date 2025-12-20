@@ -726,4 +726,18 @@
     <string name="import_from_pdf">PDF से आयात करें</string>
     <string name="pdf_parse_error_message">अमान्य कीस्टोर JSON प्रारूप। कृपया अपनी कीस्टोर फ़ाइल को सही ढंग से निर्यात करने के लिए Flow Wallet Extension डाउनलोड करें।</string>
     <string name="extension_download_url">https://chromewebstore.google.com/detail/flow-wallet/hpclkefagolihohboafpheddmmgdffjm?hl=en</string>
+    
+    <!-- PDF Import Feature -->
+    <string name="pdf_password_hint">अपना PDF पासवर्ड दर्ज करें</string>
+    <string name="pdf_password_protected_info">यह PDF पासवर्ड से सुरक्षित है। निजी कुंजी निकालने के लिए अपना पासवर्ड दर्ज करें।</string>
+    <string name="extract_private_key_from_pdf">PDF से निजी कुंजी निकालें</string>
+    <string name="pdf_file_not_found">PDF फ़ाइल नहीं मिली</string>
+    <string name="pdf_extract_json_failed">PDF से JSON निकालने में विफल</string>
+    <string name="pdf_private_key_extracted">PDF से निजी कुंजी निकाली गई। समीक्षा करें और जारी रखने के लिए आयात दबाएं।</string>
+    <string name="pdf_contains_keystore">इस PDF में कीस्टोर है। कृपया कीस्टोर आयात विकल्प का उपयोग करें।</string>
+    <string name="pdf_unknown_format">PDF में अज्ञात JSON प्रारूप। private_key या कीस्टोर प्रारूप अपेक्षित।</string>
+    <string name="pdf_password_incorrect">पासवर्ड गलत है। कृपया अपना पासवर्ड जांचें और पुनः प्रयास करें।</string>
+    <string name="pdf_extract_failed">PDF निष्कर्षण विफल: %1$s</string>
+    <string name="pdf_keystore_extracted">PDF से कीस्टोर निकाला गया। पासवर्ड दर्ज करें और आयात दबाएं।</string>
+    <string name="pdf_imported_success">PDF सफलतापूर्वक आयातित: %1$s</string>
 </resources>
