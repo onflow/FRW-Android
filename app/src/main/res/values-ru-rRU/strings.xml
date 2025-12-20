@@ -722,4 +722,18 @@
     <string name="import_from_pdf">Импорт из PDF</string>
     <string name="pdf_parse_error_message">Неверный формат JSON хранилища ключей. Пожалуйста, загрузите расширение Flow Wallet для правильного экспорта файла хранилища ключей.</string>
     <string name="extension_download_url">https://chromewebstore.google.com/detail/flow-wallet/hpclkefagolihohboafpheddmmgdffjm?hl=en</string>
+    
+    <!-- PDF Import Feature -->
+    <string name="pdf_password_hint">Введите пароль PDF</string>
+    <string name="pdf_password_protected_info">Этот PDF защищён паролем. Введите пароль для извлечения закрытого ключа.</string>
+    <string name="extract_private_key_from_pdf">Извлечь закрытый ключ из PDF</string>
+    <string name="pdf_file_not_found">PDF файл не найден</string>
+    <string name="pdf_extract_json_failed">Не удалось извлечь JSON из PDF</string>
+    <string name="pdf_private_key_extracted">Закрытый ключ извлечён из PDF. Проверьте и нажмите Импорт.</string>
+    <string name="pdf_contains_keystore">Этот PDF содержит хранилище ключей. Используйте опцию импорта Keystore.</string>
+    <string name="pdf_unknown_format">Неизвестный формат JSON в PDF. Ожидается private_key или формат keystore.</string>
+    <string name="pdf_password_incorrect">Неверный пароль. Проверьте пароль и повторите попытку.</string>
+    <string name="pdf_extract_failed">Ошибка извлечения PDF: %1$s</string>
+    <string name="pdf_keystore_extracted">Keystore извлечён из PDF. Введите пароль и нажмите Импорт.</string>
+    <string name="pdf_imported_success">PDF успешно импортирован: %1$s</string>
 </resources>
