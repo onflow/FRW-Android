@@ -61,45 +61,65 @@ class PrivateKeyInfoFragment: Fragment() {
         
         with(binding) {
             // Show password field and hide private key field if PDF URI is present
+            // Get reference to private key asterisk
+            val tvPrivateKeyAsterisk = view.findViewById<View>(com.flowfoundation.wallet.R.id.tv_private_key_asterisk)
+            
             if (pdfUri != null) {
                 android.util.Log.d("PDF_IMPORT", "PrivateKeyInfoFragment: PDF URI found, showing password field")
-                // Hide private key field and label, show password field
+                // Hide private key field and label
                 val tvPrivateKeyLabel = view.findViewById<View>(com.flowfoundation.wallet.R.id.tv_private_key)
                 tvPrivateKeyLabel?.visibility = View.GONE
-                // Hide asterisk next to private key label (it's the next sibling TextView)
-                view.findViewById<View>(com.flowfoundation.wallet.R.id.tv_private_key)?.let { label ->
-                    (label.parent as? ViewGroup)?.let { parent ->
-                        val index = parent.indexOfChild(label)
-                        if (index >= 0 && index < parent.childCount - 1) {
-                            val nextView = parent.getChildAt(index + 1)
-                            if (nextView is android.widget.TextView && nextView.text == "*") {
-                                nextView.visibility = View.GONE
-                            }
-                        }
-                    }
-                }
+                tvPrivateKeyAsterisk?.visibility = View.GONE
                 etPrivateKey.visibility = View.GONE
                 btnImportFromPdf.visibility = View.GONE
                 
-                // Show password field
+                // Show password field (already constrained to title in XML)
                 tvPassword.visibility = View.VISIBLE
                 tvPasswordAsterisk.visibility = View.VISIBLE
                 tilPassword.visibility = View.VISIBLE
                 
-                // Update address field constraint to be below password field instead of private key field
+                // Update password field hint to be PDF-specific
+                tilPassword.editText?.hint = "Enter PDF password to decrypt file"
+                
+                // Update address field constraint to be below password field
                 val addressParams = tvAddress.layoutParams as? ConstraintLayout.LayoutParams
                 addressParams?.topToBottom = tilPassword.id
                 addressParams?.topToTop = ConstraintLayout.LayoutParams.UNSET
-                tvAddress.requestLayout()
+                addressParams?.topMargin = (24 * resources.displayMetrics.density).toInt()
+                tvAddress.layoutParams = addressParams
+                
+                // Force layout update
+                view.requestLayout()
                 
                 // Update import button to extract from PDF
                 btnImport.text = "Extract Private Key from PDF"
             } else {
+                // Normal private key flow - ensure password field is hidden
+                tvPassword.visibility = View.GONE
+                tvPasswordAsterisk.visibility = View.GONE
+                tilPassword.visibility = View.GONE
+                
+                // Ensure private key field and label are visible
+                val tvPrivateKeyLabel = view.findViewById<View>(com.flowfoundation.wallet.R.id.tv_private_key)
+                tvPrivateKeyLabel?.visibility = View.VISIBLE
+                tvPrivateKeyAsterisk?.visibility = View.VISIBLE
+                etPrivateKey.visibility = View.VISIBLE
+                
                 // Show PDF import button for normal flow
                 btnImportFromPdf.visibility = View.VISIBLE
                 btnImportFromPdf.setOnClickListener {
                     openPDFPicker()
                 }
+                
+                // Reset address field constraint to be below import from PDF button
+                val addressParams = tvAddress.layoutParams as? ConstraintLayout.LayoutParams
+                addressParams?.topToBottom = btnImportFromPdf.id
+                addressParams?.topToTop = ConstraintLayout.LayoutParams.UNSET
+                addressParams?.topMargin = (24 * resources.displayMetrics.density).toInt()
+                tvAddress.layoutParams = addressParams
+                
+                // Reset import button text
+                btnImport.text = getString(com.flowfoundation.wallet.R.string.import_str)
             }
             
             etPrivateKey.addTextChangedListener(object : SimpleTextWatcher() {
@@ -175,20 +195,37 @@ class PrivateKeyInfoFragment: Fragment() {
             override fun onPasswordRequired(fileName: String, pdfUri: String) {
                 android.util.Log.d("PDF_IMPORT", "Password-protected PDF detected: $fileName, URI: $pdfUri")
                 // Already on private key page, just update the PDF URI
-                // Reload fragment with PDF URI
                 val args = Bundle().apply {
                     putString("pdf_uri", pdfUri)
                 }
-                // Update arguments and show password field
                 arguments = args
+                
+                // Hide private key field and label, show password field
+                view?.let { v ->
+                    v.findViewById<View>(com.flowfoundation.wallet.R.id.tv_private_key)?.visibility = View.GONE
+                    v.findViewById<View>(com.flowfoundation.wallet.R.id.tv_private_key_asterisk)?.visibility = View.GONE
+                }
+                
                 with(binding) {
                     etPrivateKey.visibility = View.GONE
+                    btnImportFromPdf.visibility = View.GONE
+                    
                     tvPassword.visibility = View.VISIBLE
                     tvPasswordAsterisk.visibility = View.VISIBLE
                     tilPassword.visibility = View.VISIBLE
-                    btnImportFromPdf.visibility = View.GONE
+                    tilPassword.editText?.hint = "Enter PDF password to decrypt file"
+                    
+                    // Update address field constraint to be below password field
+                    val addressParams = tvAddress.layoutParams as? ConstraintLayout.LayoutParams
+                    addressParams?.topToBottom = tilPassword.id
+                    addressParams?.topToTop = ConstraintLayout.LayoutParams.UNSET
+                    addressParams?.topMargin = (24 * resources.displayMetrics.density).toInt()
+                    tvAddress.layoutParams = addressParams
+                    
                     btnImport.text = "Extract Private Key from PDF"
                     updateImportButtonState()
+                    
+                    view?.requestLayout()
                 }
             }
         }
