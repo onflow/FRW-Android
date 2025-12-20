@@ -73,19 +73,25 @@ class BlocktoPDFExtractor(private val context: Context) {
             document = if (password != null) {
                 // Try loading with password
                 try {
+                    Log.d(TAG, "Attempting to load PDF with password (length: ${password.length})")
                     val loadedDoc = PDDocument.load(file, password)
+                    Log.d(TAG, "PDDocument.load completed")
                     // Verify the document was actually decrypted
                     // If still encrypted after loading with password, password was likely wrong
                     if (loadedDoc.isEncrypted && !loadedDoc.isAllSecurityToBeRemoved) {
+                        Log.d(TAG, "Document still encrypted after loading, password may be wrong")
                         loadedDoc.close()
                         throw PasswordIncorrectException("Password is incorrect. Please check your password and try again.")
                     }
+                    Log.d(TAG, "PDF loaded and decrypted successfully")
                     loadedDoc
                 } catch (e: PasswordIncorrectException) {
                     // Re-throw password incorrect exceptions
+                    Log.e(TAG, "PasswordIncorrectException: ${e.message}")
                     throw e
                 } catch (e: Exception) {
                     // Check if it's a password-related error
+                    Log.e(TAG, "Exception during PDF load with password: ${e.javaClass.simpleName}: ${e.message}")
                     val errorMsg = e.message?.lowercase() ?: ""
                     val className = e.javaClass.simpleName.lowercase()
                     if (errorMsg.contains("password") || 

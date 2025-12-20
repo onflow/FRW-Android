@@ -73,28 +73,24 @@ class PrivateKeyInfoFragment: Fragment() {
                 etPrivateKey.visibility = View.GONE
                 btnImportFromPdf.visibility = View.GONE
                 
-                // Show password field (already constrained to title in XML)
+                // Show password info message and password field
+                tvPdfPasswordInfo.visibility = View.VISIBLE
                 tvPassword.visibility = View.VISIBLE
                 tvPasswordAsterisk.visibility = View.VISIBLE
                 tilPassword.visibility = View.VISIBLE
                 
                 // Update password field hint to be PDF-specific
-                tilPassword.editText?.hint = "Enter PDF password to decrypt file"
+                etPassword.hint = "Enter your PDF password"
                 
-                // Update address field constraint to be below password field
-                val addressParams = tvAddress.layoutParams as? ConstraintLayout.LayoutParams
-                addressParams?.topToBottom = tilPassword.id
-                addressParams?.topToTop = ConstraintLayout.LayoutParams.UNSET
-                addressParams?.topMargin = (24 * resources.displayMetrics.density).toInt()
-                tvAddress.layoutParams = addressParams
-                
-                // Force layout update
-                view.requestLayout()
+                // Hide address field - not needed for PDF password entry
+                tvAddress.visibility = View.GONE
+                etAddress.visibility = View.GONE
                 
                 // Update import button to extract from PDF
                 btnImport.text = "Extract Private Key from PDF"
             } else {
-                // Normal private key flow - ensure password field is hidden
+                // Normal private key flow - ensure password field and info are hidden
+                tvPdfPasswordInfo.visibility = View.GONE
                 tvPassword.visibility = View.GONE
                 tvPasswordAsterisk.visibility = View.GONE
                 tilPassword.visibility = View.GONE
@@ -111,12 +107,9 @@ class PrivateKeyInfoFragment: Fragment() {
                     openPDFPicker()
                 }
                 
-                // Reset address field constraint to be below import from PDF button
-                val addressParams = tvAddress.layoutParams as? ConstraintLayout.LayoutParams
-                addressParams?.topToBottom = btnImportFromPdf.id
-                addressParams?.topToTop = ConstraintLayout.LayoutParams.UNSET
-                addressParams?.topMargin = (24 * resources.displayMetrics.density).toInt()
-                tvAddress.layoutParams = addressParams
+                // Show address field for normal flow
+                tvAddress.visibility = View.VISIBLE
+                etAddress.visibility = View.VISIBLE
                 
                 // Reset import button text
                 btnImport.text = getString(com.flowfoundation.wallet.R.string.import_str)
@@ -128,31 +121,38 @@ class PrivateKeyInfoFragment: Fragment() {
                 }
             })
             
-            tilPassword.editText?.addTextChangedListener(object : SimpleTextWatcher() {
+            etPassword.addTextChangedListener(object : SimpleTextWatcher() {
                 override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
                     updateImportButtonState()
                 }
             })
             
             btnImport.setOnClickListener {
+                // Re-read pdfUri from arguments in case it was updated
+                val currentPdfUri = arguments?.getString("pdf_uri")
                 val inputText = etPrivateKey.text.toString().trim()
-                val password = tilPassword.editText?.text?.toString()?.trim() ?: ""
+                val password = etPassword.text?.toString()?.trim() ?: ""
                 
-                if (pdfUri != null && password.isNotEmpty()) {
+                android.util.Log.d("PDF_IMPORT", "Import button clicked - pdfUri: $currentPdfUri, password length: ${password.length}")
+                
+                if (currentPdfUri != null && password.isNotEmpty()) {
                     // Extract from password-protected PDF
-                    extractPrivateKeyFromPasswordProtectedPdf(pdfUri, password)
+                    android.util.Log.d("PDF_IMPORT", "Calling extractPrivateKeyFromPasswordProtectedPdf")
+                    extractPrivateKeyFromPasswordProtectedPdf(currentPdfUri, password)
                 } else if (validatePrivateKey(inputText)) {
                     // Normal private key import flow
                     restoreViewModel.importPrivateKey(
                         inputText,
                         etAddress.text.toString().trim()
                     )
+                } else {
+                    android.util.Log.d("PDF_IMPORT", "Button click - no action taken. pdfUri: $currentPdfUri, password empty: ${password.isEmpty()}, validPrivateKey: ${validatePrivateKey(inputText)}")
                 }
             }
             
             updateImportButtonState()
             Instabug.addPrivateViews(etPrivateKey)
-            tilPassword.editText?.let { Instabug.addPrivateViews(it) }
+            Instabug.addPrivateViews(etPassword)
         }
     }
     
@@ -161,7 +161,7 @@ class PrivateKeyInfoFragment: Fragment() {
         with(binding) {
             if (pdfUri != null) {
                 // Enable if password is entered
-                btnImport.isEnabled = tilPassword.editText?.text?.toString()?.trim()?.isNotEmpty() == true
+                btnImport.isEnabled = etPassword.text?.toString()?.trim()?.isNotEmpty() == true
             } else {
                 // Enable if private key is valid
                 btnImport.isEnabled = canRestore()
@@ -210,22 +210,19 @@ class PrivateKeyInfoFragment: Fragment() {
                     etPrivateKey.visibility = View.GONE
                     btnImportFromPdf.visibility = View.GONE
                     
+                    // Show password info message and password field
+                    tvPdfPasswordInfo.visibility = View.VISIBLE
                     tvPassword.visibility = View.VISIBLE
                     tvPasswordAsterisk.visibility = View.VISIBLE
                     tilPassword.visibility = View.VISIBLE
-                    tilPassword.editText?.hint = "Enter PDF password to decrypt file"
+                    etPassword.hint = "Enter your PDF password"
                     
-                    // Update address field constraint to be below password field
-                    val addressParams = tvAddress.layoutParams as? ConstraintLayout.LayoutParams
-                    addressParams?.topToBottom = tilPassword.id
-                    addressParams?.topToTop = ConstraintLayout.LayoutParams.UNSET
-                    addressParams?.topMargin = (24 * resources.displayMetrics.density).toInt()
-                    tvAddress.layoutParams = addressParams
+                    // Hide address field - not needed for PDF password entry
+                    tvAddress.visibility = View.GONE
+                    etAddress.visibility = View.GONE
                     
                     btnImport.text = "Extract Private Key from PDF"
                     updateImportButtonState()
-                    
-                    view?.requestLayout()
                 }
             }
         }
@@ -295,8 +292,12 @@ class PrivateKeyInfoFragment: Fragment() {
                 }
                 
                 // Extract JSON from PDF with password
+                android.util.Log.d("PDF_IMPORT", "Creating BlocktoPDFExtractor and calling extractJsonFromPdf")
+                android.util.Log.d("PDF_IMPORT", "PDF file: ${pdfFile.absolutePath}, exists: ${pdfFile.exists()}, size: ${pdfFile.length()}")
                 val extractor = BlocktoPDFExtractor(requireContext().applicationContext)
+                android.util.Log.d("PDF_IMPORT", "Extractor created, calling extractJsonFromPdf with password length: ${password.length}")
                 val jsonResult = extractor.extractJsonFromPdf(pdfFile, password)
+                android.util.Log.d("PDF_IMPORT", "extractJsonFromPdf returned: ${if (jsonResult != null) "JSON (${jsonResult.length} chars)" else "null"}")
                 
                 if (jsonResult == null) {
                     withContext(Dispatchers.Main) {
