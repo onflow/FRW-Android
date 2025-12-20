@@ -11,6 +11,16 @@ import java.io.File
 import java.util.regex.Pattern
 
 /**
+ * Exception thrown when a PDF is encrypted but no password was provided
+ */
+class PasswordRequiredException(message: String, cause: Throwable? = null) : Exception(message, cause)
+
+/**
+ * Exception thrown when the provided password is incorrect
+ */
+class PasswordIncorrectException(message: String, cause: Throwable? = null) : Exception(message, cause)
+
+/**
  * Extract JSON data from Blocto RecoveryKit PDF files
  */
 class BlocktoPDFExtractor(private val context: Context) {
@@ -39,11 +49,16 @@ class BlocktoPDFExtractor(private val context: Context) {
 
     /**
      * Extract JSON string from a PDF file
+     * Supports both encrypted and unencrypted PDFs
      * @param file PDF file to extract from
+     * @param password Optional password for encrypted PDFs. If null and PDF is encrypted, will throw PasswordRequiredException
      * @param pageIndex Zero-based page index (default: 0 for first page)
      * @return Extracted JSON string or null if extraction fails
+     * @throws PasswordRequiredException if PDF is encrypted and no password provided
+     * @throws PasswordIncorrectException if provided password is incorrect
      */
-    fun extractJsonFromPdf(file: File, pageIndex: Int = 0): String? {
+    fun extractJsonFromPdf(file: File, password: String? = null, pageIndex: Int = 0): String? {
+        var document: PDDocument? = null
         return try {
             Log.d(TAG, "Starting JSON extraction from PDF: ${file.name}")
 
@@ -52,9 +67,67 @@ class BlocktoPDFExtractor(private val context: Context) {
                 initializePDFBox(context)
             }
 
-            // 1. Load PDF document
-            Log.d(TAG, "Loading PDF document with PDFBox")
-            val document = PDDocument.load(file)
+            // 1. Load PDF document (with or without password)
+            Log.d(TAG, if (password != null) "Loading password-protected PDF document" else "Loading PDF document")
+            
+            document = if (password != null) {
+                // Try loading with password
+                try {
+                    val loadedDoc = PDDocument.load(file, password)
+                    // Verify the document was actually decrypted
+                    // If still encrypted after loading with password, password was likely wrong
+                    if (loadedDoc.isEncrypted && !loadedDoc.isAllSecurityToBeRemoved) {
+                        loadedDoc.close()
+                        throw PasswordIncorrectException("Password is incorrect. Please check your password and try again.")
+                    }
+                    loadedDoc
+                } catch (e: PasswordIncorrectException) {
+                    // Re-throw password incorrect exceptions
+                    throw e
+                } catch (e: Exception) {
+                    // Check if it's a password-related error
+                    val errorMsg = e.message?.lowercase() ?: ""
+                    val className = e.javaClass.simpleName.lowercase()
+                    if (errorMsg.contains("password") || 
+                        errorMsg.contains("incorrect") ||
+                        errorMsg.contains("wrong") ||
+                        errorMsg.contains("invalid password") ||
+                        className.contains("password") ||
+                        className.contains("encryption")) {
+                        throw PasswordIncorrectException("Password is incorrect. Please check your password and try again.", e)
+                    }
+                    throw e
+                }
+            } else {
+                // Try loading without password
+                try {
+                    val loadedDoc = PDDocument.load(file)
+                    // Check if document is encrypted even if load succeeded
+                    if (loadedDoc.isEncrypted) {
+                        loadedDoc.close()
+                        Log.d(TAG, "PDF is encrypted but no password provided")
+                        throw PasswordRequiredException("PDF is password-protected. A password is required to decrypt this file.")
+                    }
+                    loadedDoc
+                } catch (e: PasswordRequiredException) {
+                    // Re-throw password required exceptions
+                    throw e
+                } catch (e: Exception) {
+                    // Check if PDF is encrypted (requires password)
+                    val errorMsg = e.message?.lowercase() ?: ""
+                    val className = e.javaClass.simpleName.lowercase()
+                    if (errorMsg.contains("password") || 
+                        errorMsg.contains("encrypted") ||
+                        errorMsg.contains("decrypt") ||
+                        errorMsg.contains("encryption") ||
+                        className.contains("encryption") ||
+                        className.contains("password")) {
+                        throw PasswordRequiredException("PDF is password-protected. A password is required to decrypt this file.", e)
+                    }
+                    throw e
+                }
+            }
+            
             val pageCount = document.numberOfPages
             Log.d(TAG, "PDF loaded successfully, total pages: $pageCount")
 
@@ -67,7 +140,6 @@ class BlocktoPDFExtractor(private val context: Context) {
 
             // 3. Extract page text
             val pageText = stripper.getText(document)
-            document.close()
             Log.d(TAG, "Text extracted, length: ${pageText.length} characters")
 
             // 4. Extract JSON from text
@@ -80,12 +152,27 @@ class BlocktoPDFExtractor(private val context: Context) {
             }
             result
 
+        } catch (e: PasswordRequiredException) {
+            // Re-throw password required exceptions
+            throw e
+        } catch (e: PasswordIncorrectException) {
+            // Re-throw password incorrect exceptions
+            throw e
         } catch (e: Exception) {
             Log.e(TAG, "Exception during PDF JSON extraction", e)
             e.printStackTrace()
-            null
+            // Wrap other exceptions
+            throw IllegalArgumentException("Failed to extract JSON from PDF: ${e.message ?: "Unknown error"}", e)
+        } finally {
+            // Ensure document is always closed
+            try {
+                document?.close()
+            } catch (e: Exception) {
+                Log.w(TAG, "Error closing PDF document", e)
+            }
         }
     }
+
 
     /**
      * Extract JSON string from text using regex patterns

@@ -17,6 +17,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.FragmentPrivateKeyStoreInfoBinding
 import com.flowfoundation.wallet.page.restore.keystore.viewmodel.KeyStoreRestoreViewModel
+import com.flowfoundation.wallet.page.restore.keystore.KeyStoreRestoreActivity
 import com.flowfoundation.wallet.pdfparser.DocumentPickerManager
 import com.flowfoundation.wallet.utils.listeners.SimpleTextWatcher
 import com.flowfoundation.wallet.utils.toast
@@ -175,6 +176,15 @@ class PrivateKeyStoreInfoFragment: Fragment() {
 
             override fun onCancelled() {
                 // User cancelled, no action needed
+            }
+
+            override fun onPasswordRequired(fileName: String, pdfUri: String) {
+                android.util.Log.d("PDF_IMPORT", "Password-protected PDF detected: $fileName, URI: $pdfUri")
+                // Route user to private key restore page with PDF URI
+                // The private key page will handle extracting JSON with password
+                KeyStoreRestoreActivity.launchPrivateKey(requireContext(), pdfUri)
+                // Close current activity/fragment since we're navigating away
+                activity?.finish()
             }
         }
 

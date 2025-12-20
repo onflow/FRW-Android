@@ -95,7 +95,16 @@ class KeyStoreRestoreActivity : BaseActivity() {
         val transition = createTransition(currentOption, option)
         val fragment = when (option) {
             KeyStoreOption.INPUT_KEYSTORE_INFO -> PrivateKeyStoreInfoFragment()
-            KeyStoreOption.INPUT_PRIVATE_KEY_INFO -> PrivateKeyInfoFragment()
+            KeyStoreOption.INPUT_PRIVATE_KEY_INFO -> {
+                val pdfUri = intent.getStringExtra(EXTRA_PDF_URI)
+                PrivateKeyInfoFragment().apply {
+                    arguments = Bundle().apply {
+                        if (pdfUri != null) {
+                            putString("pdf_uri", pdfUri)
+                        }
+                    }
+                }
+            }
             KeyStoreOption.INPUT_SEED_PHRASE_INFO -> SeedPhraseInfoFragment()
             KeyStoreOption.CREATE_USERNAME -> PrivateKeyStoreUsernameFragment()
         }
@@ -139,14 +148,18 @@ class KeyStoreRestoreActivity : BaseActivity() {
     companion object {
         private const val EXTRA_RESTORE_PRIVATE_KEY = "extra_restore_private_key"
         private const val EXTRA_RESTORE_SEED_PHRASE = "extra_restore_seed_phrase"
+        const val EXTRA_PDF_URI = "extra_pdf_uri"
 
         fun launchKeyStore(context: Context) {
             context.startActivity(Intent(context, KeyStoreRestoreActivity::class.java))
         }
 
-        fun launchPrivateKey(context: Context) {
+        fun launchPrivateKey(context: Context, pdfUri: String? = null) {
             context.startActivity(Intent(context, KeyStoreRestoreActivity::class.java).apply {
                 putExtra(EXTRA_RESTORE_PRIVATE_KEY, true)
+                if (pdfUri != null) {
+                    putExtra(EXTRA_PDF_URI, pdfUri)
+                }
             })
         }
 

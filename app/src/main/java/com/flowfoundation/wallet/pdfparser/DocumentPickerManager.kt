@@ -28,6 +28,15 @@ class DocumentPickerManager(private val activity: Activity) {
         fun onSuccess(jsonData: String, fileName: String)
         fun onError(error: String)
         fun onCancelled()
+        /**
+         * Called when PDF is password-protected and requires password
+         * @param fileName Name of the PDF file
+         * @param pdfUri URI of the PDF file (can be passed to next screen for extraction with password)
+         */
+        fun onPasswordRequired(fileName: String, pdfUri: String) {
+            // Default implementation calls onError for backward compatibility
+            onError("PDF is password-protected. A password is required.")
+        }
     }
 
     private var callback: PDFSelectionCallback? = null
@@ -130,7 +139,33 @@ class DocumentPickerManager(private val activity: Activity) {
                     // Parse PDF
                     Log.d(TAG, "Starting PDF extraction with BlocktoPDFExtractor")
                     val extractor = BlocktoPDFExtractor(activity.applicationContext)
-                    val result = extractor.extractJsonFromPdf(tempFile)
+                    val result = try {
+                        extractor.extractJsonFromPdf(tempFile)
+                    } catch (e: PasswordRequiredException) {
+                        Log.w(TAG, "PDF is password-protected: ${e.message}")
+                        // Store URI as string for passing to next screen
+                        val pdfUriString = uri.toString()
+                        withContext(Dispatchers.Main) {
+                            // Call the password required callback with PDF URI to allow UI to route appropriately
+                            callback?.onPasswordRequired(fileName, pdfUriString)
+                            callback = null
+                        }
+                        return@launch
+                    } catch (e: PasswordIncorrectException) {
+                        Log.w(TAG, "Password is incorrect: ${e.message}")
+                        withContext(Dispatchers.Main) {
+                            callback?.onError("Password is incorrect. Please check your password and try again.")
+                            callback = null
+                        }
+                        return@launch
+                    } catch (e: Exception) {
+                        Log.e(TAG, "PDF extraction error: ${e.message}")
+                        withContext(Dispatchers.Main) {
+                            callback?.onError("Failed to extract JSON from PDF: ${e.message ?: "Unknown error"}")
+                            callback = null
+                        }
+                        return@launch
+                    }
 
                     withContext(Dispatchers.Main) {
                         if (result != null) {
