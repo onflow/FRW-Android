@@ -316,25 +316,41 @@ class PrivateKeyInfoFragment: Fragment() {
                     val privateKey = jsonObject.getString("private_key")
                     val address = if (jsonObject.has("address")) jsonObject.getString("address") else ""
                     
-                    android.util.Log.d("PDF_IMPORT", "Found Blocto-style PDF with private_key, importing directly")
+                    android.util.Log.d("PDF_IMPORT", "Found Blocto-style PDF with private_key, filling fields")
                     
                     withContext(Dispatchers.Main) {
-                        // Import the private key directly
-                        restoreViewModel.importPrivateKey(
-                            privateKey,
-                            address
-                        )
+                        // Fill the private key and address fields, let user manually import
+                        binding.etPrivateKey.setText(privateKey)
+                        binding.etPrivateKey.visibility = View.VISIBLE
+                        view?.findViewById<View>(com.flowfoundation.wallet.R.id.tv_private_key)?.visibility = View.VISIBLE
+                        view?.findViewById<View>(com.flowfoundation.wallet.R.id.tv_private_key_asterisk)?.visibility = View.VISIBLE
+                        
+                        if (address.isNotEmpty()) {
+                            binding.etAddress.setText(address)
+                        }
+                        binding.etAddress.visibility = View.VISIBLE
+                        binding.tvAddress.visibility = View.VISIBLE
+                        
+                        // Hide password field since we're done with PDF extraction
+                        binding.tvPdfPasswordInfo.visibility = View.GONE
+                        binding.tvPassword.visibility = View.GONE
+                        view?.findViewById<View>(com.flowfoundation.wallet.R.id.tv_password_asterisk)?.visibility = View.GONE
+                        binding.tilPassword.visibility = View.GONE
+                        
+                        // Update button text back to normal import
+                        binding.btnImport.text = getString(com.flowfoundation.wallet.R.string.import_str)
+                        
+                        // Clear the PDF URI so normal import flow is used
+                        arguments?.remove("pdf_uri")
+                        
+                        toast(msg = "Private key extracted from PDF. Review and press Import to continue.")
                     }
                 } else if (jsonObject.has("crypto") || jsonObject.has("version")) {
-                    // This is a keystore JSON format
-                    android.util.Log.d("PDF_IMPORT", "Found keystore-style PDF, decrypting with password")
+                    // This is a keystore JSON format - route to keystore page
+                    android.util.Log.d("PDF_IMPORT", "Found keystore-style PDF, routing to keystore page")
                     
                     withContext(Dispatchers.Main) {
-                        restoreViewModel.importKeyStore(
-                            jsonResult,
-                            password,
-                            binding.etAddress.text.toString().trim()
-                        )
+                        toast(msg = "This PDF contains a keystore. Please use the Keystore import option.")
                     }
                 } else {
                     android.util.Log.e("PDF_IMPORT", "Unknown JSON format in PDF (not logging content for security)")
