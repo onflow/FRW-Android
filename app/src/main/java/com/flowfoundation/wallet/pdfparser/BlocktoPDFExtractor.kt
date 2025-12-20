@@ -186,7 +186,7 @@ class BlocktoPDFExtractor(private val context: Context) {
      */
     private fun extractJsonString(text: String): String? {
         Log.d(TAG, "Attempting to extract JSON from text of length ${text.length}")
-        Log.d(TAG, "Text preview (first 500 chars): ${text.take(500)}")
+        // Note: Not logging text content to avoid exposing private keys
         
         // First, try to find keystore-specific patterns (more reliable for Blocto)
         val keystoreResult = extractKeystoreJson(text)

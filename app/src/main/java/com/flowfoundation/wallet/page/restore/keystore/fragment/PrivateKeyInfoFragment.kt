@@ -306,15 +306,41 @@ class PrivateKeyInfoFragment: Fragment() {
                     return@launch
                 }
                 
-                android.util.Log.d("PDF_IMPORT", "Successfully extracted JSON from PDF, now decrypting keystore")
+                android.util.Log.d("PDF_IMPORT", "Successfully extracted JSON from PDF, parsing content")
                 
-                // Use ViewModel to import keystore (which will decrypt and extract private key)
-                withContext(Dispatchers.Main) {
-                    restoreViewModel.importKeyStore(
-                        jsonResult,
-                        password, // Use same password for PDF and keystore
-                        binding.etAddress.text.toString().trim()
-                    )
+                // Parse the JSON to determine the format
+                val jsonObject = org.json.JSONObject(jsonResult)
+                
+                // Check if this is a Blocto-style PDF with direct private_key field
+                if (jsonObject.has("private_key")) {
+                    val privateKey = jsonObject.getString("private_key")
+                    val address = if (jsonObject.has("address")) jsonObject.getString("address") else ""
+                    
+                    android.util.Log.d("PDF_IMPORT", "Found Blocto-style PDF with private_key, importing directly")
+                    
+                    withContext(Dispatchers.Main) {
+                        // Import the private key directly
+                        restoreViewModel.importPrivateKey(
+                            privateKey,
+                            address
+                        )
+                    }
+                } else if (jsonObject.has("crypto") || jsonObject.has("version")) {
+                    // This is a keystore JSON format
+                    android.util.Log.d("PDF_IMPORT", "Found keystore-style PDF, decrypting with password")
+                    
+                    withContext(Dispatchers.Main) {
+                        restoreViewModel.importKeyStore(
+                            jsonResult,
+                            password,
+                            binding.etAddress.text.toString().trim()
+                        )
+                    }
+                } else {
+                    android.util.Log.e("PDF_IMPORT", "Unknown JSON format in PDF (not logging content for security)")
+                    withContext(Dispatchers.Main) {
+                        toast(msg = "Unknown JSON format in PDF. Expected private_key or keystore format.")
+                    }
                 }
                 
             } catch (e: PasswordIncorrectException) {
