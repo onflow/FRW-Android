@@ -143,11 +143,14 @@ class DocumentPickerManager(private val activity: Activity) {
                         extractor.extractJsonFromPdf(tempFile)
                     } catch (e: PasswordRequiredException) {
                         Log.w(TAG, "PDF is password-protected: ${e.message}")
-                        // Store URI as string for passing to next screen
-                        val pdfUriString = uri.toString()
+                        // Copy temp file to a persistent cache location before passing
+                        val persistentCacheFile = File(activity.cacheDir, "password_protected_pdf_${System.currentTimeMillis()}.pdf")
+                        tempFile.copyTo(persistentCacheFile, overwrite = true)
+                        Log.d(TAG, "Copied password-protected PDF to: ${persistentCacheFile.absolutePath}")
+                        
                         withContext(Dispatchers.Main) {
-                            // Call the password required callback with PDF URI to allow UI to route appropriately
-                            callback?.onPasswordRequired(fileName, pdfUriString)
+                            // Call the password required callback with cache file path
+                            callback?.onPasswordRequired(fileName, persistentCacheFile.absolutePath)
                             callback = null
                         }
                         return@launch

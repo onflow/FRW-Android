@@ -262,25 +262,41 @@ class PrivateKeyInfoFragment: Fragment() {
      */
     private fun extractPrivateKeyFromPasswordProtectedPdf(pdfUri: String, password: String) {
         CoroutineScope(Dispatchers.IO).launch {
-            var tempFile: File? = null
+            var pdfFile: File? = null
+            var shouldDeleteFile = false
             try {
-                android.util.Log.d("PDF_IMPORT", "Extracting private key from password-protected PDF")
+                android.util.Log.d("PDF_IMPORT", "Extracting private key from password-protected PDF: $pdfUri")
                 
-                // Create temp file from URI
-                val uri = Uri.parse(pdfUri)
-                val contentResolver = requireContext().contentResolver
-                val inputStream = contentResolver.openInputStream(uri)
-                tempFile = File.createTempFile("pdf_keystore", ".pdf", requireContext().cacheDir)
-                
-                inputStream?.use { input ->
-                    tempFile.outputStream().use { output ->
-                        input.copyTo(output)
+                // Check if pdfUri is a file path or a content URI
+                pdfFile = if (pdfUri.startsWith("/") || pdfUri.startsWith("file://")) {
+                    // It's a file path (from cache)
+                    val path = if (pdfUri.startsWith("file://")) pdfUri.removePrefix("file://") else pdfUri
+                    File(path)
+                } else {
+                    // It's a content URI - need to copy to temp file
+                    shouldDeleteFile = true
+                    val uri = Uri.parse(pdfUri)
+                    val contentResolver = requireContext().contentResolver
+                    val inputStream = contentResolver.openInputStream(uri)
+                    val tempFile = File.createTempFile("pdf_keystore", ".pdf", requireContext().cacheDir)
+                    inputStream?.use { input ->
+                        tempFile.outputStream().use { output ->
+                            input.copyTo(output)
+                        }
                     }
+                    tempFile
+                }
+                
+                if (pdfFile == null || !pdfFile.exists()) {
+                    withContext(Dispatchers.Main) {
+                        toast(msg = "PDF file not found")
+                    }
+                    return@launch
                 }
                 
                 // Extract JSON from PDF with password
                 val extractor = BlocktoPDFExtractor(requireContext().applicationContext)
-                val jsonResult = extractor.extractJsonFromPdf(tempFile, password)
+                val jsonResult = extractor.extractJsonFromPdf(pdfFile, password)
                 
                 if (jsonResult == null) {
                     withContext(Dispatchers.Main) {
@@ -311,7 +327,10 @@ class PrivateKeyInfoFragment: Fragment() {
                     toast(msg = "Failed to extract PDF: ${e.message ?: "Unknown error"}")
                 }
             } finally {
-                tempFile?.delete()
+                // Only delete the file if we created it (content URI case) or if it's a cache file
+                if (shouldDeleteFile || pdfFile?.absolutePath?.contains("password_protected_pdf") == true) {
+                    pdfFile?.delete()
+                }
             }
         }
     }
