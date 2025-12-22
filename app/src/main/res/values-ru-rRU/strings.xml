@@ -736,4 +736,8 @@
     <string name="pdf_extract_failed">Ошибка извлечения PDF: %1$s</string>
     <string name="pdf_keystore_extracted">Keystore извлечён из PDF. Введите пароль и нажмите Импорт.</string>
     <string name="pdf_imported_success">PDF успешно импортирован: %1$s</string>
+    <string name="pdf_password_required_title">Требуется пароль</string>
+    <string name="pdf_password_required_desc">Этот PDF защищён паролем. Пожалуйста, введите пароль.</string>
+    <string name="unlock">Разблокировать</string>
+    <string name="pdf_contains_private_key">Этот PDF содержит приватный ключ. Используйте опцию импорта приватного ключа.</string>
 </resources>

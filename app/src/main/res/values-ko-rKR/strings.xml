@@ -733,4 +733,8 @@
     <string name="pdf_extract_failed">PDF 추출 실패: %1$s</string>
     <string name="pdf_keystore_extracted">PDF에서 키스토어가 추출되었습니다. 비밀번호를 입력하고 가져오기를 누르세요.</string>
     <string name="pdf_imported_success">PDF 가져오기 성공: %1$s</string>
+    <string name="pdf_password_required_title">비밀번호 필요</string>
+    <string name="pdf_password_required_desc">이 PDF는 비밀번호로 보호되어 있습니다. 비밀번호를 입력하세요.</string>
+    <string name="unlock">잠금 해제</string>
+    <string name="pdf_contains_private_key">이 PDF에는 개인 키가 포함되어 있습니다. 개인 키 가져오기 옵션을 사용하세요.</string>
 </resources>

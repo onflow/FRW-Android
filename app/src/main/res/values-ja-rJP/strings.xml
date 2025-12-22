@@ -739,4 +739,8 @@ Secure Enclave は、デバイスのハードウェア レベルのセキュリ�
     <string name="pdf_extract_failed">PDF抽出に失敗: %1$s</string>
     <string name="pdf_keystore_extracted">PDFからキーストアを抽出しました。パスワードを入力してインポートを押してください。</string>
     <string name="pdf_imported_success">PDFのインポートに成功: %1$s</string>
+    <string name="pdf_password_required_title">パスワードが必要です</string>
+    <string name="pdf_password_required_desc">このPDFはパスワードで保護されています。パスワードを入力してください。</string>
+    <string name="unlock">ロック解除</string>
+    <string name="pdf_contains_private_key">このPDFには秘密鍵が含まれています。秘密鍵インポートオプションを使用してください。</string>
 </resources>

@@ -742,4 +742,8 @@
     <string name="pdf_extract_failed">PDF 提取失败: %1$s</string>
     <string name="pdf_keystore_extracted">已从 PDF 提取密钥库。输入密码并按导入。</string>
     <string name="pdf_imported_success">PDF 导入成功: %1$s</string>
+    <string name="pdf_password_required_title">需要密码</string>
+    <string name="pdf_password_required_desc">此 PDF 受密码保护。请提供密码。</string>
+    <string name="unlock">解锁</string>
+    <string name="pdf_contains_private_key">此 PDF 包含私钥。请使用私钥导入选项。</string>
 </resources>

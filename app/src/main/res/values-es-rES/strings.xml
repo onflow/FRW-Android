@@ -739,4 +739,8 @@
     <string name="pdf_extract_failed">Error al extraer PDF: %1$s</string>
     <string name="pdf_keystore_extracted">Keystore extraído del PDF. Ingrese contraseña y presione Importar.</string>
     <string name="pdf_imported_success">PDF importado exitosamente: %1$s</string>
+    <string name="pdf_password_required_title">Contraseña requerida</string>
+    <string name="pdf_password_required_desc">Este PDF está protegido con contraseña. Por favor proporcione una contraseña.</string>
+    <string name="unlock">Desbloquear</string>
+    <string name="pdf_contains_private_key">Este PDF contiene una clave privada. Use la opción de importación de clave privada.</string>
 </resources>

@@ -740,4 +740,8 @@
     <string name="pdf_extract_failed">PDF निष्कर्षण विफल: %1$s</string>
     <string name="pdf_keystore_extracted">PDF से कीस्टोर निकाला गया। पासवर्ड दर्ज करें और आयात दबाएं।</string>
     <string name="pdf_imported_success">PDF सफलतापूर्वक आयातित: %1$s</string>
+    <string name="pdf_password_required_title">पासवर्ड आवश्यक</string>
+    <string name="pdf_password_required_desc">यह PDF पासवर्ड सुरक्षित है। कृपया पासवर्ड प्रदान करें।</string>
+    <string name="unlock">अनलॉक करें</string>
+    <string name="pdf_contains_private_key">इस PDF में एक प्राइवेट की है। प्राइवेट की इंपोर्ट विकल्प का उपयोग करें।</string>
 </resources>
