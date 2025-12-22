@@ -96,7 +96,7 @@ fun String.parseAccountMetas(): List<ChildAccount> {
         ChildAccount(
             address = address,
             name = name ?: R.string.default_child_account_name.res2String(),
-            icon = icon.orEmpty().ifBlank { "https://lilico.app/placeholder-2.0.png" },
+            icon = icon.orEmpty().ifBlank { "https://web.api.wallet.flow.com/placeholder-2.0.png" },
             description = description,
         )
     }

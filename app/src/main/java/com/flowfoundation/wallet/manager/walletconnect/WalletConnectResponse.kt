@@ -66,7 +66,7 @@ private fun authn(address: String, keyId: Int): String {
         "color": "#41CC5D",
         "supportEmail": "wallet@flow.com",
         "website": "https://frw-link.lilico.app/wc",
-        "icon": "https://lilico.app/logo_mobile.png"
+        "icon": "https://web.api.wallet.flow.com/logo_mobile.png"
     },
     "id": "$address",
     "f_vsn": "1.0.0",

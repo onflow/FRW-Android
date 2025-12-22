@@ -100,7 +100,7 @@ class WatchAssetsViewModel : ViewModel() {
             symbol = symbolValue.orEmpty(),
             decimal = decimal,
             name = nameValue.orEmpty(),
-            icon = icon ?: "https://lilico.app/placeholder-2.0.png",
+            icon = icon ?: "https://web.api.wallet.flow.com/placeholder-2.0.png",
             contractName = null,
             flowIdentifier = flowIdentifier,
             evmAddress = null,

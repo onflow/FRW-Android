@@ -59,7 +59,7 @@ class NftShareView(
                 .transform(BlurTransformation(15, 30))
                 .into(backgroundImage)
 
-            qrcodeView.setImageBitmap("https://lilico.app/".toQRBitmap(300, 300))
+            qrcodeView.setImageBitmap("https://web.api.wallet.flow.com/".toQRBitmap(300, 300))
 
             loadNftCover()
         }
