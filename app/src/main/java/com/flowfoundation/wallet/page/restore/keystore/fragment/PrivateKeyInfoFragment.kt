@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.databinding.FragmentPrivateKeyInfoBinding
 import com.flowfoundation.wallet.page.restore.keystore.KeyStoreRestoreActivity
 import com.flowfoundation.wallet.page.restore.keystore.viewmodel.KeyStoreRestoreViewModel
+import com.flowfoundation.wallet.page.restore.keystore.dialog.PdfPasswordDialog
 import com.flowfoundation.wallet.pdfparser.BlocktoPDFExtractor
 import com.flowfoundation.wallet.pdfparser.DocumentPickerManager
 import com.flowfoundation.wallet.pdfparser.PasswordIncorrectException
@@ -58,61 +59,33 @@ class PrivateKeyInfoFragment: Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val pdfUri = arguments?.getString("pdf_uri")
-
         // Initialize document picker
         documentPicker = DocumentPickerManager(requireActivity())
 
         with(binding) {
-            // Show password field and hide private key field if PDF URI is present
-            if (pdfUri != null) {
-                logd(TAG, "PrivateKeyInfoFragment: PDF URI found, showing password field")
-                // Hide private key field and label
-                tvPrivateKey.visibility = View.GONE
-                tvPrivateKeyAsterisk.visibility = View.GONE
-                etPrivateKey.visibility = View.GONE
-                btnImportFromPdf.visibility = View.GONE
+            // Hide password fields - we use a dialog now
+            tvPdfPasswordInfo.visibility = View.GONE
+            tvPassword.visibility = View.GONE
+            tvPasswordAsterisk.visibility = View.GONE
+            tilPassword.visibility = View.GONE
 
-                // Show password info message and password field
-                tvPdfPasswordInfo.visibility = View.VISIBLE
-                tvPassword.visibility = View.VISIBLE
-                tvPasswordAsterisk.visibility = View.VISIBLE
-                tilPassword.visibility = View.VISIBLE
+            // Ensure private key field and label are visible
+            tvPrivateKey.visibility = View.VISIBLE
+            tvPrivateKeyAsterisk.visibility = View.VISIBLE
+            etPrivateKey.visibility = View.VISIBLE
 
-                // Update password field hint to be PDF-specific
-                etPassword.hint = getString(com.flowfoundation.wallet.R.string.pdf_password_hint)
-
-                // Hide address field - not needed for PDF password entry
-                tvAddress.visibility = View.GONE
-                etAddress.visibility = View.GONE
-
-                // Update import button to extract from PDF
-                btnImport.text = "Extract Private Key from PDF"
-            } else {
-                // Normal private key flow - ensure password field and info are hidden
-                tvPdfPasswordInfo.visibility = View.GONE
-                tvPassword.visibility = View.GONE
-                tvPasswordAsterisk.visibility = View.GONE
-                tilPassword.visibility = View.GONE
-
-                // Ensure private key field and label are visible
-                tvPrivateKey.visibility = View.VISIBLE
-                tvPrivateKeyAsterisk.visibility = View.VISIBLE
-                etPrivateKey.visibility = View.VISIBLE
-
-                // Show PDF import button for normal flow
-                btnImportFromPdf.visibility = View.VISIBLE
-                btnImportFromPdf.setOnClickListener {
-                    openPDFPicker()
-                }
-
-                // Show address field for normal flow
-                tvAddress.visibility = View.VISIBLE
-                etAddress.visibility = View.VISIBLE
-
-                // Reset import button text
-                btnImport.text = getString(com.flowfoundation.wallet.R.string.import_str)
+            // Show PDF import button
+            btnImportFromPdf.visibility = View.VISIBLE
+            btnImportFromPdf.setOnClickListener {
+                openPDFPicker()
             }
+
+            // Show address field
+            tvAddress.visibility = View.VISIBLE
+            etAddress.visibility = View.VISIBLE
+
+            // Set import button text
+            btnImport.text = getString(com.flowfoundation.wallet.R.string.import_str)
 
             etPrivateKey.addTextChangedListener(object : SimpleTextWatcher() {
                 override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
@@ -120,51 +93,25 @@ class PrivateKeyInfoFragment: Fragment() {
                 }
             })
 
-            etPassword.addTextChangedListener(object : SimpleTextWatcher() {
-                override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-                    updateImportButtonState()
-                }
-            })
-
             btnImport.setOnClickListener {
-                // Re-read pdfUri from arguments in case it was updated
-                val currentPdfUri = arguments?.getString("pdf_uri")
                 val inputText = etPrivateKey.text.toString().trim()
-                val password = etPassword.text?.toString()?.trim() ?: ""
 
-                logd(TAG, "Import button clicked - pdfUri: $currentPdfUri, password length: ${password.length}")
-
-                if (currentPdfUri != null && password.isNotEmpty()) {
-                    // Extract from password-protected PDF
-                    logd(TAG, "Calling extractPrivateKeyFromPasswordProtectedPdf")
-                    extractPrivateKeyFromPasswordProtectedPdf(currentPdfUri, password)
-                } else if (validatePrivateKey(inputText)) {
-                    // Normal private key import flow
-                restoreViewModel.importPrivateKey(
+                if (validatePrivateKey(inputText)) {
+                    restoreViewModel.importPrivateKey(
                         inputText,
-                    etAddress.text.toString().trim()
-                )
-                } else {
-                    logd(TAG, "Button click - no action taken. pdfUri: $currentPdfUri, password empty: ${password.isEmpty()}, validPrivateKey: ${validatePrivateKey(inputText)}")
+                        etAddress.text.toString().trim()
+                    )
                 }
             }
 
             updateImportButtonState()
             Instabug.addPrivateViews(etPrivateKey)
-            Instabug.addPrivateViews(etPassword)
         }
     }
 
     private fun updateImportButtonState() {
-        val pdfUri = arguments?.getString("pdf_uri")
         with(binding) {
-            if (pdfUri != null) {
-                // Enable if password is entered
-                btnImport.isEnabled = etPassword.text?.toString()?.trim()?.isNotEmpty() == true
-            } else {
-                // Enable if private key is valid
-                btnImport.isEnabled = canRestore()
-            }
+            btnImport.isEnabled = canRestore()
         }
     }
 
@@ -191,35 +138,10 @@ class PrivateKeyInfoFragment: Fragment() {
                 // User cancelled, no action needed
             }
 
-            override fun onPasswordRequired(fileName: String, pdfUri: String) {
-                logd(TAG, "Password-protected PDF detected: $fileName, URI: $pdfUri")
-                // Already on private key page, just update the PDF URI
-                val args = Bundle().apply {
-                    putString("pdf_uri", pdfUri)
-                }
-                arguments = args
-
-                // Hide private key field and label, show password field
-                with(binding) {
-                    tvPrivateKey.visibility = View.GONE
-                    tvPrivateKeyAsterisk.visibility = View.GONE
-                    etPrivateKey.visibility = View.GONE
-                    btnImportFromPdf.visibility = View.GONE
-
-                    // Show password info message and password field
-                    tvPdfPasswordInfo.visibility = View.VISIBLE
-                    tvPassword.visibility = View.VISIBLE
-                    tvPasswordAsterisk.visibility = View.VISIBLE
-                    tilPassword.visibility = View.VISIBLE
-                    etPassword.hint = getString(com.flowfoundation.wallet.R.string.pdf_password_hint)
-
-                    // Hide address field - not needed for PDF password entry
-                    tvAddress.visibility = View.GONE
-                    etAddress.visibility = View.GONE
-
-                    btnImport.text = getString(com.flowfoundation.wallet.R.string.extract_private_key_from_pdf)
-                    updateImportButtonState()
-                }
+            override fun onPasswordRequired(fileName: String, pdfFilePath: String) {
+                logd(TAG, "Password-protected PDF detected: $fileName, path: $pdfFilePath")
+                // Show password dialog
+                showPasswordDialog(pdfFilePath)
             }
         }
 
@@ -245,6 +167,22 @@ class PrivateKeyInfoFragment: Fragment() {
             logd(TAG, "Passing result to DocumentPickerManager")
             documentPicker.handleActivityResult(requestCode, resultCode, data)
         }
+    }
+
+    /**
+     * Show password dialog for password-protected PDF
+     */
+    private fun showPasswordDialog(pdfFilePath: String) {
+        PdfPasswordDialog(
+            context = requireContext(),
+            pdfFilePath = pdfFilePath,
+            onUnlock = { password ->
+                extractPrivateKeyFromPasswordProtectedPdf(pdfFilePath, password)
+            },
+            onCancel = {
+                // User cancelled, no action needed
+            }
+        ).show()
     }
 
     /**
@@ -358,6 +296,8 @@ class PrivateKeyInfoFragment: Fragment() {
             } catch (e: PasswordIncorrectException) {
                 withContext(Dispatchers.Main) {
                     toast(msg = getString(com.flowfoundation.wallet.R.string.pdf_password_incorrect))
+                    // Show dialog again for retry
+                    showPasswordDialog(pdfUri)
                 }
             } catch (e: Exception) {
                 loge(TAG, "Error extracting PDF: ${e.message}")
