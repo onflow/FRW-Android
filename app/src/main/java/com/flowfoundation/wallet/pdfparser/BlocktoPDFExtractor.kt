@@ -176,7 +176,7 @@ class BlocktoPDFExtractor(private val context: Context) {
             try {
                 document?.close()
             } catch (e: Exception) {
-                logw(TAG, "Error closing PDF document", e)
+                logw(TAG, "Error closing PDF document: ${e.message}")
             }
         }
     }
