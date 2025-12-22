@@ -120,7 +120,7 @@ class CustomTokenViewModel : ViewModel() {
             symbol = symbolValue.orEmpty(),
             decimal = decimalsValue.toInt(),
             name = nameValue.orEmpty(),
-            icon = "https://lilico.app/placeholder-2.0.png",
+            icon = "https://web.api.wallet.flow.com/placeholder-2.0.png",
             contractName = null,
             flowIdentifier = flowIdentifier,
             evmAddress = null,

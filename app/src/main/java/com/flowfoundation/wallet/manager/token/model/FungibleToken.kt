@@ -105,7 +105,7 @@ data class FungibleToken(
 
     fun tokenIcon(): String {
         if (logoURI.isNullOrEmpty()) {
-            return "https://lilico.app/placeholder-2.0.png"
+            return "https://web.api.wallet.flow.com/placeholder-2.0.png"
         }
         if (logoURI.endsWith(".svg")) {
             return logoURI.svgToPng()
