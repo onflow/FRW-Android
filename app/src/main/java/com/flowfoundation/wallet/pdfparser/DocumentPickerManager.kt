@@ -82,7 +82,7 @@ class DocumentPickerManager(private val activity: Activity) {
             activity.startActivityForResult(intent, PICK_PDF_REQUEST)
             logd(TAG, "Document picker activity started successfully")
         } catch (e: Exception) {
-            loge(TAG, "Failed to open document picker", e)
+            loge(TAG, "Failed to open document picker: ${e.message}")
             callback.onError("Failed to open document picker: ${e.message}")
         }
     }
@@ -195,7 +195,7 @@ class DocumentPickerManager(private val activity: Activity) {
                 }
 
             } catch (e: Exception) {
-                loge(TAG, "Exception during PDF processing", e)
+                loge(TAG, "Exception during PDF processing: ${e.message}")
                 withContext(Dispatchers.Main) {
                     callback?.onError("Error processing file: ${e.message}")
                     callback = null
@@ -239,7 +239,7 @@ class DocumentPickerManager(private val activity: Activity) {
             }
             tempFile
         } catch (e: Exception) {
-            loge(TAG, "Failed to create temp file from URI", e)
+            loge(TAG, "Failed to create temp file from URI: ${e.message}")
             e.printStackTrace()
             null
         }

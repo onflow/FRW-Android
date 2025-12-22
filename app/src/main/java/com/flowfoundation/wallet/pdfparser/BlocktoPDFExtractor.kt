@@ -43,7 +43,7 @@ class BlocktoPDFExtractor(private val context: Context) {
                 isPDFBoxInitialized = true
                 logd(TAG, "PDFBox initialized successfully")
             } catch (e: Exception) {
-                loge(TAG, "Failed to initialize PDFBox", e)
+                loge(TAG, "Failed to initialize PDFBox: ${e.message}")
                 e.printStackTrace()
             }
         }
@@ -167,7 +167,7 @@ class BlocktoPDFExtractor(private val context: Context) {
             // Re-throw password incorrect exceptions
             throw e
         } catch (e: Exception) {
-            loge(TAG, "Exception during PDF JSON extraction", e)
+            loge(TAG, "Exception during PDF JSON extraction: ${e.message}")
             e.printStackTrace()
             // Wrap other exceptions
             throw IllegalArgumentException("Failed to extract JSON from PDF: ${e.message ?: "Unknown error"}", e)

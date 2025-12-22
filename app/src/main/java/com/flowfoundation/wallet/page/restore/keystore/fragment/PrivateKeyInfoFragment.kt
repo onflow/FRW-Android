@@ -230,7 +230,7 @@ class PrivateKeyInfoFragment: Fragment() {
             logd(TAG, "Starting PDF picker from Fragment")
             startActivityForResult(intent, DocumentPickerManager.PICK_PDF_REQUEST)
         } catch (e: Exception) {
-            loge(TAG, "Failed to start PDF picker", e)
+            loge(TAG, "Failed to start PDF picker: ${e.message}")
             callback.onError("Failed to open document picker: ${e.message}")
         }
     }
