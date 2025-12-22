@@ -28,6 +28,10 @@ import org.json.JSONObject
 
 
 class PrivateKeyStoreInfoFragment: Fragment() {
+    companion object {
+        private const val TAG = "PDF_IMPORT"
+    }
+
     private lateinit var binding: FragmentPrivateKeyStoreInfoBinding
     private val restoreViewModel by lazy {
         ViewModelProvider(requireActivity())[KeyStoreRestoreViewModel::class.java]
@@ -167,7 +171,7 @@ class PrivateKeyStoreInfoFragment: Fragment() {
      * Open PDF file picker
      */
     private fun openPDFPicker() {
-        logd("PDF_IMPORT", "openPDFPicker called in Fragment")
+        logd(TAG, "openPDFPicker called in Fragment")
         val callback = object : DocumentPickerManager.PDFSelectionCallback {
             override fun onSuccess(jsonData: String, fileName: String) {
                 // Populate the JSON field with extracted data
@@ -178,7 +182,7 @@ class PrivateKeyStoreInfoFragment: Fragment() {
             }
 
             override fun onError(error: String) {
-                loge("PDF_IMPORT", "PDF parsing failed: $error")
+                loge(TAG, "PDF parsing failed: $error")
                 // Show error message instead of toast
                 binding.tvPdfError.visibility = View.VISIBLE
             }
@@ -188,7 +192,7 @@ class PrivateKeyStoreInfoFragment: Fragment() {
             }
 
             override fun onPasswordRequired(fileName: String, pdfUri: String) {
-                logd("PDF_IMPORT", "Password-protected PDF detected: $fileName, URI: $pdfUri")
+                logd(TAG, "Password-protected PDF detected: $fileName, URI: $pdfUri")
                 // Route user to private key restore page with PDF URI
                 // The private key page will handle extracting JSON with password
                 KeyStoreRestoreActivity.launchPrivateKey(requireContext(), pdfUri)
@@ -203,10 +207,10 @@ class PrivateKeyStoreInfoFragment: Fragment() {
         // Start activity from Fragment (not Activity) to ensure result comes back to Fragment
         try {
             val intent = documentPicker.createPickerIntent()
-            logd("PDF_IMPORT", "Starting PDF picker from Fragment with requestCode=${DocumentPickerManager.PICK_PDF_REQUEST}")
+            logd(TAG, "Starting PDF picker from Fragment with requestCode=${DocumentPickerManager.PICK_PDF_REQUEST}")
             startActivityForResult(intent, DocumentPickerManager.PICK_PDF_REQUEST)
         } catch (e: Exception) {
-            loge("PDF_IMPORT", "Failed to start PDF picker", e)
+            loge(TAG, "Failed to start PDF picker", e)
             callback.onError("Failed to open document picker: ${e.message}")
         }
     }
@@ -215,13 +219,13 @@ class PrivateKeyStoreInfoFragment: Fragment() {
      * Handle activity result from document picker
      */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        logd("PDF_IMPORT", "Fragment onActivityResult: requestCode=$requestCode, resultCode=$resultCode, data=$data")
+        logd(TAG, "Fragment onActivityResult: requestCode=$requestCode, resultCode=$resultCode, data=$data")
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == DocumentPickerManager.PICK_PDF_REQUEST && resultCode == Activity.RESULT_OK) {
-            logd("PDF_IMPORT", "Passing result to DocumentPickerManager")
+            logd(TAG, "Passing result to DocumentPickerManager")
             documentPicker.handleActivityResult(requestCode, resultCode, data)
         } else {
-            logd("PDF_IMPORT", "Result not handled: requestCode=${DocumentPickerManager.PICK_PDF_REQUEST}, RESULT_OK=${Activity.RESULT_OK}")
+            logd(TAG, "Result not handled: requestCode=${DocumentPickerManager.PICK_PDF_REQUEST}, RESULT_OK=${Activity.RESULT_OK}")
         }
     }
 

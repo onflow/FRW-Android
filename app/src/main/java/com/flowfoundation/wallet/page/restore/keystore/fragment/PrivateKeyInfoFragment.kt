@@ -28,6 +28,10 @@ import java.io.File
 
 
 class PrivateKeyInfoFragment: Fragment() {
+    companion object {
+        private const val TAG = "PDF_IMPORT"
+    }
+
     private lateinit var binding: FragmentPrivateKeyInfoBinding
     private lateinit var documentPicker: DocumentPickerManager
     private val restoreViewModel by lazy {
@@ -62,7 +66,7 @@ class PrivateKeyInfoFragment: Fragment() {
         with(binding) {
             // Show password field and hide private key field if PDF URI is present
             if (pdfUri != null) {
-                logd("PDF_IMPORT", "PrivateKeyInfoFragment: PDF URI found, showing password field")
+                logd(TAG, "PrivateKeyInfoFragment: PDF URI found, showing password field")
                 // Hide private key field and label
                 tvPrivateKey.visibility = View.GONE
                 tvPrivateKeyAsterisk.visibility = View.GONE
@@ -128,11 +132,11 @@ class PrivateKeyInfoFragment: Fragment() {
                 val inputText = etPrivateKey.text.toString().trim()
                 val password = etPassword.text?.toString()?.trim() ?: ""
 
-                logd("PDF_IMPORT", "Import button clicked - pdfUri: $currentPdfUri, password length: ${password.length}")
+                logd(TAG, "Import button clicked - pdfUri: $currentPdfUri, password length: ${password.length}")
 
                 if (currentPdfUri != null && password.isNotEmpty()) {
                     // Extract from password-protected PDF
-                    logd("PDF_IMPORT", "Calling extractPrivateKeyFromPasswordProtectedPdf")
+                    logd(TAG, "Calling extractPrivateKeyFromPasswordProtectedPdf")
                     extractPrivateKeyFromPasswordProtectedPdf(currentPdfUri, password)
                 } else if (validatePrivateKey(inputText)) {
                     // Normal private key import flow
@@ -141,7 +145,7 @@ class PrivateKeyInfoFragment: Fragment() {
                     etAddress.text.toString().trim()
                 )
                 } else {
-                    logd("PDF_IMPORT", "Button click - no action taken. pdfUri: $currentPdfUri, password empty: ${password.isEmpty()}, validPrivateKey: ${validatePrivateKey(inputText)}")
+                    logd(TAG, "Button click - no action taken. pdfUri: $currentPdfUri, password empty: ${password.isEmpty()}, validPrivateKey: ${validatePrivateKey(inputText)}")
                 }
             }
 
@@ -168,18 +172,18 @@ class PrivateKeyInfoFragment: Fragment() {
      * Open PDF file picker
      */
     private fun openPDFPicker() {
-        logd("PDF_IMPORT", "openPDFPicker called in PrivateKeyInfoFragment")
+        logd(TAG, "openPDFPicker called in PrivateKeyInfoFragment")
         val callback = object : DocumentPickerManager.PDFSelectionCallback {
             override fun onSuccess(jsonData: String, fileName: String) {
                 // Non-password-protected PDF with keystore JSON
                 // Route to keystore page with the pre-extracted JSON
-                logd("PDF_IMPORT", "Non-password-protected PDF selected, routing to keystore page with extracted JSON")
+                logd(TAG, "Non-password-protected PDF selected, routing to keystore page with extracted JSON")
                 KeyStoreRestoreActivity.launchKeyStore(requireContext(), jsonData)
                 activity?.finish()
             }
 
             override fun onError(error: String) {
-                loge("PDF_IMPORT", "PDF parsing failed: $error")
+                loge(TAG, "PDF parsing failed: $error")
                 toast(msg = error)
             }
 
@@ -188,7 +192,7 @@ class PrivateKeyInfoFragment: Fragment() {
             }
 
             override fun onPasswordRequired(fileName: String, pdfUri: String) {
-                logd("PDF_IMPORT", "Password-protected PDF detected: $fileName, URI: $pdfUri")
+                logd(TAG, "Password-protected PDF detected: $fileName, URI: $pdfUri")
                 // Already on private key page, just update the PDF URI
                 val args = Bundle().apply {
                     putString("pdf_uri", pdfUri)
@@ -223,10 +227,10 @@ class PrivateKeyInfoFragment: Fragment() {
 
         try {
             val intent = documentPicker.createPickerIntent()
-            logd("PDF_IMPORT", "Starting PDF picker from Fragment")
+            logd(TAG, "Starting PDF picker from Fragment")
             startActivityForResult(intent, DocumentPickerManager.PICK_PDF_REQUEST)
         } catch (e: Exception) {
-            loge("PDF_IMPORT", "Failed to start PDF picker", e)
+            loge(TAG, "Failed to start PDF picker", e)
             callback.onError("Failed to open document picker: ${e.message}")
         }
     }
@@ -235,10 +239,10 @@ class PrivateKeyInfoFragment: Fragment() {
      * Handle activity result from document picker
      */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        logd("PDF_IMPORT", "PrivateKeyInfoFragment onActivityResult: requestCode=$requestCode, resultCode=$resultCode")
+        logd(TAG, "PrivateKeyInfoFragment onActivityResult: requestCode=$requestCode, resultCode=$resultCode")
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == DocumentPickerManager.PICK_PDF_REQUEST && resultCode == Activity.RESULT_OK) {
-            logd("PDF_IMPORT", "Passing result to DocumentPickerManager")
+            logd(TAG, "Passing result to DocumentPickerManager")
             documentPicker.handleActivityResult(requestCode, resultCode, data)
         }
     }
@@ -254,7 +258,7 @@ class PrivateKeyInfoFragment: Fragment() {
             var pdfFile: File? = null
             var shouldDeleteFile = false
             try {
-                logd("PDF_IMPORT", "Extracting private key from password-protected PDF: $pdfUri")
+                logd(TAG, "Extracting private key from password-protected PDF: $pdfUri")
 
                 // Check if pdfUri is a file path or a content URI
                 pdfFile = if (pdfUri.startsWith("/") || pdfUri.startsWith("file://")) {
@@ -284,12 +288,12 @@ class PrivateKeyInfoFragment: Fragment() {
                 }
 
                 // Extract JSON from PDF with password
-                logd("PDF_IMPORT", "Creating BlocktoPDFExtractor and calling extractJsonFromPdf")
-                logd("PDF_IMPORT", "PDF file: ${pdfFile.absolutePath}, exists: ${pdfFile.exists()}, size: ${pdfFile.length()}")
+                logd(TAG, "Creating BlocktoPDFExtractor and calling extractJsonFromPdf")
+                logd(TAG, "PDF file: ${pdfFile.absolutePath}, exists: ${pdfFile.exists()}, size: ${pdfFile.length()}")
                 val extractor = BlocktoPDFExtractor(requireContext().applicationContext)
-                logd("PDF_IMPORT", "Extractor created, calling extractJsonFromPdf with password length: ${password.length}")
+                logd(TAG, "Extractor created, calling extractJsonFromPdf with password length: ${password.length}")
                 val jsonResult = extractor.extractJsonFromPdf(pdfFile, password)
-                logd("PDF_IMPORT", "extractJsonFromPdf returned: ${if (jsonResult != null) "JSON (${jsonResult.length} chars)" else "null"}")
+                logd(TAG, "extractJsonFromPdf returned: ${if (jsonResult != null) "JSON (${jsonResult.length} chars)" else "null"}")
 
                 if (jsonResult == null) {
                     withContext(Dispatchers.Main) {
@@ -298,7 +302,7 @@ class PrivateKeyInfoFragment: Fragment() {
                     return@launch
                 }
 
-                logd("PDF_IMPORT", "Successfully extracted JSON from PDF, parsing content")
+                logd(TAG, "Successfully extracted JSON from PDF, parsing content")
 
                 // Parse the JSON to determine the format
                 val jsonObject = org.json.JSONObject(jsonResult)
@@ -308,7 +312,7 @@ class PrivateKeyInfoFragment: Fragment() {
                     val privateKey = jsonObject.getString("private_key")
                     val address = if (jsonObject.has("address")) jsonObject.getString("address") else ""
 
-                    logd("PDF_IMPORT", "Found Blocto-style PDF with private_key, filling fields")
+                    logd(TAG, "Found Blocto-style PDF with private_key, filling fields")
 
                     withContext(Dispatchers.Main) {
                         // Fill the private key and address fields, let user manually import
@@ -339,13 +343,13 @@ class PrivateKeyInfoFragment: Fragment() {
                     }
                 } else if (jsonObject.has("crypto") || jsonObject.has("version")) {
                     // This is a keystore JSON format - route to keystore page
-                    logd("PDF_IMPORT", "Found keystore-style PDF, routing to keystore page")
+                    logd(TAG, "Found keystore-style PDF, routing to keystore page")
 
                     withContext(Dispatchers.Main) {
                         toast(msg = getString(com.flowfoundation.wallet.R.string.pdf_contains_keystore))
                     }
                 } else {
-                    loge("PDF_IMPORT", "Unknown JSON format in PDF (not logging content for security)")
+                    loge(TAG, "Unknown JSON format in PDF (not logging content for security)")
                     withContext(Dispatchers.Main) {
                         toast(msg = getString(com.flowfoundation.wallet.R.string.pdf_unknown_format))
                     }
@@ -356,7 +360,7 @@ class PrivateKeyInfoFragment: Fragment() {
                     toast(msg = getString(com.flowfoundation.wallet.R.string.pdf_password_incorrect))
                 }
             } catch (e: Exception) {
-                loge("PDF_IMPORT", "Error extracting PDF: ${e.message}")
+                loge(TAG, "Error extracting PDF: ${e.message}")
                 e.printStackTrace()
                 withContext(Dispatchers.Main) {
                     toast(msg = getString(com.flowfoundation.wallet.R.string.pdf_extract_failed, e.message ?: "Unknown error"))
