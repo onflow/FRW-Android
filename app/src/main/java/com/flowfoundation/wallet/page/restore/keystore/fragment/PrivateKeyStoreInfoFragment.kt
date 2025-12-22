@@ -288,13 +288,16 @@ class PrivateKeyStoreInfoFragment: Fragment() {
                     val privateKey = jsonObject.getString("private_key")
                     val address = if (jsonObject.has("address")) jsonObject.getString("address") else ""
 
-                    logd(TAG, "Found Blocto-style PDF with private_key, routing to private key page")
+                    logd(TAG, "Found Blocto-style PDF with private_key, routing to private key page with data")
 
                     withContext(Dispatchers.Main) {
                         // Route to private key page with the extracted key pre-filled
-                        // For now, show toast and let user know to use private key flow
-                        toast(msg = getString(R.string.pdf_contains_private_key))
-                        KeyStoreRestoreActivity.launchPrivateKey(requireContext(), null)
+                        KeyStoreRestoreActivity.launchPrivateKeyWithData(
+                            requireContext(),
+                            privateKey,
+                            address.ifEmpty { null }
+                        )
+                        activity?.finish()
                     }
                 } else if (jsonObject.has("crypto") || jsonObject.has("version")) {
                     // This is a keystore JSON format - fill the field

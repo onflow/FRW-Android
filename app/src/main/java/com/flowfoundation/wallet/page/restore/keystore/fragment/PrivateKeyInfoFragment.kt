@@ -62,6 +62,10 @@ class PrivateKeyInfoFragment: Fragment() {
         // Initialize document picker
         documentPicker = DocumentPickerManager(requireActivity())
 
+        // Check for pre-filled private key from PDF extraction
+        val prefilledPrivateKey = arguments?.getString("private_key")
+        val prefilledAddress = arguments?.getString("address")
+
         with(binding) {
             // Hide password fields - we use a dialog now
             tvPdfPasswordInfo.visibility = View.GONE
@@ -74,6 +78,13 @@ class PrivateKeyInfoFragment: Fragment() {
             tvPrivateKeyAsterisk.visibility = View.VISIBLE
             etPrivateKey.visibility = View.VISIBLE
 
+            // Pre-fill private key if provided
+            if (!prefilledPrivateKey.isNullOrEmpty()) {
+                etPrivateKey.setText(prefilledPrivateKey)
+                logd(TAG, "Pre-filled private key from PDF extraction")
+                toast(msg = getString(com.flowfoundation.wallet.R.string.pdf_private_key_extracted))
+            }
+
             // Show PDF import button
             btnImportFromPdf.visibility = View.VISIBLE
             btnImportFromPdf.setOnClickListener {
@@ -83,6 +94,11 @@ class PrivateKeyInfoFragment: Fragment() {
             // Show address field
             tvAddress.visibility = View.VISIBLE
             etAddress.visibility = View.VISIBLE
+
+            // Pre-fill address if provided
+            if (!prefilledAddress.isNullOrEmpty()) {
+                etAddress.setText(prefilledAddress)
+            }
 
             // Set import button text
             btnImport.text = getString(com.flowfoundation.wallet.R.string.import_str)
@@ -276,6 +292,9 @@ class PrivateKeyInfoFragment: Fragment() {
 
                         // Clear the PDF URI so normal import flow is used
                         arguments?.remove("pdf_uri")
+
+                        // Update button state
+                        updateImportButtonState()
 
                         toast(msg = getString(com.flowfoundation.wallet.R.string.pdf_private_key_extracted))
                     }

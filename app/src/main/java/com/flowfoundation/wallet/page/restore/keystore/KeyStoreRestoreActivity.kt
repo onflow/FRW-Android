@@ -106,11 +106,13 @@ class KeyStoreRestoreActivity : BaseActivity() {
             }
             KeyStoreOption.INPUT_PRIVATE_KEY_INFO -> {
                 val pdfUri = intent.getStringExtra(EXTRA_PDF_URI)
+                val privateKey = intent.getStringExtra(EXTRA_PRIVATE_KEY)
+                val address = intent.getStringExtra(EXTRA_ADDRESS)
                 PrivateKeyInfoFragment().apply {
                     arguments = Bundle().apply {
-                        if (pdfUri != null) {
-                            putString("pdf_uri", pdfUri)
-                        }
+                        pdfUri?.let { putString("pdf_uri", it) }
+                        privateKey?.let { putString("private_key", it) }
+                        address?.let { putString("address", it) }
                     }
                 }
             }
@@ -159,6 +161,8 @@ class KeyStoreRestoreActivity : BaseActivity() {
         private const val EXTRA_RESTORE_SEED_PHRASE = "extra_restore_seed_phrase"
         const val EXTRA_PDF_URI = "extra_pdf_uri"
         const val EXTRA_KEYSTORE_JSON = "extra_keystore_json"
+        const val EXTRA_PRIVATE_KEY = "extra_private_key"
+        const val EXTRA_ADDRESS = "extra_address"
 
         fun launchKeyStore(context: Context, keystoreJson: String? = null) {
             context.startActivity(Intent(context, KeyStoreRestoreActivity::class.java).apply {
@@ -172,6 +176,14 @@ class KeyStoreRestoreActivity : BaseActivity() {
                 if (pdfUri != null) {
                     putExtra(EXTRA_PDF_URI, pdfUri)
                 }
+            })
+        }
+
+        fun launchPrivateKeyWithData(context: Context, privateKey: String, address: String? = null) {
+            context.startActivity(Intent(context, KeyStoreRestoreActivity::class.java).apply {
+                putExtra(EXTRA_RESTORE_PRIVATE_KEY, true)
+                putExtra(EXTRA_PRIVATE_KEY, privateKey)
+                address?.let { putExtra(EXTRA_ADDRESS, it) }
             })
         }
 
