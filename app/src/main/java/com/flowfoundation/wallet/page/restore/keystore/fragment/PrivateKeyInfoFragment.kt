@@ -16,6 +16,8 @@ import com.flowfoundation.wallet.pdfparser.BlocktoPDFExtractor
 import com.flowfoundation.wallet.pdfparser.DocumentPickerManager
 import com.flowfoundation.wallet.pdfparser.PasswordIncorrectException
 import com.flowfoundation.wallet.utils.listeners.SimpleTextWatcher
+import com.flowfoundation.wallet.utils.logd
+import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.toast
 import com.instabug.library.Instabug
 import kotlinx.coroutines.CoroutineScope
@@ -59,15 +61,11 @@ class PrivateKeyInfoFragment: Fragment() {
 
         with(binding) {
             // Show password field and hide private key field if PDF URI is present
-            // Get reference to private key asterisk
-            val tvPrivateKeyAsterisk = view.findViewById<View>(com.flowfoundation.wallet.R.id.tv_private_key_asterisk)
-
             if (pdfUri != null) {
-                android.util.Log.d("PDF_IMPORT", "PrivateKeyInfoFragment: PDF URI found, showing password field")
+                logd("PDF_IMPORT", "PrivateKeyInfoFragment: PDF URI found, showing password field")
                 // Hide private key field and label
-                val tvPrivateKeyLabel = view.findViewById<View>(com.flowfoundation.wallet.R.id.tv_private_key)
-                tvPrivateKeyLabel?.visibility = View.GONE
-                tvPrivateKeyAsterisk?.visibility = View.GONE
+                tvPrivateKey.visibility = View.GONE
+                tvPrivateKeyAsterisk.visibility = View.GONE
                 etPrivateKey.visibility = View.GONE
                 btnImportFromPdf.visibility = View.GONE
 
@@ -94,9 +92,8 @@ class PrivateKeyInfoFragment: Fragment() {
                 tilPassword.visibility = View.GONE
 
                 // Ensure private key field and label are visible
-                val tvPrivateKeyLabel = view.findViewById<View>(com.flowfoundation.wallet.R.id.tv_private_key)
-                tvPrivateKeyLabel?.visibility = View.VISIBLE
-                tvPrivateKeyAsterisk?.visibility = View.VISIBLE
+                tvPrivateKey.visibility = View.VISIBLE
+                tvPrivateKeyAsterisk.visibility = View.VISIBLE
                 etPrivateKey.visibility = View.VISIBLE
 
                 // Show PDF import button for normal flow
@@ -131,20 +128,20 @@ class PrivateKeyInfoFragment: Fragment() {
                 val inputText = etPrivateKey.text.toString().trim()
                 val password = etPassword.text?.toString()?.trim() ?: ""
 
-                android.util.Log.d("PDF_IMPORT", "Import button clicked - pdfUri: $currentPdfUri, password length: ${password.length}")
+                logd("PDF_IMPORT", "Import button clicked - pdfUri: $currentPdfUri, password length: ${password.length}")
 
                 if (currentPdfUri != null && password.isNotEmpty()) {
                     // Extract from password-protected PDF
-                    android.util.Log.d("PDF_IMPORT", "Calling extractPrivateKeyFromPasswordProtectedPdf")
+                    logd("PDF_IMPORT", "Calling extractPrivateKeyFromPasswordProtectedPdf")
                     extractPrivateKeyFromPasswordProtectedPdf(currentPdfUri, password)
                 } else if (validatePrivateKey(inputText)) {
                     // Normal private key import flow
-                    restoreViewModel.importPrivateKey(
+                restoreViewModel.importPrivateKey(
                         inputText,
-                        etAddress.text.toString().trim()
-                    )
+                    etAddress.text.toString().trim()
+                )
                 } else {
-                    android.util.Log.d("PDF_IMPORT", "Button click - no action taken. pdfUri: $currentPdfUri, password empty: ${password.isEmpty()}, validPrivateKey: ${validatePrivateKey(inputText)}")
+                    logd("PDF_IMPORT", "Button click - no action taken. pdfUri: $currentPdfUri, password empty: ${password.isEmpty()}, validPrivateKey: ${validatePrivateKey(inputText)}")
                 }
             }
 
@@ -171,18 +168,18 @@ class PrivateKeyInfoFragment: Fragment() {
      * Open PDF file picker
      */
     private fun openPDFPicker() {
-        android.util.Log.d("PDF_IMPORT", "openPDFPicker called in PrivateKeyInfoFragment")
+        logd("PDF_IMPORT", "openPDFPicker called in PrivateKeyInfoFragment")
         val callback = object : DocumentPickerManager.PDFSelectionCallback {
             override fun onSuccess(jsonData: String, fileName: String) {
                 // Non-password-protected PDF with keystore JSON
                 // Route to keystore page with the pre-extracted JSON
-                android.util.Log.d("PDF_IMPORT", "Non-password-protected PDF selected, routing to keystore page with extracted JSON")
+                logd("PDF_IMPORT", "Non-password-protected PDF selected, routing to keystore page with extracted JSON")
                 KeyStoreRestoreActivity.launchKeyStore(requireContext(), jsonData)
                 activity?.finish()
             }
 
             override fun onError(error: String) {
-                android.util.Log.e("PDF_IMPORT", "PDF parsing failed: $error")
+                loge("PDF_IMPORT", "PDF parsing failed: $error")
                 toast(msg = error)
             }
 
@@ -191,7 +188,7 @@ class PrivateKeyInfoFragment: Fragment() {
             }
 
             override fun onPasswordRequired(fileName: String, pdfUri: String) {
-                android.util.Log.d("PDF_IMPORT", "Password-protected PDF detected: $fileName, URI: $pdfUri")
+                logd("PDF_IMPORT", "Password-protected PDF detected: $fileName, URI: $pdfUri")
                 // Already on private key page, just update the PDF URI
                 val args = Bundle().apply {
                     putString("pdf_uri", pdfUri)
@@ -199,12 +196,9 @@ class PrivateKeyInfoFragment: Fragment() {
                 arguments = args
 
                 // Hide private key field and label, show password field
-                view?.let { v ->
-                    v.findViewById<View>(com.flowfoundation.wallet.R.id.tv_private_key)?.visibility = View.GONE
-                    v.findViewById<View>(com.flowfoundation.wallet.R.id.tv_private_key_asterisk)?.visibility = View.GONE
-                }
-
                 with(binding) {
+                    tvPrivateKey.visibility = View.GONE
+                    tvPrivateKeyAsterisk.visibility = View.GONE
                     etPrivateKey.visibility = View.GONE
                     btnImportFromPdf.visibility = View.GONE
 
@@ -229,10 +223,10 @@ class PrivateKeyInfoFragment: Fragment() {
 
         try {
             val intent = documentPicker.createPickerIntent()
-            android.util.Log.d("PDF_IMPORT", "Starting PDF picker from Fragment")
+            logd("PDF_IMPORT", "Starting PDF picker from Fragment")
             startActivityForResult(intent, DocumentPickerManager.PICK_PDF_REQUEST)
         } catch (e: Exception) {
-            android.util.Log.e("PDF_IMPORT", "Failed to start PDF picker", e)
+            loge("PDF_IMPORT", "Failed to start PDF picker", e)
             callback.onError("Failed to open document picker: ${e.message}")
         }
     }
@@ -241,10 +235,10 @@ class PrivateKeyInfoFragment: Fragment() {
      * Handle activity result from document picker
      */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        android.util.Log.d("PDF_IMPORT", "PrivateKeyInfoFragment onActivityResult: requestCode=$requestCode, resultCode=$resultCode")
+        logd("PDF_IMPORT", "PrivateKeyInfoFragment onActivityResult: requestCode=$requestCode, resultCode=$resultCode")
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == DocumentPickerManager.PICK_PDF_REQUEST && resultCode == Activity.RESULT_OK) {
-            android.util.Log.d("PDF_IMPORT", "Passing result to DocumentPickerManager")
+            logd("PDF_IMPORT", "Passing result to DocumentPickerManager")
             documentPicker.handleActivityResult(requestCode, resultCode, data)
         }
     }
@@ -260,7 +254,7 @@ class PrivateKeyInfoFragment: Fragment() {
             var pdfFile: File? = null
             var shouldDeleteFile = false
             try {
-                android.util.Log.d("PDF_IMPORT", "Extracting private key from password-protected PDF: $pdfUri")
+                logd("PDF_IMPORT", "Extracting private key from password-protected PDF: $pdfUri")
 
                 // Check if pdfUri is a file path or a content URI
                 pdfFile = if (pdfUri.startsWith("/") || pdfUri.startsWith("file://")) {
@@ -290,12 +284,12 @@ class PrivateKeyInfoFragment: Fragment() {
                 }
 
                 // Extract JSON from PDF with password
-                android.util.Log.d("PDF_IMPORT", "Creating BlocktoPDFExtractor and calling extractJsonFromPdf")
-                android.util.Log.d("PDF_IMPORT", "PDF file: ${pdfFile.absolutePath}, exists: ${pdfFile.exists()}, size: ${pdfFile.length()}")
+                logd("PDF_IMPORT", "Creating BlocktoPDFExtractor and calling extractJsonFromPdf")
+                logd("PDF_IMPORT", "PDF file: ${pdfFile.absolutePath}, exists: ${pdfFile.exists()}, size: ${pdfFile.length()}")
                 val extractor = BlocktoPDFExtractor(requireContext().applicationContext)
-                android.util.Log.d("PDF_IMPORT", "Extractor created, calling extractJsonFromPdf with password length: ${password.length}")
+                logd("PDF_IMPORT", "Extractor created, calling extractJsonFromPdf with password length: ${password.length}")
                 val jsonResult = extractor.extractJsonFromPdf(pdfFile, password)
-                android.util.Log.d("PDF_IMPORT", "extractJsonFromPdf returned: ${if (jsonResult != null) "JSON (${jsonResult.length} chars)" else "null"}")
+                logd("PDF_IMPORT", "extractJsonFromPdf returned: ${if (jsonResult != null) "JSON (${jsonResult.length} chars)" else "null"}")
 
                 if (jsonResult == null) {
                     withContext(Dispatchers.Main) {
@@ -304,7 +298,7 @@ class PrivateKeyInfoFragment: Fragment() {
                     return@launch
                 }
 
-                android.util.Log.d("PDF_IMPORT", "Successfully extracted JSON from PDF, parsing content")
+                logd("PDF_IMPORT", "Successfully extracted JSON from PDF, parsing content")
 
                 // Parse the JSON to determine the format
                 val jsonObject = org.json.JSONObject(jsonResult)
@@ -314,14 +308,14 @@ class PrivateKeyInfoFragment: Fragment() {
                     val privateKey = jsonObject.getString("private_key")
                     val address = if (jsonObject.has("address")) jsonObject.getString("address") else ""
 
-                    android.util.Log.d("PDF_IMPORT", "Found Blocto-style PDF with private_key, filling fields")
+                    logd("PDF_IMPORT", "Found Blocto-style PDF with private_key, filling fields")
 
                     withContext(Dispatchers.Main) {
                         // Fill the private key and address fields, let user manually import
                         binding.etPrivateKey.setText(privateKey)
                         binding.etPrivateKey.visibility = View.VISIBLE
-                        view?.findViewById<View>(com.flowfoundation.wallet.R.id.tv_private_key)?.visibility = View.VISIBLE
-                        view?.findViewById<View>(com.flowfoundation.wallet.R.id.tv_private_key_asterisk)?.visibility = View.VISIBLE
+                        binding.tvPrivateKey.visibility = View.VISIBLE
+                        binding.tvPrivateKeyAsterisk.visibility = View.VISIBLE
 
                         if (address.isNotEmpty()) {
                             binding.etAddress.setText(address)
@@ -332,7 +326,7 @@ class PrivateKeyInfoFragment: Fragment() {
                         // Hide password field since we're done with PDF extraction
                         binding.tvPdfPasswordInfo.visibility = View.GONE
                         binding.tvPassword.visibility = View.GONE
-                        view?.findViewById<View>(com.flowfoundation.wallet.R.id.tv_password_asterisk)?.visibility = View.GONE
+                        binding.tvPasswordAsterisk.visibility = View.GONE
                         binding.tilPassword.visibility = View.GONE
 
                         // Update button text back to normal import
@@ -345,13 +339,13 @@ class PrivateKeyInfoFragment: Fragment() {
                     }
                 } else if (jsonObject.has("crypto") || jsonObject.has("version")) {
                     // This is a keystore JSON format - route to keystore page
-                    android.util.Log.d("PDF_IMPORT", "Found keystore-style PDF, routing to keystore page")
+                    logd("PDF_IMPORT", "Found keystore-style PDF, routing to keystore page")
 
                     withContext(Dispatchers.Main) {
                         toast(msg = getString(com.flowfoundation.wallet.R.string.pdf_contains_keystore))
                     }
                 } else {
-                    android.util.Log.e("PDF_IMPORT", "Unknown JSON format in PDF (not logging content for security)")
+                    loge("PDF_IMPORT", "Unknown JSON format in PDF (not logging content for security)")
                     withContext(Dispatchers.Main) {
                         toast(msg = getString(com.flowfoundation.wallet.R.string.pdf_unknown_format))
                     }
@@ -362,7 +356,7 @@ class PrivateKeyInfoFragment: Fragment() {
                     toast(msg = getString(com.flowfoundation.wallet.R.string.pdf_password_incorrect))
                 }
             } catch (e: Exception) {
-                android.util.Log.e("PDF_IMPORT", "Error extracting PDF: ${e.message}")
+                loge("PDF_IMPORT", "Error extracting PDF: ${e.message}")
                 e.printStackTrace()
                 withContext(Dispatchers.Main) {
                     toast(msg = getString(com.flowfoundation.wallet.R.string.pdf_extract_failed, e.message ?: "Unknown error"))

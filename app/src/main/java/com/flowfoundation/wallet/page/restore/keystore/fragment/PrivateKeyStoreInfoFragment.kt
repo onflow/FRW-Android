@@ -20,6 +20,8 @@ import com.flowfoundation.wallet.page.restore.keystore.viewmodel.KeyStoreRestore
 import com.flowfoundation.wallet.page.restore.keystore.KeyStoreRestoreActivity
 import com.flowfoundation.wallet.pdfparser.DocumentPickerManager
 import com.flowfoundation.wallet.utils.listeners.SimpleTextWatcher
+import com.flowfoundation.wallet.utils.logd
+import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.toast
 import com.instabug.library.Instabug
 import org.json.JSONObject
@@ -165,7 +167,7 @@ class PrivateKeyStoreInfoFragment: Fragment() {
      * Open PDF file picker
      */
     private fun openPDFPicker() {
-        android.util.Log.d("PDF_IMPORT", "openPDFPicker called in Fragment")
+        logd("PDF_IMPORT", "openPDFPicker called in Fragment")
         val callback = object : DocumentPickerManager.PDFSelectionCallback {
             override fun onSuccess(jsonData: String, fileName: String) {
                 // Populate the JSON field with extracted data
@@ -176,7 +178,7 @@ class PrivateKeyStoreInfoFragment: Fragment() {
             }
 
             override fun onError(error: String) {
-                android.util.Log.e("PDF_IMPORT", "PDF parsing failed: $error")
+                loge("PDF_IMPORT", "PDF parsing failed: $error")
                 // Show error message instead of toast
                 binding.tvPdfError.visibility = View.VISIBLE
             }
@@ -186,7 +188,7 @@ class PrivateKeyStoreInfoFragment: Fragment() {
             }
 
             override fun onPasswordRequired(fileName: String, pdfUri: String) {
-                android.util.Log.d("PDF_IMPORT", "Password-protected PDF detected: $fileName, URI: $pdfUri")
+                logd("PDF_IMPORT", "Password-protected PDF detected: $fileName, URI: $pdfUri")
                 // Route user to private key restore page with PDF URI
                 // The private key page will handle extracting JSON with password
                 KeyStoreRestoreActivity.launchPrivateKey(requireContext(), pdfUri)
@@ -201,10 +203,10 @@ class PrivateKeyStoreInfoFragment: Fragment() {
         // Start activity from Fragment (not Activity) to ensure result comes back to Fragment
         try {
             val intent = documentPicker.createPickerIntent()
-            android.util.Log.d("PDF_IMPORT", "Starting PDF picker from Fragment with requestCode=${DocumentPickerManager.PICK_PDF_REQUEST}")
+            logd("PDF_IMPORT", "Starting PDF picker from Fragment with requestCode=${DocumentPickerManager.PICK_PDF_REQUEST}")
             startActivityForResult(intent, DocumentPickerManager.PICK_PDF_REQUEST)
         } catch (e: Exception) {
-            android.util.Log.e("PDF_IMPORT", "Failed to start PDF picker", e)
+            loge("PDF_IMPORT", "Failed to start PDF picker", e)
             callback.onError("Failed to open document picker: ${e.message}")
         }
     }
@@ -213,13 +215,13 @@ class PrivateKeyStoreInfoFragment: Fragment() {
      * Handle activity result from document picker
      */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        android.util.Log.d("PDF_IMPORT", "Fragment onActivityResult: requestCode=$requestCode, resultCode=$resultCode, data=$data")
+        logd("PDF_IMPORT", "Fragment onActivityResult: requestCode=$requestCode, resultCode=$resultCode, data=$data")
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == DocumentPickerManager.PICK_PDF_REQUEST && resultCode == Activity.RESULT_OK) {
-            android.util.Log.d("PDF_IMPORT", "Passing result to DocumentPickerManager")
+            logd("PDF_IMPORT", "Passing result to DocumentPickerManager")
             documentPicker.handleActivityResult(requestCode, resultCode, data)
         } else {
-            android.util.Log.d("PDF_IMPORT", "Result not handled: requestCode=${DocumentPickerManager.PICK_PDF_REQUEST}, RESULT_OK=${Activity.RESULT_OK}")
+            logd("PDF_IMPORT", "Result not handled: requestCode=${DocumentPickerManager.PICK_PDF_REQUEST}, RESULT_OK=${Activity.RESULT_OK}")
         }
     }
 

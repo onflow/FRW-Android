@@ -1,7 +1,9 @@
 package com.flowfoundation.wallet.pdfparser
 
 import android.content.Context
-import android.util.Log
+import com.flowfoundation.wallet.utils.logd
+import com.flowfoundation.wallet.utils.loge
+import com.flowfoundation.wallet.utils.logw
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.text.PDFTextStripper
@@ -35,13 +37,13 @@ class BlocktoPDFExtractor(private val context: Context) {
          */
         private fun initializePDFBox(context: Context) {
             try {
-                Log.d(TAG, "Initializing PDFBox for Android with context")
+                logd(TAG, "Initializing PDFBox for Android with context")
                 // Initialize PDFBox resource loader with Android context
                 PDFBoxResourceLoader.init(context)
                 isPDFBoxInitialized = true
-                Log.d(TAG, "PDFBox initialized successfully")
+                logd(TAG, "PDFBox initialized successfully")
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to initialize PDFBox", e)
+                loge(TAG, "Failed to initialize PDFBox", e)
                 e.printStackTrace()
             }
         }
@@ -60,7 +62,7 @@ class BlocktoPDFExtractor(private val context: Context) {
     fun extractJsonFromPdf(file: File, password: String? = null, pageIndex: Int = 0): String? {
         var document: PDDocument? = null
         return try {
-            Log.d(TAG, "Starting JSON extraction from PDF: ${file.name}")
+            logd(TAG, "Starting JSON extraction from PDF: ${file.name}")
 
             // Initialize PDFBox for Android if not already initialized
             if (!isPDFBoxInitialized) {
@@ -68,29 +70,29 @@ class BlocktoPDFExtractor(private val context: Context) {
             }
 
             // 1. Load PDF document (with or without password)
-            Log.d(TAG, if (password != null) "Loading password-protected PDF document" else "Loading PDF document")
+            logd(TAG, if (password != null) "Loading password-protected PDF document" else "Loading PDF document")
             
             document = if (password != null) {
                 // Try loading with password
                 try {
-                    Log.d(TAG, "Attempting to load PDF with password (length: ${password.length})")
+                    logd(TAG, "Attempting to load PDF with password (length: ${password.length})")
                     // Use InputStream instead of File for better Android compatibility
                     val inputStream = file.inputStream()
-                    Log.d(TAG, "Created InputStream, calling PDDocument.load with password")
+                    logd(TAG, "Created InputStream, calling PDDocument.load with password")
                     val loadedDoc = PDDocument.load(inputStream, password)
-                    Log.d(TAG, "PDDocument.load completed successfully")
+                    logd(TAG, "PDDocument.load completed successfully")
                     // Note: isEncrypted returns true even after successful decryption
                     // It just indicates the document WAS encrypted, not that decryption failed
                     // If password was wrong, PDFBox would have thrown an exception during load()
-                    Log.d(TAG, "PDF loaded and decrypted successfully (isEncrypted=${loadedDoc.isEncrypted})")
+                    logd(TAG, "PDF loaded and decrypted successfully (isEncrypted=${loadedDoc.isEncrypted})")
                     loadedDoc
                 } catch (e: PasswordIncorrectException) {
                     // Re-throw password incorrect exceptions
-                    Log.e(TAG, "PasswordIncorrectException: ${e.message}")
+                    loge(TAG, "PasswordIncorrectException: ${e.message}")
                     throw e
                 } catch (e: Exception) {
                     // Check if it's a password-related error
-                    Log.e(TAG, "Exception during PDF load with password: ${e.javaClass.simpleName}: ${e.message}")
+                    loge(TAG, "Exception during PDF load with password: ${e.javaClass.simpleName}: ${e.message}")
                     e.printStackTrace()
                     val errorMsg = e.message?.lowercase() ?: ""
                     val className = e.javaClass.simpleName.lowercase()
@@ -111,7 +113,7 @@ class BlocktoPDFExtractor(private val context: Context) {
                     // Check if document is encrypted even if load succeeded
                     if (loadedDoc.isEncrypted) {
                         loadedDoc.close()
-                        Log.d(TAG, "PDF is encrypted but no password provided")
+                        logd(TAG, "PDF is encrypted but no password provided")
                         throw PasswordRequiredException("PDF is password-protected. A password is required to decrypt this file.")
                     }
                     loadedDoc
@@ -135,26 +137,26 @@ class BlocktoPDFExtractor(private val context: Context) {
             }
             
             val pageCount = document.numberOfPages
-            Log.d(TAG, "PDF loaded successfully, total pages: $pageCount")
+            logd(TAG, "PDF loaded successfully, total pages: $pageCount")
 
             // 2. Configure text stripper for specific page
             val stripper = PDFTextStripper()
             // PDFBox uses 1-based page indexing
             stripper.startPage = pageIndex + 1
             stripper.endPage = pageIndex + 1
-            Log.d(TAG, "Extracting text from page ${pageIndex + 1} of $pageCount")
+            logd(TAG, "Extracting text from page ${pageIndex + 1} of $pageCount")
 
             // 3. Extract page text
             val pageText = stripper.getText(document)
-            Log.d(TAG, "Text extracted, length: ${pageText.length} characters")
+            logd(TAG, "Text extracted, length: ${pageText.length} characters")
 
             // 4. Extract JSON from text
-            Log.d(TAG, "Searching for JSON pattern in extracted text")
+            logd(TAG, "Searching for JSON pattern in extracted text")
             val result = extractJsonString(pageText)
             if (result != null) {
-                Log.d(TAG, "JSON extraction successful")
+                logd(TAG, "JSON extraction successful")
             } else {
-                Log.w(TAG, "No valid JSON found in PDF text")
+                logw(TAG, "No valid JSON found in PDF text")
             }
             result
 
@@ -165,7 +167,7 @@ class BlocktoPDFExtractor(private val context: Context) {
             // Re-throw password incorrect exceptions
             throw e
         } catch (e: Exception) {
-            Log.e(TAG, "Exception during PDF JSON extraction", e)
+            loge(TAG, "Exception during PDF JSON extraction", e)
             e.printStackTrace()
             // Wrap other exceptions
             throw IllegalArgumentException("Failed to extract JSON from PDF: ${e.message ?: "Unknown error"}", e)
@@ -174,7 +176,7 @@ class BlocktoPDFExtractor(private val context: Context) {
             try {
                 document?.close()
             } catch (e: Exception) {
-                Log.w(TAG, "Error closing PDF document", e)
+                logw(TAG, "Error closing PDF document", e)
             }
         }
     }
@@ -185,13 +187,13 @@ class BlocktoPDFExtractor(private val context: Context) {
      * Tries multiple patterns to find valid JSON, prioritizing keystore-like structures
      */
     private fun extractJsonString(text: String): String? {
-        Log.d(TAG, "Attempting to extract JSON from text of length ${text.length}")
+        logd(TAG, "Attempting to extract JSON from text of length ${text.length}")
         // Note: Not logging text content to avoid exposing private keys
         
         // First, try to find keystore-specific patterns (more reliable for Blocto)
         val keystoreResult = extractKeystoreJson(text)
         if (keystoreResult != null) {
-            Log.d(TAG, "Found keystore JSON using keystore-specific extraction")
+            logd(TAG, "Found keystore JSON using keystore-specific extraction")
             return keystoreResult
         }
         
@@ -206,39 +208,39 @@ class BlocktoPDFExtractor(private val context: Context) {
             "\\{.*\\}"
         )
 
-        Log.d(TAG, "Trying ${patterns.size} regex patterns to find JSON")
+        logd(TAG, "Trying ${patterns.size} regex patterns to find JSON")
         for ((index, patternStr) in patterns.withIndex()) {
             try {
-                Log.d(TAG, "Trying pattern ${index + 1}/${patterns.size}")
+                logd(TAG, "Trying pattern ${index + 1}/${patterns.size}")
                 val pattern = Pattern.compile(patternStr, Pattern.DOTALL)
                 val matcher = pattern.matcher(text)
 
                 if (matcher.find()) {
                     val jsonString = matcher.group()
-                    Log.d(TAG, "Pattern ${index + 1} matched, found string of length ${jsonString.length}")
+                    logd(TAG, "Pattern ${index + 1} matched, found string of length ${jsonString.length}")
 
                     // Clean up whitespace and newlines
                     val cleanedJson = jsonString
                         .replace(Regex("\\s+"), " ")
                         .trim()
 
-                    Log.d(TAG, "Cleaned JSON length: ${cleanedJson.length}, validating...")
+                    logd(TAG, "Cleaned JSON length: ${cleanedJson.length}, validating...")
                     // Validate JSON structure
                     if (isValidJSON(cleanedJson)) {
-                        Log.d(TAG, "Valid JSON found with pattern ${index + 1}")
+                        logd(TAG, "Valid JSON found with pattern ${index + 1}")
                         return cleanedJson
                     } else {
-                        Log.d(TAG, "Pattern ${index + 1} match was not valid JSON, trying next pattern")
+                        logd(TAG, "Pattern ${index + 1} match was not valid JSON, trying next pattern")
                     }
                 } else {
-                    Log.d(TAG, "Pattern ${index + 1} did not match")
+                    logd(TAG, "Pattern ${index + 1} did not match")
                 }
             } catch (e: Exception) {
-                Log.w(TAG, "Exception with pattern ${index + 1}: ${e.message}")
+                logw(TAG, "Exception with pattern ${index + 1}: ${e.message}")
                 continue
             }
         }
-        Log.w(TAG, "No valid JSON found after trying all patterns")
+        logw(TAG, "No valid JSON found after trying all patterns")
         return null
     }
     
@@ -255,7 +257,7 @@ class BlocktoPDFExtractor(private val context: Context) {
         // Find the start of potential keystore JSON
         val startIndex = text.indexOf("{")
         if (startIndex == -1) {
-            Log.d(TAG, "No opening brace found in text")
+            logd(TAG, "No opening brace found in text")
             return null
         }
         
@@ -271,7 +273,7 @@ class BlocktoPDFExtractor(private val context: Context) {
                 
                 // Validate it's a proper keystore
                 if (isValidJSON(cleaned) && isKeystoreJson(cleaned)) {
-                    Log.d(TAG, "Found valid keystore JSON at position $currentStart")
+                    logd(TAG, "Found valid keystore JSON at position $currentStart")
                     return cleaned
                 }
             }
@@ -323,10 +325,10 @@ class BlocktoPDFExtractor(private val context: Context) {
             val hasId = json.has("id")
             
             val result = hasVersion && hasCrypto && hasId
-            Log.d(TAG, "Keystore check: version=$hasVersion, crypto=$hasCrypto, id=$hasId -> $result")
+            logd(TAG, "Keystore check: version=$hasVersion, crypto=$hasCrypto, id=$hasId -> $result")
             result
         } catch (e: Exception) {
-            Log.d(TAG, "Keystore check failed with exception: ${e.message}")
+            logd(TAG, "Keystore check failed with exception: ${e.message}")
             false
         }
     }
@@ -336,18 +338,18 @@ class BlocktoPDFExtractor(private val context: Context) {
      */
     private fun isValidJSON(jsonString: String): Boolean {
         return try {
-            Log.d(TAG, "Validating JSON as JSONObject")
+            logd(TAG, "Validating JSON as JSONObject")
             JSONObject(jsonString)
-            Log.d(TAG, "Valid JSONObject")
+            logd(TAG, "Valid JSONObject")
             true
         } catch (e: org.json.JSONException) {
             try {
-                Log.d(TAG, "Not a JSONObject, trying JSONArray")
+                logd(TAG, "Not a JSONObject, trying JSONArray")
                 JSONArray(jsonString)
-                Log.d(TAG, "Valid JSONArray")
+                logd(TAG, "Valid JSONArray")
                 true
             } catch (e2: org.json.JSONException) {
-                Log.w(TAG, "Invalid JSON: ${e2.message}")
+                logw(TAG, "Invalid JSON: ${e2.message}")
                 false
             }
         }
