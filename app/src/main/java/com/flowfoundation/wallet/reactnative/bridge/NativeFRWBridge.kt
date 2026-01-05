@@ -3,6 +3,7 @@ package com.flowfoundation.wallet.reactnative.bridge
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReadableArray
+import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.WritableNativeMap
 import com.facebook.react.bridge.WritableNativeArray
 import com.facebook.react.bridge.WritableMap
@@ -13,6 +14,7 @@ import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.BuildConfig
+import com.flowfoundation.wallet.manager.app.ActivityManager
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.cache.recentTransactionCache
 import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
@@ -57,6 +59,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
     init {
         logd(TAG, "NativeFRWBridge initialized with context: ${reactContext != null}")
         logd(TAG, "React context is active: ${reactContext.hasActiveCatalystInstance()}")
+        ActivityManager.setReactContext(reactContext)
     }
 
     override fun getName(): String {
@@ -153,6 +156,24 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 }
             }
         }
+    }
+
+    override fun nativeResponse(
+        requestId: String,
+        eventName: String,
+        resultJson: String?,
+        error: String?,
+        promise: Promise
+    ) {
+        NativeRequestRegistry.handle(
+            NativeRequestResult(
+                requestId = requestId,
+                eventName = eventName,
+                resultJson = resultJson,
+                error = error
+            )
+        )
+        promise.resolve(null)
     }
 
     override fun listenTransaction(txid: String) {

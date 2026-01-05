@@ -11,6 +11,7 @@ class NativeFRWBridgePackage : BaseReactPackage() {
     override fun getModule(name: String, reactContext: ReactApplicationContext): NativeModule? =
         when (name) {
             NativeFRWBridge.NAME -> NativeFRWBridge(reactContext)
+            NativeRequestEventEmitter.NAME -> NativeRequestEventEmitter(reactContext)
             else -> null
         }
 
@@ -23,6 +24,14 @@ class NativeFRWBridgePackage : BaseReactPackage() {
                 needsEagerInit = false,
                 isCxxModule = false,
                 isTurboModule = true
+            ),
+            NativeRequestEventEmitter.NAME to ReactModuleInfo(
+                name = NativeRequestEventEmitter.NAME,
+                className = NativeRequestEventEmitter.NAME,
+                canOverrideExistingModule = false,
+                needsEagerInit = false,
+                isCxxModule = false,
+                isTurboModule = false
             )
         )
     }

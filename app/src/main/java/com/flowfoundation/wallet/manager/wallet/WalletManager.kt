@@ -25,6 +25,10 @@ import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.utils.updateSelectedWalletAddress
 import com.flowfoundation.wallet.wallet.toAddress
+import com.flowfoundation.wallet.reactnative.bridge.NativeRequestEmitter
+import com.flowfoundation.wallet.reactnative.bridge.NativeRequestEventName
+import com.flowfoundation.wallet.reactnative.bridge.NativeRequestRegistry
+import org.json.JSONObject
 import com.google.gson.Gson
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.first
@@ -438,6 +442,7 @@ object WalletManager {
         logd(TAG, "Setting selected address to: '$address'")
         selectedWalletAddressRef.set(address)
         updateSelectedWalletAddress(address)
+        emitKeyRotationCheck(address)
 
         val account = wallet()?.accounts?.values?.flatten()?.firstOrNull {
             it.address.equals(address, ignoreCase = true)
@@ -466,6 +471,23 @@ object WalletManager {
         }
 
         return networkStr ?: chainNetWorkString()
+    }
+
+    private fun emitKeyRotationCheck(address: String) {
+        if (address.isBlank()) {
+            return
+        }
+
+        val requestId = java.util.UUID.randomUUID().toString()
+        NativeRequestRegistry.register(requestId) { result ->
+            logd(TAG, "Native response: ${result.eventName} ${result.requestId} ${result.resultJson} ${result.error}")
+        }
+        val paramsJson = JSONObject(mapOf("address" to address)).toString()
+        NativeRequestEmitter.emit(
+            requestId = requestId,
+            eventName = NativeRequestEventName.KEY_ROTATION_CHECK,
+            paramsJson = paramsJson
+        )
     }
 
     fun selectedWalletAddress(): String {
