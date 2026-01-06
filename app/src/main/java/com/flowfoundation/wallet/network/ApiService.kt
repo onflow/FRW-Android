@@ -8,7 +8,7 @@ import retrofit2.http.Path
 
 interface ApiService {
 
-    @POST("/v3/register")
+    @POST("/v4/register")
     suspend fun register(@Body param: RegisterRequest): RegisterResponse
 
     @POST("/v1/user/address")

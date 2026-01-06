@@ -31,9 +31,11 @@ import com.flowfoundation.wallet.manager.walletdata.FlowWallet
 import com.flowfoundation.wallet.mixpanel.AccountCreateKeyType
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.network.model.AccountKey
+import com.flowfoundation.wallet.network.model.EvmAccountInfo
 import com.flowfoundation.wallet.network.model.LoginRequest
 import com.flowfoundation.wallet.network.model.RegisterRequest
 import com.flowfoundation.wallet.network.model.RegisterResponse
+import wallet.core.jni.Hash
 import com.flowfoundation.wallet.page.walletrestore.firebaseLogin
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.NETWORK_MAINNET
@@ -60,6 +62,8 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.delay
 import org.onflow.flow.ChainId
+import org.onflow.flow.models.DomainTag
+import org.onflow.flow.models.HashingAlgorithm
 import org.onflow.flow.models.SigningAlgorithm
 import java.io.File
 import java.security.MessageDigest
@@ -549,7 +553,7 @@ private fun registerFirebase(user: RegisterResponse, callback: (isSuccess: Boole
 }
 
 private suspend fun registerServer(username: String, prefix: String): RegisterResponse {
-  logd(TAG, "Starting server registration for username: $username")
+  logd(TAG, "Starting server registration for username: $username (using v4 API)")
   val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
   val service = retrofit().create(ApiService::class.java)
   val baseDir = File(Env.getApp().filesDir, "wallet")
@@ -603,17 +607,77 @@ private suspend fun registerServer(username: String, prefix: String): RegisterRe
     }
     logd(TAG, "Formatted public key: $hexPublicKey (${hexPublicKey.length} chars)")
 
-    // Create registration request with correct algorithm parameters
-    val request = RegisterRequest(
-      username = username,
+    // Get Firebase JWT for signing (v4 requires signature verification)
+    val firebaseJwt = getFirebaseJwt()
+    logd(TAG, "Got Firebase JWT for signing")
+
+    // Sign the Firebase JWT with the private key
+    // Important: Prepend DomainTag.User.bytes to match what backend expects
+    val dataToSign = DomainTag.User.bytes + firebaseJwt.toByteArray(Charsets.UTF_8)
+    logd(TAG, "Signing data with DomainTag.User prefix, total size: ${dataToSign.size}")
+
+    val signatureBytes = privateKey.sign(dataToSign, SigningAlgorithm.ECDSA_P256, HashingAlgorithm.SHA2_256)
+    if (signatureBytes == null) {
+      logd(TAG, "Failed to sign Firebase JWT")
+      throw IllegalStateException("Failed to sign Firebase JWT")
+    }
+
+    val hexSignature = signatureBytes.joinToString("") { "%02x".format(it) }
+    logd(TAG, "Signed Firebase JWT, signature length: ${hexSignature.length} chars (${signatureBytes.size} bytes)")
+
+    // Create v4 registration request with FlowAccountInfo containing signature
+    val flowAccountInfo = com.flowfoundation.wallet.network.model.FlowAccountInfo(
       accountKey = AccountKey(
         publicKey = hexPublicKey
         // Using default values: ECDSA_P256 and SHA2_256
       ),
+      signature = hexSignature
+    )
+
+    // Create EVMAccountInfo for registration
+    // IMPORTANT: EVM key must be derived from the MNEMONIC, not from the P256 private key
+    // The extension derives EVM from mnemonic with BIP44 path m/44'/60'/0'/0/0
+    val evmAccountInfo = try {
+      // Use Trust Wallet Core to derive EVM key from mnemonic
+      val hdWallet = wallet.core.jni.HDWallet(mnemonic, "")
+      val evmDerivationPath = "m/44'/60'/0'/0/0" // Standard Ethereum BIP44 path
+      
+      // Get private key for EVM using secp256k1 curve
+      val evmPrivateKey = hdWallet.getKeyByCurve(wallet.core.jni.Curve.SECP256K1, evmDerivationPath)
+      val evmPublicKey = evmPrivateKey.getPublicKeySecp256k1(false) // uncompressed
+      
+      // Derive EVM address from public key
+      val evmAddress = wallet.core.jni.AnyAddress(evmPublicKey, wallet.core.jni.CoinType.ETHEREUM).description()
+      logd(TAG, "Derived EVM address from mnemonic: $evmAddress")
+      
+      // Sign keccak256(idToken) for EVM - NO domain tag, same as extension
+      val jwtBytes = firebaseJwt.toByteArray(Charsets.UTF_8)
+      val jwtHash = Hash.keccak256(jwtBytes)
+      
+      // Sign the digest with secp256k1
+      val signatureData = evmPrivateKey.sign(jwtHash, wallet.core.jni.Curve.SECP256K1)
+      
+      val evmSignature = "0x" + signatureData.joinToString("") { "%02x".format(it) }
+      logd(TAG, "Generated EVM signature from mnemonic, length: ${evmSignature.length}")
+      
+      EvmAccountInfo(
+        eoaAddress = evmAddress,
+        signature = evmSignature
+      )
+    } catch (e: Exception) {
+      logd(TAG, "Error creating EVM account info from mnemonic: ${e.message}")
+      e.printStackTrace()
+      null
+    }
+
+    val request = RegisterRequest(
+      flowAccountInfo = flowAccountInfo,
+      evmAccountInfo = evmAccountInfo,
+      username = username,
       deviceInfo = deviceInfoRequest
     )
 
-    logd(TAG, "Sending registration request: $request")
+    logd(TAG, "Sending v4 registration request for username: $username")
     try {
       val user = service.register(request)
       logd(TAG, "Registration response: $user")

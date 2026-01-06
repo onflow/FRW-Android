@@ -58,9 +58,12 @@ import com.flowfoundation.wallet.utils.Env.getStorage
 import org.onflow.flow.models.DomainTag
 import org.json.JSONObject
 import com.flowfoundation.wallet.mixpanel.AccountCreateKeyType
+import com.flowfoundation.wallet.network.model.EvmAccountInfo
+import com.flowfoundation.wallet.network.model.FlowAccountInfo
 import com.flowfoundation.wallet.network.model.RegisterRequest
 import com.flowfoundation.wallet.network.model.RegisterResponse
 import com.flowfoundation.wallet.network.model.WalletListData
+import wallet.core.jni.Hash
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.wallet.DERIVATION_PATH
 import com.flowfoundation.wallet.wallet.createWalletFromServer
@@ -1165,16 +1168,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
         // Sign using the wallet module's signing method
         val signatureBytes = key.sign(dataToSign, signAlgo, hashAlgo)
 
-        // Remove recovery ID if present (wallet module includes it, but server expects standard 64-byte signature)
-        val finalSignatureBytes = if (signatureBytes.size == 65) {
-            logd("KeyStoreRestoreViewModel", "Removing recovery ID from 65-byte signature")
-            signatureBytes.copyOfRange(0, 64) // Remove the last byte (recovery ID)
-        } else {
-            logd("KeyStoreRestoreViewModel", "Using signature as-is (${signatureBytes.size} bytes)")
-            signatureBytes
-        }
-
-        val signature = finalSignatureBytes.joinToString("") { "%02x".format(it) }
+        val signature = signatureBytes.joinToString("") { "%02x".format(it) }
 
         logd("KeyStoreRestoreViewModel", "Generated signature: $signature")
         logd("KeyStoreRestoreViewModel", "Signature length: ${signature.length}")
@@ -1229,18 +1223,75 @@ class KeyStoreRestoreViewModel : ViewModel() {
         ioScope {
             val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
             val service = retrofit().create(ApiService::class.java)
-            val request = RegisterRequest(
-                username = username,
+
+            // Get Firebase JWT for signing (v4 requires signature verification)
+            val firebaseJwt = getFirebaseJwt()
+            logd("KeyStoreRestoreViewModel", "Got Firebase JWT for v4 registration")
+
+            // Sign the Firebase JWT with the crypto provider
+            val signature = cryptoProvider.getUserSignature(firebaseJwt)
+            logd("KeyStoreRestoreViewModel", "Signed Firebase JWT, signature length: ${signature.length}")
+
+            // Create v4 registration request with FlowAccountInfo containing signature
+            val flowAccountInfo = FlowAccountInfo(
                 accountKey = AccountKey(
                     publicKey = cryptoProvider.getPublicKey(),
                     signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex,
                     hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
                 ),
+                signature = signature
+            )
+
+            // Create EVMAccountInfo for keystore registration
+            val evmAccountInfo = try {
+                val storage = getStorage()
+                val privateKeyHex = cryptoProvider.getPrivateKey()
+                val key = PrivateKey.create(storage).apply {
+                    val keyBytes = privateKeyHex.removePrefix("0x").hexToBytes()
+                    importPrivateKey(keyBytes, KeyFormat.RAW)
+                }
+                
+                // Get secp256k1 public key for EVM address derivation
+                val evmPublicKeyBytes = key.publicKey(SigningAlgorithm.ECDSA_secp256k1)
+                if (evmPublicKeyBytes != null) {
+                    // Derive EVM address from public key using Keccak256
+                    val publicKeyForHash = if (evmPublicKeyBytes.size == 65 && evmPublicKeyBytes[0] == 0x04.toByte()) {
+                        evmPublicKeyBytes.copyOfRange(1, evmPublicKeyBytes.size)
+                    } else {
+                        evmPublicKeyBytes
+                    }
+                    val addressHash = Hash.keccak256(publicKeyForHash)
+                    val evmAddress = "0x" + addressHash.copyOfRange(12, 32).joinToString("") { "%02x".format(it) }
+                    logd("KeyStoreRestoreViewModel", "Derived EVM address: $evmAddress")
+                    
+                    // Sign Firebase JWT for EVM with secp256k1 key
+                    val dataToSign = DomainTag.User.bytes + firebaseJwt.toByteArray(Charsets.UTF_8)
+                    val evmSignatureBytes = key.sign(dataToSign, SigningAlgorithm.ECDSA_secp256k1, HashingAlgorithm.SHA2_256)
+                    val evmSignature = evmSignatureBytes.joinToString("") { "%02x".format(it) }
+                    logd("KeyStoreRestoreViewModel", "Generated EVM signature, length: ${evmSignature.length}")
+                    
+                    EvmAccountInfo(
+                        eoaAddress = evmAddress,
+                        signature = evmSignature
+                    )
+                } else {
+                    logd("KeyStoreRestoreViewModel", "Could not derive secp256k1 public key, skipping EVM account")
+                    null
+                }
+            } catch (e: Exception) {
+                logd("KeyStoreRestoreViewModel", "Error creating EVM account info: ${e.message}")
+                null
+            }
+
+            val request = RegisterRequest(
+                flowAccountInfo = flowAccountInfo,
+                evmAccountInfo = evmAccountInfo,
+                username = username,
                 deviceInfo = deviceInfoRequest
             )
             try {
                 val user = service.register(request)
-                logd("KeyStoreRestoreViewModel", "Registration response: $user")
+                logd("KeyStoreRestoreViewModel", "Registration v4 response: $user")
 
                 if (user.status > 400) {
                     logd("KeyStoreRestoreViewModel", "Registration failed with status: ${user.status}, message: ${user.message}")
