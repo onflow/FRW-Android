@@ -14,6 +14,10 @@
         android:name="com.google.android.gms.permission.AD_ID"
         tools:node="remove"/>
 
+    <!-- Storage permissions for PDF import (only needed for API < 30) -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32"/>
+
     <!-- Sceneform requires OpenGLES 3.0 or later. -->
     <uses-feature
         android:glEsVersion="0x00030000"

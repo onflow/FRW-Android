@@ -716,6 +716,9 @@
     <string name="blocked_tip">Это приложение было помечено как опасное.</string>
     <string name="switch_to">Переключиться на %1$s</string>
     <string name="deeplink_login_failed">Не удалось открыть, пожалуйста, сначала создайте кошелек.</string>
+    <string name="import_from_pdf">Импорт из PDF</string>
+    <string name="pdf_parse_error_message">Неверный формат JSON хранилища ключей. Пожалуйста, загрузите расширение Flow Wallet для правильного экспорта файла хранилища ключей.</string>
+    <string name="extension_download_url">https://chromewebstore.google.com/detail/flow-wallet/hpclkefagolihohboafpheddmmgdffjm?hl=en</string>
     <string name="surge_pricing_title">Вы действительно уверены, что хотите продолжить с повышенной ценой?</string>
     <string name="surge_current_fee">Ваша комиссия за транзакцию:</string>
     <string name="surge_active">Повышенная цена активна</string>

@@ -10,11 +10,11 @@ import java.util.Date
 
 data class WalletNotification(
     @SerializedName("id")
-    val id: String,
+    val id: String = "",
     @SerializedName("priority")
-    val priority: Priority,
+    val priority: Priority = Priority.LOW,
     @SerializedName("type")
-    val type: Type,
+    val type: Type = Type.IMAGE,
     @SerializedName("title")
     val title: String? = null,
     @SerializedName("body")
@@ -26,11 +26,11 @@ data class WalletNotification(
     @SerializedName("url")
     val url: String? = null,
     @SerializedName("expiry_time")
-    val expiryTime: Date?,
+    val expiryTime: Date? = null,
     @SerializedName("display_type")
-    val displayType: DisplayType,
+    val displayType: DisplayType = DisplayType.ONCE,
     @SerializedName("conditions")
-    val conditions: List<Condition>?,
+    val conditions: List<Condition>? = null,
     @Transient
     val pendingRequest: Sign.Model.SessionRequest? = null
 ) {
@@ -66,7 +66,7 @@ data class WalletNotification(
 
 data class Condition(
     @SerializedName("type")
-    val type: ConditionType,
+    val type: ConditionType = ConditionType.UNKNOWN,
 )
 
 

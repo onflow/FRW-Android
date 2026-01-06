@@ -718,6 +718,9 @@
     <string name="blocked_tip">此应用已被标记为危险。</string>
     <string name="switch_to">切换到 %1$s</string>
     <string name="deeplink_login_failed">无法打开，请先创建一个钱包。</string>
+    <string name="import_from_pdf">从 PDF 导入</string>
+    <string name="pdf_parse_error_message">密钥库 JSON 格式无效。请下载 Flow Wallet Extension 以正确导出您的密钥库文件。</string>
+    <string name="extension_download_url">https://chromewebstore.google.com/detail/flow-wallet/hpclkefagolihohboafpheddmmgdffjm?hl=en</string>
     <string name="surge_pricing_title">您真的确定要继续进行激增定价吗？</string>
     <string name="surge_current_fee">您的交易费用：</string>
     <string name="surge_active">激增价格激活</string>

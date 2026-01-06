@@ -9,7 +9,6 @@ import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.ActivityTokenDetailBinding
 import com.flowfoundation.wallet.manager.account.AccountInfoManager
 import com.flowfoundation.wallet.manager.app.isMainnet
-import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.staking.STAKING_DEFAULT_NORMAL_APY
 import com.flowfoundation.wallet.manager.staking.StakingManager
 import com.flowfoundation.wallet.manager.staking.isLilico
@@ -18,19 +17,16 @@ import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.manager.token.model.FungibleTokenType
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.page.browser.openBrowser
-import com.flowfoundation.wallet.page.evm.EnableEVMActivity
 import com.flowfoundation.wallet.page.profile.subpage.currency.model.selectedCurrency
 import com.flowfoundation.wallet.page.profile.subpage.wallet.ChildAccountCollectionManager
 import com.flowfoundation.wallet.page.receive.ReceiveActivity
 import com.flowfoundation.wallet.reactnative.ReactNativeActivity
 import com.flowfoundation.wallet.manager.app.isTestnet
-import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.reactnative.bridge.RNBridge
 import com.flowfoundation.wallet.reactnative.bridge.toRNBridgeTokenModel
 import com.flowfoundation.wallet.page.staking.openStakingPage
 import com.flowfoundation.wallet.page.token.detail.model.TokenDetailModel
 import com.flowfoundation.wallet.page.wallet.dialog.SwapDialog
-import com.flowfoundation.wallet.page.wallet.dialog.SwapProviderDialog
 import com.flowfoundation.wallet.utils.debug.ResourceUtility.getString
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.res2String
@@ -41,10 +37,9 @@ import com.flowfoundation.wallet.utils.formatLargeBalanceNumber
 import com.flowfoundation.wallet.utils.formatNum
 import com.flowfoundation.wallet.utils.formatPrice
 import com.flowfoundation.wallet.utils.toHumanReadableSIPrefixes
-import com.flowfoundation.wallet.utils.uiScope
 import com.zackratos.ultimatebarx.ultimatebarx.addNavigationBarBottomPadding
 import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
-import com.flowfoundation.wallet.manager.app.chainNetWorkString
+import com.flowfoundation.wallet.manager.config.AppConfig
 
 class TokenDetailPresenter(
     private val activity: AppCompatActivity,
@@ -74,15 +69,21 @@ class TokenDetailPresenter(
                 ReactNativeActivity.launch(activity, RNBridge.ScreenType.RECEIVE)
             }
             btnSwap.setOnClickListener {
-                if (WalletManager.isChildAccountSelected()) {
-                    return@setOnClickListener
+                val url = if (WalletManager.isEVMAccountSelected()) {
+                    "https://swap.flow.com/"
+                } else {
+                    "https://${if (isTestnet()) "demo" else "app"}" +
+                      ".increment.fi/swap"
                 }
-                SwapProviderDialog.show(
-                    activity.supportFragmentManager,
-                    isEVMToken = WalletManager.isEVMAccountSelected(),
-                    isFlowToken = token.isFlowToken())
+                openBrowser(activity, url)
             }
-            btnTrade.setVisible(token.isFlowToken())
+            btnSwap.setVisible(WalletManager.isChildAccountSelected().not() && AppConfig.isInAppSwap())
+            btnTrade.setVisible(
+              WalletManager.isChildAccountSelected().not()
+                && WalletManager.isEVMAccountSelected().not()
+                && AppConfig.isInAppBuy()
+                && token.isFlowToken()
+            )
             btnTrade.setOnClickListener {
                 if (WalletManager.isChildAccountSelected()) {
                     return@setOnClickListener

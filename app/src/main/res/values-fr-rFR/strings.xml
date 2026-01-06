@@ -716,6 +716,9 @@
     <string name="blocked_tip">Cette application a été signalée comme dangereuse.</string>
     <string name="switch_to">Basculer vers %1$s</string>
     <string name="deeplink_login_failed">Impossible d\'ouvrir, veuillez d\'abord créer un portefeuille.</string>
+    <string name="import_from_pdf">Importer depuis PDF</string>
+    <string name="pdf_parse_error_message">Format JSON du keystore invalide. Veuillez télécharger l\'extension Flow Wallet pour exporter correctement votre fichier keystore.</string>
+    <string name="extension_download_url">https://chromewebstore.google.com/detail/flow-wallet/hpclkefagolihohboafpheddmmgdffjm?hl=en</string>
     <string name="surge_pricing_title">Êtes-vous vraiment sûr de vouloir continuer avec la tarification de pointe?</string>
     <string name="surge_current_fee">Frais de votre transaction:</string>
     <string name="surge_active">Tarification de pointe active</string>

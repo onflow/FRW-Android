@@ -719,6 +719,9 @@ Secure Enclave は、デバイスのハードウェア レベルのセキュリ�
     <string name="blocked_tip">このアプリは危険としてフラグ付けられています。</string>
     <string name="switch_to">%1$s に切り替え</string>
     <string name="deeplink_login_failed">開けませんでした。最初にウォレットを作成してください。</string>
+    <string name="import_from_pdf">PDFからインポート</string>
+    <string name="pdf_parse_error_message">キーストアJSONフォーマットが無効です。Flow Wallet Extensionをダウンロードして、キーストアファイルを正しくエクスポートしてください。</string>
+    <string name="extension_download_url">https://chromewebstore.google.com/detail/flow-wallet/hpclkefagolihohboafpheddmmgdffjm?hl=en</string>
     <string name="surge_pricing_title">サージ価格で続行することを本当に確信していますか？</string>
     <string name="surge_current_fee">あなたの取引手数料：</string>
     <string name="surge_active">サージ価格アクティブ</string>

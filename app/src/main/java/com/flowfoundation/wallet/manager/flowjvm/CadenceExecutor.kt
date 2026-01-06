@@ -31,7 +31,7 @@ import org.onflow.flow.infrastructure.Cadence.Companion.string
 import java.math.BigDecimal
 
 private const val TAG = "CadenceExecutor"
-const val EVM_GAS_LIMIT = 16_000_000
+const val EVM_GAS_LIMIT = 16_777_216
 
 suspend fun cadenceQueryAddressByDomainFlowns(domain: String, root: String = "fn"): String? {
     logd(TAG, "cadenceQueryAddressByDomainFlowns(): domain=$domain, root=$root")

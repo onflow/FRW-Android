@@ -713,6 +713,9 @@
     <string name="blocked_tip">이 앱은 위험하다고 표시되었습니다.</string>
     <string name="switch_to">%1$s 전환하다</string>
     <string name="deeplink_login_failed">열기에 실패했습니다. 먼저 지갑을 생성해 주세요.</string>
+    <string name="import_from_pdf">PDF에서 가져오기</string>
+    <string name="pdf_parse_error_message">키스토어 JSON 형식이 잘못되었습니다. Flow Wallet Extension을 다운로드하여 키스토어 파일을 올바르게 내보내세요.</string>
+    <string name="extension_download_url">https://chromewebstore.google.com/detail/flow-wallet/hpclkefagolihohboafpheddmmgdffjm?hl=en</string>
     <string name="surge_pricing_title">정말로 서지 가격으로 계속하시겠습니까?</string>
     <string name="surge_current_fee">귀하의 거래 수수료:</string>
     <string name="surge_active">서지 가격 활성화</string>

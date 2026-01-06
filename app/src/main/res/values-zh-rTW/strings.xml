@@ -689,6 +689,9 @@
     <string name="function">函數</string>
     <string name="parameters">參數</string>
     <string name="call_data">調用數據</string>
+    <string name="import_from_pdf">從 PDF 匯入</string>
+    <string name="pdf_parse_error_message">密鑰庫 JSON 格式無效。請下載 Flow Wallet Extension 以正確匯出您的密鑰庫文件。</string>
+    <string name="extension_download_url">https://chromewebstore.google.com/detail/flow-wallet/hpclkefagolihohboafpheddmmgdffjm?hl=en</string>
     <string name="surge_pricing_title">您真的確定要繼續進行激增定價嗎？</string>
     <string name="surge_current_fee">您的交易費用：</string>
     <string name="surge_active">激增價格激活</string>

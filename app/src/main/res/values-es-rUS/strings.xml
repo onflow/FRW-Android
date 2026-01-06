@@ -719,6 +719,9 @@
     <string name="blocked_tip">Esta app ha sido marcada como peligrosa.</string>
     <string name="switch_to">Cambiar a %1$s</string>
     <string name="deeplink_login_failed">Error al abrir, por favor cree una cartera primero.</string>
+    <string name="import_from_pdf">Importar desde PDF</string>
+    <string name="pdf_parse_error_message">Formato JSON de keystore inválido. Por favor, descargue la extensión Flow Wallet para exportar correctamente su archivo keystore.</string>
+    <string name="extension_download_url">https://chromewebstore.google.com/detail/flow-wallet/hpclkefagolihohboafpheddmmgdffjm?hl=en</string>
     <string name="surge_pricing_title">¿Estás realmente seguro de que quieres continuar con el precio de sobrecarga?</string>
     <string name="surge_current_fee">Tu tarifa de transacción:</string>
     <string name="surge_active">Precio de sobrecarga activo</string>

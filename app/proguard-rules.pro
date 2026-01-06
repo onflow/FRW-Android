@@ -306,3 +306,7 @@
 -keep class * extends com.facebook.react.** { *; }
 -keepattributes Signature,RuntimeVisibleAnnotations,RuntimeVisibleParameterAnnotations
 -dontwarn coil3.PlatformContext
+
+# PdfBox-Android - ignore optional JPEG2000 codec dependencies
+-dontwarn com.gemalto.jp2.JP2Decoder
+-dontwarn com.gemalto.jp2.JP2Encoder

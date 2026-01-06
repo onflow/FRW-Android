@@ -742,9 +742,9 @@
     <string name="nft_list_loading_error">Error, please check your internet or refresh.</string>
     <string name="refresh">Refresh</string>
     <string name="no_relevant_nft">No relevant NFT found.</string>
-    <string name="json" translatable="false">JSON</string>
-    <string name="required_asterisk" translatable="false">" *"</string>
-    <string name="cadence_script_version" translatable="false">Cadence Script Version: %1$s</string>
+    <string name="import_from_pdf">從 PDF 匯入</string>
+    <string name="pdf_parse_error_message">密鑰庫 JSON 格式無效。請下載 Flow Wallet Extension 以正確匯出您的密鑰庫文件。</string>
+    <string name="extension_download_url">https://chromewebstore.google.com/detail/flow-wallet/hpclkefagolihohboafpheddmmgdffjm?hl=en</string>
     <string name="contact_address">Contact Address</string>
     <string name="amount">Amount</string>
     <string name="contact">Contact</string>

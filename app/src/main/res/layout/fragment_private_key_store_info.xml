@@ -78,6 +78,44 @@
         app:layout_constraintTop_toBottomOf="@id/tv_json"
         tools:text=""/>
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_import_from_pdf"
+        style="@style/Button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="8dp"
+        android:minHeight="34dp"
+        android:paddingStart="24dp"
+        android:paddingTop="16dp"
+        android:paddingEnd="24dp"
+        android:paddingBottom="16dp"
+        android:text="@string/import_from_pdf"
+        app:icon="@drawable/ic_import_pdf"
+        app:iconGravity="start"
+        app:iconTint="@color/button_text"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/et_json"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"/>
+
+    <TextView
+        android:id="@+id/tv_pdf_error"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="24dp"
+        android:fontFamily="@font/inter"
+        android:text="@string/pdf_parse_error_message"
+        android:textColor="@color/info_error_red"
+        android:textSize="13sp"
+        android:visibility="gone"
+        android:lineSpacingExtra="2dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btn_import_from_pdf"/>
+
     <TextView
         android:id="@+id/tv_password"
         android:layout_width="wrap_content"
@@ -89,7 +127,7 @@
         android:textSize="14sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/et_json"/>
+        app:layout_constraintTop_toBottomOf="@id/tv_pdf_error"/>
 
     <TextView
         android:layout_width="wrap_content"

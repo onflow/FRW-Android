@@ -11,6 +11,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import androidx.core.content.edit
+import com.flowfoundation.wallet.network.ApiService
+import com.flowfoundation.wallet.network.retrofitApi
+import java.math.BigDecimal
 
 object DAppEVMConnectionManager {
     private val TAG = DAppEVMConnectionManager::class.java.simpleName
@@ -24,6 +27,7 @@ object DAppEVMConnectionManager {
 
     private val _availableAccounts = MutableStateFlow<List<DAppEVMAccount>>(emptyList())
     val availableAccounts: StateFlow<List<DAppEVMAccount>> = _availableAccounts.asStateFlow()
+    private val service by lazy { retrofitApi().create(ApiService::class.java) }
 
     init {
         loadSelectedAccount()
@@ -71,16 +75,36 @@ object DAppEVMConnectionManager {
                     logd(TAG, "Found COA account: $coaAddress")
 
                     // Query COA balance
+                    var rawBalance: BigDecimal? = null
                     val coaBalance = try {
-                        cadenceQueryCOATokenBalance()?.let { balance ->
-                            balance.formatPrice(includeSymbol = true)
-                        }
+                        rawBalance = cadenceQueryCOATokenBalance()
+                        rawBalance?.formatPrice(includeSymbol = true)
                     } catch (e: Exception) {
                         logd(TAG, "Error querying COA balance: ${e.message}")
                         null
                     }
 
-                    accounts.add(DAppEVMAccount(coaAddress, DAppEVMAccountType.COA, coaBalance))
+                    val coaAccount = DAppEVMAccount(coaAddress, DAppEVMAccountType.COA, coaBalance)
+                    accounts.add(coaAccount)
+
+                    // Check if COA should be auto-selected (Balance > 0 or has NFTs)
+                    val hasBalance = rawBalance != null && rawBalance > BigDecimal.ZERO
+                    var hasNFTs = false
+
+                    if (!hasBalance) {
+                        try {
+                            val nftResponse = service.getEVMNFTCollections(coaAddress)
+                            val totalNftCount = nftResponse.data?.sumOf { it.count ?: 0 } ?: 0
+                            hasNFTs = nftResponse.data?.isNotEmpty() == true && totalNftCount > 0
+                        } catch (e: Exception) {
+                             // Ignore NFT API errors
+                        }
+                    }
+
+                    if (hasBalance || hasNFTs) {
+                        logd(TAG, "COA account has balance or NFTs, setting as selected: $coaAddress")
+                        setSelectedAccount(coaAccount)
+                    }
                 }
 
                 // Load EOA account

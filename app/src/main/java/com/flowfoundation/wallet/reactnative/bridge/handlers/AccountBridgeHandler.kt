@@ -267,15 +267,11 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
 
     fun getSignKeyIndex(): Double {
         return try {
-            val address = WalletManager.selectedWalletAddress()
-            if (address.isEmpty()) {
-                logw(TAG, "getSignKeyIndex() - no selected address")
-                return 0.0
-            }
+            val address = WalletManager.getCurrentFlowWalletAddress()
 
             val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
-            if (cryptoProvider == null) {
-                logw(TAG, "getSignKeyIndex() - no crypto provider")
+
+            if (address.isNullOrBlank() || cryptoProvider == null) {
                 return 0.0
             }
 
@@ -536,7 +532,7 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
                 // Filter for LocalSwitchAccount entries (profiles stored locally but not logged in)
                 switchList.filterIsInstance<com.flowfoundation.wallet.manager.account.model.LocalSwitchAccount>().forEach { localAccount ->
                     logd(TAG, "getRecoverableProfiles() - processing LocalSwitchAccount: ${localAccount.username}")
-                    
+
                     val mainEmojiInfo = createEmojiInfo(localAccount.address)
                     val mainAccount = RNBridge.WalletAccount(
                         id = "main_${localAccount.address}",

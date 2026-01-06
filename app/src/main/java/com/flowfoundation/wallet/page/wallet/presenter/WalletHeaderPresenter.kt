@@ -101,11 +101,13 @@ class WalletHeaderPresenter(
                 }
                 cvSwap.setOnClickListener {
                     activity?.let {
-                        openBrowser(
-                            it,
+                        val url = if (WalletManager.isEVMAccountSelected()) {
+                            "https://swap.flow.com/"
+                        } else {
                             "https://${if (isTestnet()) "demo" else "app"}" +
-                                    ".increment.fi/swap"
-                        )
+                              ".increment.fi/swap"
+                        }
+                        openBrowser(it, url)
                     }
                 }
                 flManageToken.setOnClickListener {
@@ -113,7 +115,7 @@ class WalletHeaderPresenter(
                 }
                 cvBuy.setOnClickListener { activity?.let { SwapDialog.show(it.supportFragmentManager) } }
                 cvBuy.setVisible(WalletManager.isEVMAccountSelected().not() && AppConfig.isInAppBuy())
-                cvSwap.setVisible(WalletManager.isEVMAccountSelected().not() && AppConfig.isInAppSwap())
+                cvSwap.setVisible(AppConfig.isInAppSwap())
                 flAddToken.visible()
             }
 
