@@ -130,19 +130,9 @@ class PrivateKeyStoreCryptoProvider(private val keystoreInfo: String) : CryptoPr
         val signatureBytes = privateKey.sign(data, signingAlgorithm, getHashAlgorithm())
         logd(TAG, "Raw signature from privateKey.sign(): size=${signatureBytes.size} bytes")
 
-        // Recovery ID trimming - ensure consistency with account switching flow
-        // Remove recovery ID if present (Flow expects 64-byte signatures, not 65-byte with recovery ID)
-        val finalSignature = if (signatureBytes.size == 65) {
-            logd(TAG, "Trimming recovery ID from 65-byte signature for $signingAlgorithm")
-            signatureBytes.copyOfRange(0, 64) // Remove the last byte (recovery ID)
-        } else {
-            logd(TAG, "Using signature as-is (${signatureBytes.size} bytes)")
-            signatureBytes
-        }
-
-        val hexSignature = finalSignature.joinToString("") { String.format("%02x", it) }
+        val hexSignature = signatureBytes.joinToString("") { String.format("%02x", it) }
         logd(TAG, "Final signature generated: $hexSignature")
-        logd(TAG, "Final signature length: ${hexSignature.length} chars (${finalSignature.size} bytes)")
+        logd(TAG, "Final signature length: ${hexSignature.length} chars (${signatureBytes.size} bytes)")
         return hexSignature
     }
 
@@ -152,19 +142,8 @@ class PrivateKeyStoreCryptoProvider(private val keystoreInfo: String) : CryptoPr
         logd(TAG, "[KEYSTORE] Using signAlgo: $signingAlgorithm, hashAlgo: ${getHashAlgorithm()}")
 
         val result = privateKey.sign(data, signingAlgorithm, getHashAlgorithm())
-
-        // Recovery ID trimming - ensure consistency with account switching flow
-        // Remove recovery ID if present (Flow expects 64-byte signatures, not 65-byte with recovery ID)
-        val finalResult = if (result.size == 65) {
-            logd(TAG, "[KEYSTORE] Trimming recovery ID from 65-byte signature for $signingAlgorithm")
-            result.copyOfRange(0, 64) // Remove the last byte (recovery ID)
-        } else {
-            logd(TAG, "[KEYSTORE] Using signature as-is (${result.size} bytes)")
-            result
-        }
-
-        logd(TAG, "[KEYSTORE] sign() result (${finalResult.size} bytes): ${finalResult.toHexString()}")
-        return finalResult
+        logd(TAG, "[KEYSTORE] sign() result (${result.size} bytes): ${result.toHexString()}")
+        return result
     }
 
     override fun getSigner(hashingAlgorithm: HashingAlgorithm): org.onflow.flow.models.Signer {

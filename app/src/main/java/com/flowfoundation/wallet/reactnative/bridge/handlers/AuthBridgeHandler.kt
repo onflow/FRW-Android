@@ -31,7 +31,15 @@ import com.flowfoundation.wallet.utils.uiScope
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
+import com.flow.wallet.keys.SeedPhraseKey
+import com.flow.wallet.storage.InMemoryStorage
+import com.flowfoundation.wallet.firebase.auth.firebaseUid
+import com.flowfoundation.wallet.firebase.auth.isAnonymousSignIn
+import com.flowfoundation.wallet.firebase.auth.signInAnonymously
 import org.onflow.flow.models.toHexString
+import org.onflow.flow.models.DomainTag
+import org.onflow.flow.models.SigningAlgorithm
+import org.onflow.flow.models.HashingAlgorithm
 
 /**
  * Handler for authentication and account creation bridge methods
@@ -262,25 +270,96 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
     }
 
     /**
-     * Get registration signature for v4 API
-     * Signs in anonymously to Firebase, gets JWT, and signs it with the key derived from mnemonic
-     * @param mnemonic The recovery phrase to derive the signing key from
-     * @param promise Promise resolving with signature (hex string)
+     * Get all signatures needed for v4 API registration
+     * Signs in anonymously to Firebase, gets JWT, and signs it with both Flow and EVM keys derived from mnemonic
+     * @param mnemonic - The recovery phrase to derive signing keys from
+     * @returns Promise with flowSignature, evmSignature, and eoaAddress
      */
-    fun getRegistrationSignature(mnemonic: String, promise: Promise) {
-        logd(TAG, "getRegistrationSignature() called - placeholder implementation")
+    fun getV4RegistrationSignatures(mnemonic: String, promise: Promise) {
+        logd(TAG, "getV4RegistrationSignatures() called")
         ioScope {
             try {
-                // TODO: Implement registration signature logic
-                // User has implementation on different branch
-                loge(TAG, "getRegistrationSignature() - not yet implemented")
+                // Step 1: Sign in anonymously to Firebase if not already signed in
+                if (!isAnonymousSignIn()) {
+                    logd(TAG, "getV4RegistrationSignatures() - Signing in anonymously...")
+                    Firebase.auth.signOut()
+                    val signedIn = signInAnonymously()
+                    if (!signedIn) {
+                        throw IllegalStateException("Failed to sign in anonymously to Firebase")
+                    }
+                    logd(TAG, "getV4RegistrationSignatures() - Signed in anonymously")
+                }
+
+                // Step 2: Get Firebase JWT
+                val firebaseJwt = getFirebaseJwt()
+                if (firebaseJwt.isNullOrBlank()) {
+                    throw IllegalStateException("Failed to get Firebase JWT")
+                }
+                logd(TAG, "getV4RegistrationSignatures() - Got Firebase JWT")
+
+                // Step 3: Derive private key from mnemonic
+                val inMemoryStorage = InMemoryStorage()
+                val derivationPath = "m/44'/539'/0'/0/0"
+                val seedPhraseKey = SeedPhraseKey(
+                    mnemonicString = mnemonic,
+                    passphrase = "",
+                    derivationPath = derivationPath,
+                    storage = inMemoryStorage
+                )
+
+                // Step 4: Sign the Firebase JWT with the derived key (Flow signature)
+                // Important: Prepend DomainTag.User.bytes to match what backend expects
+                val dataToSign = DomainTag.User.bytes + firebaseJwt.toByteArray(Charsets.UTF_8)
+                logd(TAG, "getV4RegistrationSignatures() - Signing data with DomainTag.User prefix, total size: ${dataToSign.size}")
+
+                val flowSignatureBytes = seedPhraseKey.sign(
+                    dataToSign,
+                    SigningAlgorithm.ECDSA_secp256k1,
+                    HashingAlgorithm.SHA2_256
+                )
+
+                val flowSignature = flowSignatureBytes.joinToString("") { "%02x".format(it) }
+                logd(TAG, "getV4RegistrationSignatures() - Generated Flow signature, length: ${flowSignature.length} chars (${flowSignatureBytes.size} bytes)")
+
+                // Step 5: Derive EVM address and signature
+                // IMPORTANT: EVM must use Ethereum BIP44 path m/44'/60'/0'/0/0, NOT Flow path
+                // Use Trust Wallet Core's HDWallet for proper derivation
+                val hdWallet = wallet.core.jni.HDWallet(mnemonic, "")
+                val evmDerivationPath = "m/44'/60'/0'/0/0" // Standard Ethereum BIP44 path
+                
+                // Get private key for EVM using secp256k1 curve with Ethereum path
+                val evmPrivateKey = hdWallet.getKeyByCurve(wallet.core.jni.Curve.SECP256K1, evmDerivationPath)
+                val evmPublicKey = evmPrivateKey.getPublicKeySecp256k1(false) // uncompressed
+                
+                // Derive EVM address from public key using Trust Wallet Core
+                val eoaAddress = wallet.core.jni.AnyAddress(evmPublicKey, wallet.core.jni.CoinType.ETHEREUM).description()
+                logd(TAG, "getV4RegistrationSignatures() - Derived EOA address from mnemonic: $eoaAddress")
+
+                // Sign keccak256(idToken) for EVM - NO domain tag, same as extension
+                val jwtBytes = firebaseJwt.toByteArray(Charsets.UTF_8)
+                val jwtHash = wallet.core.jni.Hash.keccak256(jwtBytes)
+                logd(TAG, "getV4RegistrationSignatures() - EVM: keccak256 hash of JWT, hash size: ${jwtHash.size}")
+                
+                // Sign the digest with secp256k1
+                val signatureData = evmPrivateKey.sign(jwtHash, wallet.core.jni.Curve.SECP256K1)
+                
+                val evmSignature = "0x" + signatureData.joinToString("") { "%02x".format(it) }
+                logd(TAG, "getV4RegistrationSignatures() - Generated EVM signature from mnemonic, length: ${evmSignature.length} chars")
+
+                // Return both Flow and EVM signatures (matching RN interface)
+                val result = WritableNativeMap()
+                result.putString("flowSignature", flowSignature)
+                result.putString("evmSignature", evmSignature)
+                result.putString("eoaAddress", eoaAddress)
+
                 uiScope {
-                    promise.reject("NOT_IMPLEMENTED", "getRegistrationSignature not yet implemented")
+                    promise.resolve(result)
                 }
             } catch (e: Exception) {
-                loge(TAG, "getRegistrationSignature() - error: ${e.message}")
+                loge(TAG, "getV4RegistrationSignatures() - error: ${e.message}")
+                e.printStackTrace()
                 uiScope {
-                    promise.reject("ERROR", "Failed to get registration signature: ${e.message}", e)
+                    promise.reject("GET_V4_REGISTRATION_SIGNATURES_ERROR", "Failed to get v4 registration signatures: ${e.message}", e)
                 }
             }
         }
