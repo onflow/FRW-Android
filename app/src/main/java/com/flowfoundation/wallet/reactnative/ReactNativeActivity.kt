@@ -13,6 +13,14 @@ import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.reactnative.bridge.createWalletAccountFromAddress
 import com.flowfoundation.wallet.wallet.toAddress
 import com.google.gson.Gson
+import com.google.gson.annotations.SerializedName
+
+private val RNBridge.ScreenType.value: String
+    get() = try {
+        RNBridge.ScreenType::class.java.getField(this.name).getAnnotation(SerializedName::class.java)?.value ?: this.toString()
+    } catch (e: Exception) {
+        this.toString()
+    }
 
 class ReactNativeActivity : ReactActivity() {
 
@@ -121,7 +129,7 @@ class ReactNativeActivity : ReactActivity() {
                         }
                     } ?: "SelectTokens"
                 }
-                RNBridge.ScreenType.TOKEN_DETAIL -> "Home"
+                RNBridge.ScreenType.BACKUP_TIP -> "KeyRotationTip"
             }
         }
 
@@ -165,7 +173,7 @@ class ReactNativeActivity : ReactActivity() {
             }
             screenType?.let {
                 // Convert screen enum to string and determine route based on screen type
-                val screenString = if (it == RNBridge.ScreenType.SEND_ASSET) "send-asset" else "token-detail"
+                val screenString = it.value
                 val routeName = getRouteName(it, null)
 
                 intent.putExtra("screen", screenString)
@@ -198,7 +206,7 @@ class ReactNativeActivity : ReactActivity() {
             }
 
             // Convert screen enum to string and determine route based on screen type and config
-            val screenString = if (screenType == RNBridge.ScreenType.SEND_ASSET) "send-asset" else "token-detail"
+            val screenString = screenType.value
             val routeName = getRouteName(screenType, sendToConfig)
 
             intent.putExtra("screen", screenString)

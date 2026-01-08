@@ -18,7 +18,7 @@ class RNBridge {
 
     enum class ScreenType {
         @SerializedName("send-asset") SEND_ASSET,
-        @SerializedName("token-detail") TOKEN_DETAIL
+        @SerializedName("backup-tip") BACKUP_TIP
     }
 
     data class EmojiInfo(
@@ -114,6 +114,21 @@ class RNBridge {
     data class AddressBookResponse(
         @SerializedName("contacts")
         val contacts: List<AddressBookContact>
+    )
+
+    data class AccountKeySignature(
+        @SerializedName("public_key")
+        val public_key: String,
+        @SerializedName("hash_algo")
+        val hash_algo: Int,
+        @SerializedName("sign_algo")
+        val sign_algo: Int,
+        @SerializedName("signature")
+        val signature: String,
+        @SerializedName("sign_message")
+        val sign_message: String?,
+        @SerializedName("weight")
+        val weight: Int?
     )
 
     data class SendToConfig(

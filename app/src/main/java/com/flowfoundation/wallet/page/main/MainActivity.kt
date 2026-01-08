@@ -21,7 +21,6 @@ import com.flowfoundation.wallet.page.main.model.MainContentModel
 import com.flowfoundation.wallet.page.main.model.MainDrawerLayoutModel
 import com.flowfoundation.wallet.page.main.presenter.DrawerLayoutPresenter
 import com.flowfoundation.wallet.page.main.presenter.MainContentPresenter
-import com.flowfoundation.wallet.BuildConfig
 import com.flowfoundation.wallet.page.others.NotificationPermissionActivity
 import com.flowfoundation.wallet.page.window.WindowFrame
 import com.flowfoundation.wallet.utils.debug.fragments.debugViewer.DebugViewerDataSource
@@ -33,6 +32,7 @@ import com.flowfoundation.wallet.utils.isRegistered
 import com.flowfoundation.wallet.utils.uiScope
 import com.instabug.bug.BugReporting
 import com.instabug.library.Instabug
+import com.flowfoundation.wallet.manager.wallet.WalletManager
 
 class MainActivity : BaseActivity() {
 
@@ -72,7 +72,7 @@ class MainActivity : BaseActivity() {
                 firebaseInformationCheck()
             }
             contentPresenter.checkAndShowContent()
-            
+
             // Navigate to target tab if specified
             if (targetTabIndex >= 0) {
                 val targetTab = HomeTab.values().find { it.index == targetTabIndex }
@@ -121,6 +121,7 @@ class MainActivity : BaseActivity() {
         RootDetectedDialog.show(supportFragmentManager)
         super.onResume()
         checkPendingAction()
+        WalletManager.checkKeyRotation(this)
     }
 
     private fun checkPendingAction() {
