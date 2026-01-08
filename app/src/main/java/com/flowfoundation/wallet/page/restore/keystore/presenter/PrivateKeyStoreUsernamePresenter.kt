@@ -35,7 +35,7 @@ class PrivateKeyStoreUsernamePresenter(
         binding.editText.addTextChangedListener(object : SimpleTextWatcher() {
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
                 hideStateView()
-                binding.progressBar.setVisible(true)
+                binding.progressBar.setVisible(s.isNotEmpty())
                 binding.nextButton.isEnabled = false
                 viewModel.verifyUsername(s.toString())
             }
