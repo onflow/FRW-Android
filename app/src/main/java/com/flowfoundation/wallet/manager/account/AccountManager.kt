@@ -20,9 +20,14 @@ import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.walletdata.FlowWallet
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.clearUserCache
+import com.flowfoundation.wallet.manager.key.HDWalletCryptoProvider
 import com.flowfoundation.wallet.network.model.AccountKey
+import com.flowfoundation.wallet.network.model.EvmAccountInfo
+import com.flowfoundation.wallet.network.model.FlowAccountInfo
 import com.flowfoundation.wallet.network.model.LoginRequest
+import com.flowfoundation.wallet.network.model.LoginV4Request
 import com.flowfoundation.wallet.network.model.UserInfoData
+import wallet.core.jni.Hash
 import com.flowfoundation.wallet.network.model.WalletListData
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.page.main.MainActivity
@@ -549,13 +554,34 @@ object AccountManager {
             logd(TAG, "  Sign Algorithm: ${cryptoProvider.getSignatureAlgorithm()}")
             logd(TAG, "  Signature length: ${signature.length}")
 
-            val resp = service.login(
-                LoginRequest(
-                    signature = signature,
-                    accountKey = accountKey,
-                    deviceInfo = deviceInfoRequest
-                )
+            // Build EVM account info if provider has mnemonic (HDWallet accounts)
+            val evmAccountInfo = if (cryptoProvider is HDWalletCryptoProvider) {
+                try {
+                    val mnemonic = cryptoProvider.getMnemonic()
+                    val hdWallet = wallet.core.jni.HDWallet(mnemonic, "")
+                    val evmDerivationPath = "m/44'/60'/0'/0/0"
+                    val evmPrivateKey = hdWallet.getKeyByCurve(wallet.core.jni.Curve.SECP256K1, evmDerivationPath)
+                    val evmPublicKey = evmPrivateKey.getPublicKeySecp256k1(false)
+                    val evmAddress = wallet.core.jni.AnyAddress(evmPublicKey, wallet.core.jni.CoinType.ETHEREUM).description()
+                    val jwtHash = Hash.keccak256(jwt.toByteArray(Charsets.UTF_8))
+                    val signatureData = evmPrivateKey.sign(jwtHash, wallet.core.jni.Curve.SECP256K1)
+                    val evmSignature = "0x" + signatureData.joinToString("") { "%02x".format(it) }
+                    EvmAccountInfo(eoaAddress = evmAddress, signature = evmSignature)
+                } catch (e: Exception) {
+                    logd(TAG, "Could not generate EVM signature for account switch: ${e.message}")
+                    null
+                }
+            } else {
+                null
+            }
+
+            val loginRequest = LoginV4Request(
+                flowAccountInfo = FlowAccountInfo(accountKey = accountKey, signature = signature),
+                evmAccountInfo = evmAccountInfo,
+                deviceInfo = deviceInfoRequest
             )
+
+            val resp = service.loginV4(loginRequest)
 
             if (resp.data?.customToken.isNullOrBlank()) {
                 loge(tag = "SWITCH_ACCOUNT", msg = "get customToken failed :: ${resp.data?.customToken}")
@@ -704,13 +730,34 @@ object AccountManager {
             logd(TAG, "  Signature length: ${signature.length}")
             logd(TAG, "  Account: ${switchAccount.username} (${switchAccount.address})")
 
-            val resp = service.login(
-                LoginRequest(
-                    signature = signature,
-                    accountKey = accountKey,
-                    deviceInfo = deviceInfoRequest
-                )
+            // Build EVM account info if provider has mnemonic (HDWallet accounts)
+            val evmAccountInfo = if (cryptoProvider is HDWalletCryptoProvider) {
+                try {
+                    val mnemonic = cryptoProvider.getMnemonic()
+                    val hdWallet = wallet.core.jni.HDWallet(mnemonic, "")
+                    val evmDerivationPath = "m/44'/60'/0'/0/0"
+                    val evmPrivateKey = hdWallet.getKeyByCurve(wallet.core.jni.Curve.SECP256K1, evmDerivationPath)
+                    val evmPublicKey = evmPrivateKey.getPublicKeySecp256k1(false)
+                    val evmAddress = wallet.core.jni.AnyAddress(evmPublicKey, wallet.core.jni.CoinType.ETHEREUM).description()
+                    val jwtHash = Hash.keccak256(jwt.toByteArray(Charsets.UTF_8))
+                    val signatureData = evmPrivateKey.sign(jwtHash, wallet.core.jni.Curve.SECP256K1)
+                    val evmSignature = "0x" + signatureData.joinToString("") { "%02x".format(it) }
+                    EvmAccountInfo(eoaAddress = evmAddress, signature = evmSignature)
+                } catch (e: Exception) {
+                    logd(TAG, "Could not generate EVM signature for local account switch: ${e.message}")
+                    null
+                }
+            } else {
+                null
+            }
+
+            val loginRequest = LoginV4Request(
+                flowAccountInfo = FlowAccountInfo(accountKey = accountKey, signature = signature),
+                evmAccountInfo = evmAccountInfo,
+                deviceInfo = deviceInfoRequest
             )
+
+            val resp = service.loginV4(loginRequest)
             if (resp.data?.customToken.isNullOrBlank()) {
                 loge(tag = "SWITCH_ACCOUNT", msg = "get customToken failed :: ${resp.data?.customToken}")
                 callback.invoke(false)

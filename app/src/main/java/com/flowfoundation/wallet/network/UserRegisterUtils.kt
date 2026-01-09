@@ -30,9 +30,12 @@ import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.walletdata.FlowWallet
 import com.flowfoundation.wallet.mixpanel.AccountCreateKeyType
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
+import com.flowfoundation.wallet.manager.key.HDWalletCryptoProvider
 import com.flowfoundation.wallet.network.model.AccountKey
 import com.flowfoundation.wallet.network.model.EvmAccountInfo
+import com.flowfoundation.wallet.network.model.FlowAccountInfo
 import com.flowfoundation.wallet.network.model.LoginRequest
+import com.flowfoundation.wallet.network.model.LoginV4Request
 import com.flowfoundation.wallet.network.model.RegisterRequest
 import com.flowfoundation.wallet.network.model.RegisterResponse
 import wallet.core.jni.Hash
@@ -729,17 +732,43 @@ private suspend fun resumeAccount() {
     toast(msgRes = R.string.resume_login_error, duration = Toast.LENGTH_LONG)
     return
   }
-  val resp = service.login(
-    LoginRequest(
-      signature = cryptoProvider.getUserSignature(getFirebaseJwt()),
-      accountKey = AccountKey(
-        publicKey = cryptoProvider.getPublicKey(),
-        hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
-        signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
-      ),
-      deviceInfo = deviceInfoRequest
-    )
+
+  val firebaseJwt = getFirebaseJwt()
+  val flowSignature = cryptoProvider.getUserSignature(firebaseJwt)
+  val accountKey = AccountKey(
+    publicKey = cryptoProvider.getPublicKey(),
+    hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
+    signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
   )
+
+  // Build EVM account info if provider has mnemonic (HDWallet accounts)
+  val evmAccountInfo = if (cryptoProvider is HDWalletCryptoProvider) {
+    try {
+      val mnemonic = cryptoProvider.getMnemonic()
+      val hdWallet = wallet.core.jni.HDWallet(mnemonic, "")
+      val evmDerivationPath = "m/44'/60'/0'/0/0"
+      val evmPrivateKey = hdWallet.getKeyByCurve(wallet.core.jni.Curve.SECP256K1, evmDerivationPath)
+      val evmPublicKey = evmPrivateKey.getPublicKeySecp256k1(false)
+      val evmAddress = wallet.core.jni.AnyAddress(evmPublicKey, wallet.core.jni.CoinType.ETHEREUM).description()
+      val jwtHash = Hash.keccak256(firebaseJwt.toByteArray(Charsets.UTF_8))
+      val signatureData = evmPrivateKey.sign(jwtHash, wallet.core.jni.Curve.SECP256K1)
+      val evmSignature = "0x" + signatureData.joinToString("") { "%02x".format(it) }
+      EvmAccountInfo(eoaAddress = evmAddress, signature = evmSignature)
+    } catch (e: Exception) {
+      logd("resumeAccount", "Could not generate EVM signature: ${e.message}")
+      null
+    }
+  } else {
+    null
+  }
+
+  val loginRequest = LoginV4Request(
+    flowAccountInfo = FlowAccountInfo(accountKey = accountKey, signature = flowSignature),
+    evmAccountInfo = evmAccountInfo,
+    deviceInfo = deviceInfoRequest
+  )
+
+  val resp = service.loginV4(loginRequest)
   if (resp.data?.customToken.isNullOrBlank()) {
     toast(msgRes = R.string.resume_login_error, duration = Toast.LENGTH_LONG)
     return

@@ -20,6 +20,7 @@ import com.flowfoundation.wallet.network.clearUserCache
 import com.flowfoundation.wallet.network.model.AccountKey
 import com.flowfoundation.wallet.network.model.ImportRequest
 import com.flowfoundation.wallet.network.model.LoginRequest
+import com.flowfoundation.wallet.network.model.LoginV4Request
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.network.retrofitWithHost
 import com.flowfoundation.wallet.page.main.MainActivity
@@ -866,16 +867,17 @@ class KeyStoreRestoreViewModel : ViewModel() {
 
                         val newSignature = getSignature(jwt, privateKey, HashingAlgorithm.SHA2_256, signAlgo)
                         val formattedPublicKey = if (publicKey.startsWith("04")) publicKey.substring(2) else publicKey
-                        val loginRequest = LoginRequest(
-                            signature = newSignature,
-                            accountKey = AccountKey(
-                                publicKey = formattedPublicKey,
-                                hashAlgo = HashingAlgorithm.SHA2_256.cadenceIndex,
-                                signAlgo = signAlgo.cadenceIndex
-                            ),
+                        val accountKey = AccountKey(
+                            publicKey = formattedPublicKey,
+                            hashAlgo = HashingAlgorithm.SHA2_256.cadenceIndex,
+                            signAlgo = signAlgo.cadenceIndex
+                        )
+                        val loginRequest = LoginV4Request(
+                            flowAccountInfo = FlowAccountInfo(accountKey = accountKey, signature = newSignature),
+                            evmAccountInfo = null, // Keystore accounts don't have mnemonic for EVM
                             deviceInfo = deviceInfoRequest
                         )
-                        val resp = service.login(loginRequest)
+                        val resp = service.loginV4(loginRequest)
 
                         if (resp.data?.customToken.isNullOrBlank()) {
                             logd("KeyStoreRestoreViewModel", "No custom token in response")
@@ -1079,19 +1081,19 @@ class KeyStoreRestoreViewModel : ViewModel() {
                     val catching = runCatching {
                         val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
                         val service = retrofit().create(ApiService::class.java)
-                        val resp = service.login(
-                            LoginRequest(
-                                signature = cryptoProvider.getUserSignature(
-                                    getFirebaseJwt()
-                                ),
-                                accountKey = AccountKey(
-                                    publicKey = cryptoProvider.getPublicKey(),
-                                    hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
-                                    signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
-                                ),
-                                deviceInfo = deviceInfoRequest
-                            )
+                        val jwt = getFirebaseJwt()
+                        val signature = cryptoProvider.getUserSignature(jwt)
+                        val accountKey = AccountKey(
+                            publicKey = cryptoProvider.getPublicKey(),
+                            hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
+                            signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
                         )
+                        val loginRequest = LoginV4Request(
+                            flowAccountInfo = FlowAccountInfo(accountKey = accountKey, signature = signature),
+                            evmAccountInfo = null, // Keystore accounts don't have mnemonic for EVM
+                            deviceInfo = deviceInfoRequest
+                        )
+                        val resp = service.loginV4(loginRequest)
                         if (resp.data?.customToken.isNullOrBlank()) {
                             callback.invoke(false)
                         } else {

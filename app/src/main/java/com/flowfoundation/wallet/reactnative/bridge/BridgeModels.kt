@@ -149,7 +149,9 @@ class RNBridge {
         @SerializedName("GO_API_URL")
         val GO_API_URL: String,
         @SerializedName("INSTABUG_TOKEN")
-        val INSTABUG_TOKEN: String
+        val INSTABUG_TOKEN: String,
+        @SerializedName("MIXPANEL_TOKEN")
+        val MIXPANEL_TOKEN: String
     )
 
     data class Currency(
