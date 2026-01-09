@@ -27,7 +27,6 @@ import com.flowfoundation.wallet.network.model.FlowAccountInfo
 import com.flowfoundation.wallet.network.model.LoginRequest
 import com.flowfoundation.wallet.network.model.LoginV4Request
 import com.flowfoundation.wallet.network.model.UserInfoData
-import wallet.core.jni.Hash
 import com.flowfoundation.wallet.network.model.WalletListData
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.page.main.MainActivity
@@ -555,25 +554,7 @@ object AccountManager {
             logd(TAG, "  Signature length: ${signature.length}")
 
             // Build EVM account info if provider has mnemonic (HDWallet accounts)
-            val evmAccountInfo = if (cryptoProvider is HDWalletCryptoProvider) {
-                try {
-                    val mnemonic = cryptoProvider.getMnemonic()
-                    val hdWallet = wallet.core.jni.HDWallet(mnemonic, "")
-                    val evmDerivationPath = "m/44'/60'/0'/0/0"
-                    val evmPrivateKey = hdWallet.getKeyByCurve(wallet.core.jni.Curve.SECP256K1, evmDerivationPath)
-                    val evmPublicKey = evmPrivateKey.getPublicKeySecp256k1(false)
-                    val evmAddress = wallet.core.jni.AnyAddress(evmPublicKey, wallet.core.jni.CoinType.ETHEREUM).description()
-                    val jwtHash = Hash.keccak256(jwt.toByteArray(Charsets.UTF_8))
-                    val signatureData = evmPrivateKey.sign(jwtHash, wallet.core.jni.Curve.SECP256K1)
-                    val evmSignature = "0x" + signatureData.joinToString("") { "%02x".format(it) }
-                    EvmAccountInfo(eoaAddress = evmAddress, signature = evmSignature)
-                } catch (e: Exception) {
-                    logd(TAG, "Could not generate EVM signature for account switch: ${e.message}")
-                    null
-                }
-            } else {
-                null
-            }
+            val evmAccountInfo = (cryptoProvider as? HDWalletCryptoProvider)?.getEvmAccountInfo(jwt)
 
             val loginRequest = LoginV4Request(
                 flowAccountInfo = FlowAccountInfo(accountKey = accountKey, signature = signature),
@@ -731,25 +712,7 @@ object AccountManager {
             logd(TAG, "  Account: ${switchAccount.username} (${switchAccount.address})")
 
             // Build EVM account info if provider has mnemonic (HDWallet accounts)
-            val evmAccountInfo = if (cryptoProvider is HDWalletCryptoProvider) {
-                try {
-                    val mnemonic = cryptoProvider.getMnemonic()
-                    val hdWallet = wallet.core.jni.HDWallet(mnemonic, "")
-                    val evmDerivationPath = "m/44'/60'/0'/0/0"
-                    val evmPrivateKey = hdWallet.getKeyByCurve(wallet.core.jni.Curve.SECP256K1, evmDerivationPath)
-                    val evmPublicKey = evmPrivateKey.getPublicKeySecp256k1(false)
-                    val evmAddress = wallet.core.jni.AnyAddress(evmPublicKey, wallet.core.jni.CoinType.ETHEREUM).description()
-                    val jwtHash = Hash.keccak256(jwt.toByteArray(Charsets.UTF_8))
-                    val signatureData = evmPrivateKey.sign(jwtHash, wallet.core.jni.Curve.SECP256K1)
-                    val evmSignature = "0x" + signatureData.joinToString("") { "%02x".format(it) }
-                    EvmAccountInfo(eoaAddress = evmAddress, signature = evmSignature)
-                } catch (e: Exception) {
-                    logd(TAG, "Could not generate EVM signature for local account switch: ${e.message}")
-                    null
-                }
-            } else {
-                null
-            }
+            val evmAccountInfo = (cryptoProvider as? HDWalletCryptoProvider)?.getEvmAccountInfo(jwt)
 
             val loginRequest = LoginV4Request(
                 flowAccountInfo = FlowAccountInfo(accountKey = accountKey, signature = signature),

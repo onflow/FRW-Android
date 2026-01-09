@@ -16,6 +16,7 @@ import com.flowfoundation.wallet.manager.account.firstFlowWalletAddress
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
+import com.flowfoundation.wallet.manager.key.HDWalletCryptoProvider
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.walletdata.EOAWallet
 import com.flowfoundation.wallet.manager.walletdata.FlowWallet
@@ -321,36 +322,17 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                 val flowSignature = flowSignatureBytes.joinToString("") { "%02x".format(it) }
                 logd(TAG, "getV4RegistrationSignatures() - Generated Flow signature, length: ${flowSignature.length} chars (${flowSignatureBytes.size} bytes)")
 
-                // Step 5: Derive EVM address and signature
-                // IMPORTANT: EVM must use Ethereum BIP44 path m/44'/60'/0'/0/0, NOT Flow path
-                // Use Trust Wallet Core's HDWallet for proper derivation
-                val hdWallet = wallet.core.jni.HDWallet(mnemonic, "")
-                val evmDerivationPath = "m/44'/60'/0'/0/0" // Standard Ethereum BIP44 path
+                // Step 5: Derive EVM address and signature using centralized helper
+                val evmAccountInfo = HDWalletCryptoProvider.generateEvmAccountInfo(mnemonic, firebaseJwt)
+                    ?: throw IllegalStateException("Failed to generate EVM account info from mnemonic")
                 
-                // Get private key for EVM using secp256k1 curve with Ethereum path
-                val evmPrivateKey = hdWallet.getKeyByCurve(wallet.core.jni.Curve.SECP256K1, evmDerivationPath)
-                val evmPublicKey = evmPrivateKey.getPublicKeySecp256k1(false) // uncompressed
-                
-                // Derive EVM address from public key using Trust Wallet Core
-                val eoaAddress = wallet.core.jni.AnyAddress(evmPublicKey, wallet.core.jni.CoinType.ETHEREUM).description()
-                logd(TAG, "getV4RegistrationSignatures() - Derived EOA address from mnemonic: $eoaAddress")
-
-                // Sign keccak256(idToken) for EVM - NO domain tag, same as extension
-                val jwtBytes = firebaseJwt.toByteArray(Charsets.UTF_8)
-                val jwtHash = wallet.core.jni.Hash.keccak256(jwtBytes)
-                logd(TAG, "getV4RegistrationSignatures() - EVM: keccak256 hash of JWT, hash size: ${jwtHash.size}")
-                
-                // Sign the digest with secp256k1
-                val signatureData = evmPrivateKey.sign(jwtHash, wallet.core.jni.Curve.SECP256K1)
-                
-                val evmSignature = "0x" + signatureData.joinToString("") { "%02x".format(it) }
-                logd(TAG, "getV4RegistrationSignatures() - Generated EVM signature from mnemonic, length: ${evmSignature.length} chars")
+                logd(TAG, "getV4RegistrationSignatures() - Generated EVM account info: ${evmAccountInfo.eoaAddress}")
 
                 // Return both Flow and EVM signatures (matching RN interface)
                 val result = WritableNativeMap()
                 result.putString("flowSignature", flowSignature)
-                result.putString("evmSignature", evmSignature)
-                result.putString("eoaAddress", eoaAddress)
+                result.putString("evmSignature", evmAccountInfo.signature)
+                result.putString("eoaAddress", evmAccountInfo.eoaAddress)
 
                 uiScope {
                     promise.resolve(result)

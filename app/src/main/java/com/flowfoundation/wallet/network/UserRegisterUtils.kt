@@ -38,7 +38,6 @@ import com.flowfoundation.wallet.network.model.LoginRequest
 import com.flowfoundation.wallet.network.model.LoginV4Request
 import com.flowfoundation.wallet.network.model.RegisterRequest
 import com.flowfoundation.wallet.network.model.RegisterResponse
-import wallet.core.jni.Hash
 import com.flowfoundation.wallet.page.walletrestore.firebaseLogin
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.NETWORK_MAINNET
@@ -637,40 +636,10 @@ private suspend fun registerServer(username: String, prefix: String): RegisterRe
       signature = hexSignature
     )
 
-    // Create EVMAccountInfo for registration
-    // IMPORTANT: EVM key must be derived from the MNEMONIC, not from the P256 private key
-    // The extension derives EVM from mnemonic with BIP44 path m/44'/60'/0'/0/0
-    val evmAccountInfo = try {
-      // Use Trust Wallet Core to derive EVM key from mnemonic
-      val hdWallet = wallet.core.jni.HDWallet(mnemonic, "")
-      val evmDerivationPath = "m/44'/60'/0'/0/0" // Standard Ethereum BIP44 path
-      
-      // Get private key for EVM using secp256k1 curve
-      val evmPrivateKey = hdWallet.getKeyByCurve(wallet.core.jni.Curve.SECP256K1, evmDerivationPath)
-      val evmPublicKey = evmPrivateKey.getPublicKeySecp256k1(false) // uncompressed
-      
-      // Derive EVM address from public key
-      val evmAddress = wallet.core.jni.AnyAddress(evmPublicKey, wallet.core.jni.CoinType.ETHEREUM).description()
-      logd(TAG, "Derived EVM address from mnemonic: $evmAddress")
-      
-      // Sign keccak256(idToken) for EVM - NO domain tag, same as extension
-      val jwtBytes = firebaseJwt.toByteArray(Charsets.UTF_8)
-      val jwtHash = Hash.keccak256(jwtBytes)
-      
-      // Sign the digest with secp256k1
-      val signatureData = evmPrivateKey.sign(jwtHash, wallet.core.jni.Curve.SECP256K1)
-      
-      val evmSignature = "0x" + signatureData.joinToString("") { "%02x".format(it) }
-      logd(TAG, "Generated EVM signature from mnemonic, length: ${evmSignature.length}")
-      
-      EvmAccountInfo(
-        eoaAddress = evmAddress,
-        signature = evmSignature
-      )
-    } catch (e: Exception) {
-      logd(TAG, "Error creating EVM account info from mnemonic: ${e.message}")
-      e.printStackTrace()
-      null
+    // Create EVMAccountInfo for registration using the centralized helper
+    val evmAccountInfo = HDWalletCryptoProvider.generateEvmAccountInfo(mnemonic, firebaseJwt)
+    if (evmAccountInfo != null) {
+      logd(TAG, "Generated EVM account info for registration: ${evmAccountInfo.eoaAddress}")
     }
 
     val request = RegisterRequest(
@@ -742,25 +711,7 @@ private suspend fun resumeAccount() {
   )
 
   // Build EVM account info if provider has mnemonic (HDWallet accounts)
-  val evmAccountInfo = if (cryptoProvider is HDWalletCryptoProvider) {
-    try {
-      val mnemonic = cryptoProvider.getMnemonic()
-      val hdWallet = wallet.core.jni.HDWallet(mnemonic, "")
-      val evmDerivationPath = "m/44'/60'/0'/0/0"
-      val evmPrivateKey = hdWallet.getKeyByCurve(wallet.core.jni.Curve.SECP256K1, evmDerivationPath)
-      val evmPublicKey = evmPrivateKey.getPublicKeySecp256k1(false)
-      val evmAddress = wallet.core.jni.AnyAddress(evmPublicKey, wallet.core.jni.CoinType.ETHEREUM).description()
-      val jwtHash = Hash.keccak256(firebaseJwt.toByteArray(Charsets.UTF_8))
-      val signatureData = evmPrivateKey.sign(jwtHash, wallet.core.jni.Curve.SECP256K1)
-      val evmSignature = "0x" + signatureData.joinToString("") { "%02x".format(it) }
-      EvmAccountInfo(eoaAddress = evmAddress, signature = evmSignature)
-    } catch (e: Exception) {
-      logd("resumeAccount", "Could not generate EVM signature: ${e.message}")
-      null
-    }
-  } else {
-    null
-  }
+  val evmAccountInfo = (cryptoProvider as? HDWalletCryptoProvider)?.getEvmAccountInfo(firebaseJwt)
 
   val loginRequest = LoginV4Request(
     flowAccountInfo = FlowAccountInfo(accountKey = accountKey, signature = flowSignature),
