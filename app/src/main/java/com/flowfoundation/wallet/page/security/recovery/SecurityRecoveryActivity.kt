@@ -14,10 +14,12 @@ import com.flowfoundation.wallet.page.walletcreate.fragments.mnemonic.MnemonicMo
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.ioScope
+import com.flowfoundation.wallet.utils.isNightMode
 import com.flowfoundation.wallet.utils.textToClipboard
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.wallet.Wallet
 import com.flowfoundation.wallet.widgets.itemdecoration.GridSpaceItemDecoration
+import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -31,6 +33,8 @@ class SecurityRecoveryActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivitySecurityRecoveryBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        UltimateBarX.with(this).fitWindow(true).light(!isNightMode(this)).applyStatusBar()
+        UltimateBarX.with(this).fitWindow(true).light(!isNightMode(this)).applyNavigationBar()
         setupToolbar()
         initPhrases()
     }
