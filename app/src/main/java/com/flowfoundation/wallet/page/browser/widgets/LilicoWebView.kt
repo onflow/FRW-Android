@@ -1,6 +1,7 @@
 package com.flowfoundation.wallet.page.browser.widgets
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -20,6 +21,8 @@ import android.webkit.WebView
 import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.annotation.ColorInt
+import com.flowfoundation.wallet.page.browser.extractActualHost
+import com.flowfoundation.wallet.page.browser.hasDeceptiveAtSymbol
 import com.crowdin.platform.Crowdin
 import com.flowfoundation.wallet.BuildConfig
 import com.flowfoundation.wallet.R
@@ -183,6 +186,38 @@ class LilicoWebView : WebView {
         blockedViewLayout.visibility = View.GONE
     }
 
+    /**
+     * Shows a security warning dialog for URLs that contain deceptive patterns
+     * like "@" symbols that could be used for URL spoofing attacks.
+     *
+     * @param url The potentially deceptive URL
+     * @param actualHost The actual host that will be accessed
+     * @param onProceed Callback when user chooses to proceed anyway
+     * @param onCancel Callback when user cancels navigation
+     */
+    private fun showDeceptiveUrlWarning(
+        url: String,
+        actualHost: String,
+        onProceed: () -> Unit,
+        onCancel: () -> Unit
+    ) {
+        uiScope {
+            AlertDialog.Builder(context)
+                .setTitle(R.string.security_warning)
+                .setMessage(context.getString(R.string.deceptive_url_warning, actualHost))
+                .setPositiveButton(R.string.proceed_anyway) { dialog, _ ->
+                    dialog.dismiss()
+                    onProceed()
+                }
+                .setNegativeButton(R.string.cancel) { dialog, _ ->
+                    dialog.dismiss()
+                    onCancel()
+                }
+                .setCancelable(false)
+                .show()
+        }
+    }
+
     fun setWebViewCallback(callback: WebviewCallback?) {
         this.callback = callback
     }
@@ -284,18 +319,46 @@ class LilicoWebView : WebView {
             }
 
             val uri = request.url
+            val urlString = uri.toString()
             logd(TAG, "shouldOverrideUrlLoading URL: $uri, scheme: ${uri.scheme}")
 
             // Check if it's an about:blank#blocked URL (internal for blocked pages)
-            if (uri.toString() == "about:blank#blocked") {
+            if (urlString == "about:blank#blocked") {
+                return true
+            }
+
+            // SECURITY CHECK: Detect deceptive URLs with @ symbol
+            // URLs like "https://trusted.com@malicious.com" are spoofing attempts
+            if (urlString.hasDeceptiveAtSymbol()) {
+                val actualHost = urlString.extractActualHost()
+                logd(TAG, "SECURITY: Deceptive URL detected. URL: $urlString, Actual host: $actualHost")
+
+                // Stop loading and show warning
+                view?.stopLoading()
+                isLoading = false
+
+                showDeceptiveUrlWarning(
+                    url = urlString,
+                    actualHost = actualHost,
+                    onProceed = {
+                        // User chose to proceed despite warning
+                        logd(TAG, "User proceeded to deceptive URL: $urlString")
+                        isLoading = true
+                        view?.loadUrl(urlString)
+                    },
+                    onCancel = {
+                        // User cancelled navigation
+                        logd(TAG, "User cancelled navigation to deceptive URL: $urlString")
+                    }
+                )
                 return true
             }
 
             // Check if URL is blocked - this must be done on UI thread
             uiScope {
-                if (BlockManager.isBlocked(uri.toString())) {
+                if (BlockManager.isBlocked(urlString)) {
                     logd(TAG, "URL blocked: $uri")
-                    showBlockedViewLayout(uri.toString())
+                    showBlockedViewLayout(urlString)
                     loadUrl("about:blank#blocked")
                     isLoading = false
                 }

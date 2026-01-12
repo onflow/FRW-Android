@@ -810,4 +810,7 @@
     <string name="confirm_copy_address_tips">You have copied an EVM address on the Flow network, please make sure you only send assets on the Flow network to this address otherwise they will be lost.</string>
     <string name="evm_on_flow_address">EVM on Flow address</string>
     <string name="recover_profile">Recover profile</string>
+    <string name="security_warning">Security Warning</string>
+    <string name="deceptive_url_warning">This link may be trying to trick you. The actual destination is: %1$s\n\nThis URL contains characters that could be used to impersonate another website. Proceed with caution.</string>
+    <string name="proceed_anyway">Proceed Anyway</string>
 </resources>

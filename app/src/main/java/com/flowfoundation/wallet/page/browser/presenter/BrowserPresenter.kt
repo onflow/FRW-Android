@@ -23,6 +23,7 @@ import com.flowfoundation.wallet.page.window.bubble.tools.inBubbleStack
 import com.flowfoundation.wallet.utils.extensions.isVisible
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.uiScope
+import com.flowfoundation.wallet.utils.logd
 
 class BrowserPresenter(
     private val binding: LayoutBrowserBinding,
@@ -82,10 +83,40 @@ class BrowserPresenter(
     }
 
     override fun onTitleChange(title: String) {
-        binding.titleView.text = title.ifBlank { webview()?.url }
+        // SECURITY FIX: Do NOT use the page title for address bar display
+        // The title can be spoofed by attackers to show fake URLs
+        // Instead, we always display the actual URL via onPageUrlChange
+        // The title is intentionally ignored here to prevent address bar spoofing
+        logd(TAG, "Page title received (not displayed in address bar): $title")
     }
 
     override fun onPageUrlChange(url: String, isReload: Boolean) {
+        // SECURITY FIX: Always display the actual sanitized URL, never the page title
+        updateAddressBar(url)
+    }
+
+    /**
+     * Safely updates the address bar with the actual URL being displayed.
+     * This method sanitizes URLs to prevent spoofing attacks.
+     *
+     * @param url The URL to display (will be sanitized)
+     */
+    private fun updateAddressBar(url: String) {
+        if (url.isBlank()) return
+
+        // Use the sanitized URL that strips out deceptive @ symbols
+        val safeUrl = url.toSafeDisplayUrl()
+
+        // Log if a deceptive URL was detected
+        if (url.hasDeceptiveAtSymbol()) {
+            logd(TAG, "SECURITY: Deceptive URL detected with @ symbol. Original: $url, Displayed: $safeUrl")
+        }
+
+        binding.titleView.text = safeUrl.extractActualHost()
+    }
+
+    companion object {
+        private const val TAG = "BrowserPresenter"
     }
 
     override fun onWindowColorChange(color: Int) {
@@ -102,13 +133,15 @@ class BrowserPresenter(
         newAndPushBrowserTab(url)?.let { tab ->
             tab.webView.setWebViewCallback(this@BrowserPresenter)
             WindowFrame.browserContainer()?.post { expandBrowser() }
-            onTitleChange(tab.title() ?: (tab.url().orEmpty()))
+            // SECURITY FIX: Always display the URL, never the page title
+            updateAddressBar(tab.url().orEmpty())
         }
     }
 
     private fun onBrowserTabChange() {
         WindowFrame.browserContainer()?.setVisible(true)
-        onTitleChange(webview()?.title.orEmpty())
+        // SECURITY FIX: Always display the URL, never the page title
+        updateAddressBar(webview()?.url.orEmpty())
     }
 
     fun handleBackPressed(): Boolean {
