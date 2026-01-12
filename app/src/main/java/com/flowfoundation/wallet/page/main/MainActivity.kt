@@ -85,6 +85,7 @@ class MainActivity : BaseActivity() {
             NotificationPermissionActivity.launch(this)
         }
         configurationInstabugBugReport()
+        WalletManager.checkKeyRotation(this)
     }
 
     private fun configurationInstabugBugReport() {
@@ -121,7 +122,6 @@ class MainActivity : BaseActivity() {
         RootDetectedDialog.show(supportFragmentManager)
         super.onResume()
         checkPendingAction()
-        WalletManager.checkKeyRotation(this)
     }
 
     private fun checkPendingAction() {
