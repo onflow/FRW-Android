@@ -14,10 +14,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.CookieManager
+import android.webkit.JsPromptResult
+import android.webkit.JsResult
 import android.webkit.ValueCallback
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
+import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.annotation.ColorInt
@@ -252,6 +255,112 @@ class LilicoWebView : WebView {
             uiScope { showWebviewFilePicker(context, filePathCallback, fileChooserParams) }
             return true
         }
+
+        /**
+         * SECURITY FIX: Override JavaScript alert dialogs to clearly indicate
+         * they are from a webpage, not from Flow Wallet app itself.
+         * This prevents phishing attacks via fake app dialogs.
+         */
+        override fun onJsAlert(
+            view: WebView?,
+            url: String?,
+            message: String?,
+            result: JsResult?
+        ): Boolean {
+            val host = url?.extractActualHost() ?: "Unknown"
+            logd(TAG, "SECURITY: JS Alert intercepted from: $host")
+
+            AlertDialog.Builder(context)
+                .setTitle(context.getString(R.string.js_dialog_title, host))
+                .setMessage(message)
+                .setPositiveButton(R.string.ok) { dialog, _ ->
+                    result?.confirm()
+                    dialog.dismiss()
+                }
+                .setOnCancelListener {
+                    result?.cancel()
+                }
+                .setCancelable(true)
+                .show()
+            return true
+        }
+
+        /**
+         * SECURITY FIX: Override JavaScript confirm dialogs to clearly indicate
+         * they are from a webpage, not from Flow Wallet app itself.
+         */
+        override fun onJsConfirm(
+            view: WebView?,
+            url: String?,
+            message: String?,
+            result: JsResult?
+        ): Boolean {
+            val host = url?.extractActualHost() ?: "Unknown"
+            logd(TAG, "SECURITY: JS Confirm intercepted from: $host")
+
+            AlertDialog.Builder(context)
+                .setTitle(context.getString(R.string.js_dialog_title, host))
+                .setMessage(message)
+                .setPositiveButton(R.string.ok) { dialog, _ ->
+                    result?.confirm()
+                    dialog.dismiss()
+                }
+                .setNegativeButton(R.string.cancel) { dialog, _ ->
+                    result?.cancel()
+                    dialog.dismiss()
+                }
+                .setOnCancelListener {
+                    result?.cancel()
+                }
+                .setCancelable(true)
+                .show()
+            return true
+        }
+
+        /**
+         * SECURITY FIX: Override JavaScript prompt dialogs to clearly indicate
+         * they are from a webpage and NOT from Flow Wallet app.
+         * This is critical to prevent phishing attacks that display fake login prompts.
+         *
+         * The dialog clearly shows which website is requesting input, making it
+         * obvious to users that this is NOT a Flow Wallet system dialog.
+         */
+        override fun onJsPrompt(
+            view: WebView?,
+            url: String?,
+            message: String?,
+            defaultValue: String?,
+            result: JsPromptResult?
+        ): Boolean {
+            val host = url?.extractActualHost() ?: "Unknown"
+            logd(TAG, "SECURITY: JS Prompt intercepted from: $host - Message: $message")
+
+            // Create an EditText for user input
+            val inputView = EditText(context).apply {
+                setText(defaultValue)
+                hint = context.getString(R.string.js_prompt_hint)
+                setPadding(48, 32, 48, 32)
+            }
+
+            AlertDialog.Builder(context)
+                .setTitle(context.getString(R.string.js_dialog_title, host))
+                .setMessage(message)
+                .setView(inputView)
+                .setPositiveButton(R.string.ok) { dialog, _ ->
+                    result?.confirm(inputView.text.toString())
+                    dialog.dismiss()
+                }
+                .setNegativeButton(R.string.cancel) { dialog, _ ->
+                    result?.cancel()
+                    dialog.dismiss()
+                }
+                .setOnCancelListener {
+                    result?.cancel()
+                }
+                .setCancelable(true)
+                .show()
+            return true
+        }
     }
 
     private inner class WebViewClient : android.webkit.WebViewClient() {
@@ -324,6 +433,14 @@ class LilicoWebView : WebView {
 
             // Check if it's an about:blank#blocked URL (internal for blocked pages)
             if (urlString == "about:blank#blocked") {
+                return true
+            }
+
+            // SECURITY FIX: Block javascript: URL scheme to prevent UXSS attacks
+            // Attackers can use javascript: URLs in iframes to execute arbitrary JS
+            // and display fake UI elements (like login prompts) that look like app dialogs
+            if (uri.scheme?.lowercase() == "javascript") {
+                logd(TAG, "SECURITY: Blocked javascript: URL scheme - $urlString")
                 return true
             }
 

@@ -813,4 +813,6 @@
     <string name="security_warning">Security Warning</string>
     <string name="deceptive_url_warning">This link may be trying to trick you. The actual destination is: %1$s\n\nThis URL contains characters that could be used to impersonate another website. Proceed with caution.</string>
     <string name="proceed_anyway">Proceed Anyway</string>
+    <string name="js_dialog_title">Message from %1$s</string>
+    <string name="js_prompt_hint">Enter your response</string>
 </resources>
