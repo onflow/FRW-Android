@@ -30,7 +30,7 @@ data class UserInfoData(
     var address: String? = null,
     @SerialName("private")  // Needed: property name "isPrivate" differs from JSON key "private"
     @SerializedName("private")
-    var isPrivate: Int,
+    var isPrivate: Int = 0,
     @SerializedName("created")
     var created: String,
 ) : Parcelable
