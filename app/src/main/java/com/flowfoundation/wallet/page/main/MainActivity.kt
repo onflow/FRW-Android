@@ -33,6 +33,12 @@ import com.flowfoundation.wallet.utils.uiScope
 import com.instabug.bug.BugReporting
 import com.instabug.library.Instabug
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.account.AccountManager
+import com.flowfoundation.wallet.utils.Env
+import com.flowfoundation.wallet.reactnative.ReactNativeActivity
+import com.flowfoundation.wallet.reactnative.bridge.RNBridge
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class MainActivity : BaseActivity() {
 
@@ -86,6 +92,7 @@ class MainActivity : BaseActivity() {
         }
         configurationInstabugBugReport()
         WalletManager.checkKeyRotation(this)
+        WalletManager.checkKeystoreMigration(this)
     }
 
     private fun configurationInstabugBugReport() {

@@ -18,7 +18,8 @@ class RNBridge {
 
     enum class ScreenType {
         @SerializedName("send-asset") SEND_ASSET,
-        @SerializedName("backup-tip") BACKUP_TIP
+        @SerializedName("backup-tip") BACKUP_TIP,
+        @SerializedName("keystore-migration") KEYSTORE_MIGRATION
     }
 
     data class EmojiInfo(

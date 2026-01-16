@@ -85,13 +85,6 @@ object AccountManager {
         
         ioScope {
             try {
-                // Perform keystore migration before loading accounts
-                try {
-                    logd(TAG, "Performing keystore migration check...")
-                    KeyStoreMigrationManager.performMigrationIfNeeded()
-                } catch (e: Exception) {
-                    logd(TAG, "Error during keystore migration: ${e.message}")
-                }
                 // Load user prefixes first
                 val userPrefixList = UserPrefixCacheManager.read()
                 if (!userPrefixList.isNullOrEmpty()) {

@@ -130,6 +130,7 @@ class ReactNativeActivity : ReactActivity() {
                     } ?: "SelectTokens"
                 }
                 RNBridge.ScreenType.BACKUP_TIP -> "KeyRotationTip"
+                RNBridge.ScreenType.KEYSTORE_MIGRATION -> "KeystoreMigrationTip"
             }
         }
 

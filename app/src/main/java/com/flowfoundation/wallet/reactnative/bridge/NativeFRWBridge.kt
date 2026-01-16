@@ -62,7 +62,15 @@ import android.view.WindowManager
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.flowfoundation.wallet.utils.Env.getStorage
 import androidx.core.content.edit
+import com.flow.wallet.KeyManager
+import com.flow.wallet.toFormatString
 import com.flowfoundation.wallet.utils.Env
+import com.flowfoundation.wallet.network.model.AccountSignRequest
+import com.flowfoundation.wallet.network.model.AccountKeySignature
+import com.flowfoundation.wallet.network.model.AccountKey
+import com.flowfoundation.wallet.network.retrofit
+import com.flowfoundation.wallet.network.ApiService
+import com.flowfoundation.wallet.network.generatePrefix
 
 class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSpec(reactContext) {
 
@@ -318,6 +326,91 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
             } catch (e: Exception) {
                 loge(TAG, "signRotationRequest() error: ${e.message}")
                 uiScope { promise.reject("SIGN_ROTATION_ERROR", e.message, e) }
+            }
+        }
+    }
+
+    override fun keystoreMigration(promise: Promise) {
+        logd(TAG, "keystoreMigration() called")
+        ioScope {
+            try {
+                val account = AccountManager.get() ?: throw IllegalStateException("No active account")
+                val username = account.userInfo.username
+
+                // 1. Generate new prefix
+                val newPrefix = generatePrefix(username)
+                logd(TAG, "keystoreMigration() - generated new prefix: $newPrefix")
+
+                // 2. Generate new Key in Android Keystore
+                val keyPair = KeyManager.generateKeyWithPrefix(newPrefix)
+                val publicKeyStr = keyPair.public.toFormatString()
+                logd(TAG, "keystoreMigration() - generated new public key: $publicKeyStr")
+
+                // 3. Prepare signAccount request
+                val service = retrofit().create(ApiService::class.java)
+                val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
+                    ?: throw IllegalStateException("No crypto provider available")
+
+                val jwt = getFirebaseJwt()
+                val signature = cryptoProvider.getUserSignature(jwt)
+
+                // Construct the signature object for the CURRENT key
+                val currentKeySignature = AccountKeySignature(
+                    publicKey = cryptoProvider.getPublicKey(),
+                    signMessage = jwt,
+                    signature = signature,
+                    weight = cryptoProvider.getKeyWeight(),
+                    hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
+                    signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
+                )
+
+                // Construct the request for the NEW key
+                val request = AccountSignRequest(
+                    accountKey = AccountKey(
+                        publicKey = publicKeyStr,
+                        hashAlgo = HashingAlgorithm.SHA2_256.cadenceIndex, // SHA2_256
+                        signAlgo = SigningAlgorithm.ECDSA_P256.cadenceIndex, // NIST_P256
+                        weight = 1000
+                    ),
+                    deviceInfo = listOf(currentKeySignature)
+                )
+
+                logd(TAG, "keystoreMigration() - sending signAccount request")
+                val response = service.signAccount(request)
+
+                if (response.status > 400) {
+                     logd(TAG, "keystoreMigration() - failed with status ${response.status}: ${response.message}")
+                     throw IllegalStateException("Sign account failed: ${response.message}")
+                }
+                logd(TAG, "keystoreMigration() - signAccount success")
+
+                // 4. Update local account state with new prefix
+                logd(TAG, "keystoreMigration() - updating local account state")
+                account.prefix = newPrefix
+                AccountManager.add(account)
+
+                // 5. Reload CryptoProvider
+                logd(TAG, "keystoreMigration() - reloading crypto provider")
+                CryptoProviderManager.clear()
+                // Force reload of provider to ensure it uses the new key
+                val newProvider = CryptoProviderManager.getCurrentCryptoProvider()
+                if (newProvider != null) {
+                    logd(TAG, "keystoreMigration() - new crypto provider loaded successfully")
+                } else {
+                    logw(TAG, "keystoreMigration() - failed to load new crypto provider")
+                }
+
+                // 6. Close RN screen
+                uiScope {
+                    closeRN(null)
+                    promise.resolve(null)
+                }
+            } catch (e: Exception) {
+                loge(TAG, "keystoreMigration() failed: ${e.message}")
+                e.printStackTrace()
+                uiScope {
+                    promise.reject("MIGRATION_ERROR", e.message, e)
+                }
             }
         }
     }

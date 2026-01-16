@@ -508,6 +508,32 @@ object WalletManager {
         }
     }
 
+    fun checkKeystoreMigration(activity: android.app.Activity) {
+        val account = AccountManager.get() ?: return
+        val prefix = account.prefix ?: return
+
+        ioScope {
+            val newKeyId = "prefix_key_$prefix"
+            val storage = getStorage()
+
+            // Check if key exists in new storage (File-based)
+            val hasNewKey = try {
+                PrivateKey.get(newKeyId, prefix, storage)
+                true
+            } catch (e: Exception) {
+                false
+            }
+
+            // If user is using file-based key (prefix_key_), they need migration
+            if (hasNewKey) {
+                logd(TAG, "Keystore migration needed for prefix: $prefix")
+                uiScope {
+                    ReactNativeActivity.launch(activity, RNBridge.ScreenType.KEYSTORE_MIGRATION)
+                }
+            }
+        }
+    }
+
     fun selectedWalletAddress(): String {
         val currentTime = System.currentTimeMillis()
         if (currentTime - lastAddressCheck < ADDRESS_CACHE_DURATION) {
