@@ -202,15 +202,21 @@ object AccountCacheManager{
      *
      * Field mappings:
      * - "isPrivate" -> "private" (UserInfoData field name change)
+     * - "chainId" -> "chain_id" (BlockchainData field name change)
      */
     private fun migrateOldFieldNames(json: String): String {
         var migrated = json
 
         // Migrate UserInfoData.isPrivate to private
-        // Match "isPrivate": followed by a number (the old serialization format)
         if (migrated.contains("\"isPrivate\":")) {
             logd(TAG, "Migrating old field name: isPrivate -> private")
             migrated = migrated.replace("\"isPrivate\":", "\"private\":")
+        }
+
+        // Migrate BlockchainData.chainId to chain_id
+        if (migrated.contains("\"chainId\":")) {
+            logd(TAG, "Migrating old field name: chainId -> chain_id")
+            migrated = migrated.replace("\"chainId\":", "\"chain_id\":")
         }
 
         return migrated

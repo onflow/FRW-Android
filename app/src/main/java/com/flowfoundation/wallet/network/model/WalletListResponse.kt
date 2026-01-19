@@ -42,5 +42,5 @@ data class BlockchainData(
     val address: String,
     @SerialName("chain_id")  // Needed: property name "chainId" differs from JSON key "chain_id"
     @SerializedName("chain_id")
-    val chainId: String
+    val chainId: String = ""
 ) : Parcelable
