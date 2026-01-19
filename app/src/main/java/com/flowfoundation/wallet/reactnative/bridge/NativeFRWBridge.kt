@@ -235,12 +235,15 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
     }
 
     override fun removeOldKey(address: String, publicKey: String, promise: Promise) {
-        logd(TAG, "removeOldKey() called - address: $address")
+        logd(TAG, "removeOldKey() called - address: $address, publicKey: $publicKey")
         ioScope {
             try {
-              val account =
-                AccountManager.get() ?: throw IllegalStateException("No active account found")
-
+                val currentProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: throw IllegalStateException("No active crypto provider found")
+                if (currentProvider.getPublicKey() != publicKey) {
+                    logd(TAG, "removeOldKey() - Public key does not match current provider")
+                    return@ioScope
+                }
+                val account = AccountManager.get() ?: throw IllegalStateException("No active account found")
                 val uid = firebaseUid() ?: account.wallet?.id
                 val keystoreInfo = account.keyStoreInfo
 
