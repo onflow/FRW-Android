@@ -43,6 +43,8 @@ object AppConfig {
 
     fun bridgeFeePayer() = if (isTestnet()) config().getBridgeFeePayer().testnet else config().getBridgeFeePayer().mainnet
 
+    fun checkBloctoKeyRotation() = isDev() || isTesting() || (config().getFeatures().bloctoKeyRotation ?: false)
+
     fun addressRegistry(network: Int): Map<String, String> {
         return when (network) {
             NETWORK_TESTNET -> flowAddressRegistry().testnet
@@ -196,6 +198,10 @@ private data class Features(
     val txWarning: Boolean?,
     @SerializedName("cover_bridge_fee")
     val coverBridgeFee: Boolean?,
+    @SerializedName("blocto_key_rotation")
+    val bloctoKeyRotation: Boolean?,
+    @SerializedName("coa_migration")
+    val coaMigration: Boolean?
 )
 
 private data class Payer(
