@@ -3,6 +3,7 @@ package com.flowfoundation.wallet.reactnative.bridge
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReadableArray
+import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.WritableNativeMap
 import com.facebook.react.bridge.WritableNativeArray
 import com.facebook.react.bridge.WritableMap
@@ -13,6 +14,7 @@ import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.BuildConfig
+import com.flowfoundation.wallet.manager.app.ActivityManager
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.cache.recentTransactionCache
 import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
@@ -49,6 +51,18 @@ import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.logw
 import java.util.Locale
+import wallet.core.jni.HDWallet
+import com.flowfoundation.wallet.wallet.Wallet
+import com.flowfoundation.wallet.manager.key.HDWalletCryptoProvider
+import com.flow.wallet.keys.SeedPhraseKey
+import org.onflow.flow.models.SigningAlgorithm
+import org.onflow.flow.models.HashingAlgorithm
+import org.onflow.flow.models.DomainTag
+import android.view.WindowManager
+import com.flowfoundation.wallet.firebase.auth.firebaseUid
+import com.flowfoundation.wallet.utils.Env.getStorage
+import androidx.core.content.edit
+import com.flowfoundation.wallet.utils.Env
 
 class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSpec(reactContext) {
 
@@ -57,6 +71,8 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
     init {
         logd(TAG, "NativeFRWBridge initialized with context: ${reactContext != null}")
         logd(TAG, "React context is active: ${reactContext.hasActiveCatalystInstance()}")
+        ActivityManager.setReactContext(reactContext)
+        System.loadLibrary("TrustWalletCore")
     }
 
     override fun getName(): String {
@@ -150,6 +166,175 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
             } catch (e: Exception) {
                 uiScope {
                     promise.reject("SIGN_ERROR", "Failed to sign data: ${e.message}", e)
+                }
+            }
+        }
+    }
+
+    override fun createSeedKey(strength: Double, promise: Promise) {
+        logd(TAG, "createSeedKey() called - strength: $strength")
+        try {
+            val mnemonicStrength = strength.toInt()
+            val hdWallet = HDWallet(mnemonicStrength, "")
+            val mnemonic = hdWallet.mnemonic()
+
+            // Derive key using P256k1/SHA2_256 to match Flow defaults
+            val seedPhraseKey = SeedPhraseKey(
+              mnemonicString = mnemonic,
+              passphrase = "",
+              derivationPath = "m/44'/539'/0'/0/0",
+              keyPair = null,
+              storage = getStorage()
+            )
+            val cryptoProvider = HDWalletCryptoProvider(seedPhraseKey)
+            val publicKey = cryptoProvider.getPublicKey()
+
+            val flowKey = WritableNativeMap().apply {
+                putString("publicKey", publicKey)
+                putInt("signAlgo", cryptoProvider.getSignatureAlgorithm().cadenceIndex)
+                putInt("hashAlgo", cryptoProvider.getHashAlgorithm().cadenceIndex)
+                putInt("weight", 1000)
+                putString("signAlgoString", cryptoProvider.getSignatureAlgorithm().value)
+                putString("hashAlgoString", cryptoProvider.getHashAlgorithm().value)
+            }
+
+            val result = WritableNativeMap().apply {
+                putString("seedphrase", mnemonic)
+                putMap("flowKey", flowKey)
+            }
+
+            promise.resolve(result)
+        } catch (e: Exception) {
+            promise.reject("CREATE_KEY_ERROR", e.message, e)
+        }
+    }
+
+    override fun saveNewKey(key: ReadableMap, promise: Promise) {
+        logd(TAG, "saveNewKey() called")
+        ioScope {
+            try {
+                val seedPhrase = key.getString("seedphrase")
+                if (seedPhrase.isNullOrEmpty()) {
+                    throw IllegalArgumentException("Seed phrase is empty")
+                }
+
+                // Update and store the mnemonic in Wallet
+                Wallet.store().updateMnemonic(seedPhrase).store()
+
+                logd(TAG, "saveNewKey() - Seed phrase saved successfully")
+                uiScope {
+                    promise.resolve(null)
+                }
+            } catch (e: Exception) {
+                loge(TAG, "saveNewKey() error: ${e.message}")
+                uiScope {
+                    promise.reject("SAVE_KEY_ERROR", e.message, e)
+                }
+            }
+        }
+    }
+
+    override fun removeOldKey(address: String, publicKey: String, promise: Promise) {
+        logd(TAG, "removeOldKey() called - address: $address, publicKey: $publicKey")
+        ioScope {
+            try {
+                val currentProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: throw IllegalStateException("No active crypto provider found")
+                if (currentProvider.getPublicKey() != publicKey) {
+                    logd(TAG, "removeOldKey() - Public key does not match current provider")
+                    return@ioScope
+                }
+                val account = AccountManager.get() ?: throw IllegalStateException("No active account found")
+                val uid = firebaseUid() ?: account.wallet?.id
+                val keystoreInfo = account.keyStoreInfo
+
+                // 1. Backup if exists
+                if (!keystoreInfo.isNullOrBlank()) {
+                    logd(TAG, "Backing up keystore info for user: $uid")
+                    val prefs = Env.getApp().getSharedPreferences("backup_keystore", android.content.Context.MODE_PRIVATE)
+                    prefs.edit { putString("backup_info_$uid", keystoreInfo) }
+                } else {
+                    logd(TAG, "No keystore info to backup")
+                }
+
+                // 2. Remove keystore info from account
+                account.keyStoreInfo = null
+
+                // Update AccountManager cache
+                // AccountManager.add(account) will update the list and cache it
+                AccountManager.add(account)
+
+                // 3. Clear CryptoProvider
+                CryptoProviderManager.clear()
+
+                // 4. Force reload to verify
+                val newProvider = CryptoProviderManager.getCurrentCryptoProvider()
+                if (newProvider is HDWalletCryptoProvider) {
+                    logd(TAG, "Successfully switched to HDWalletCryptoProvider")
+                } else {
+                    logw(TAG, "Provider is not HDWalletCryptoProvider after rotation: ${newProvider?.javaClass?.simpleName}")
+                }
+
+                // Mark as rotated in BloctoDetector cache to prevent re-triggering
+                try {
+                    val bloctoPrefs = Env.getApp().getSharedPreferences("blocto_detector_cache", 0)
+                    val cacheKey = "blocto.detector.false.${address.lowercase()}"
+                    bloctoPrefs.edit { putBoolean(cacheKey, true) }
+                    logd(TAG, "Marked address $address as rotated in BloctoDetector cache")
+                } catch (e: Exception) {
+                    loge(TAG, "Failed to update BloctoDetector cache: ${e.message}")
+                }
+
+                uiScope { promise.resolve(null) }
+            } catch (e: Exception) {
+                loge(TAG, "removeOldKey() error: ${e.message}")
+                uiScope { promise.reject("REMOVE_OLD_KEY_ERROR", e.message, e) }
+            }
+        }
+    }
+
+    override fun signRotationRequest(address: String, signatureData: String, promise: Promise) {
+        logd(TAG, "signRotationRequest() called - address: $address, signatureData: $signatureData")
+        ioScope {
+            try {
+                val currentAddress = WalletManager.wallet()?.walletAddress() ?: ""
+                if (currentAddress != address) {
+                    throw IllegalArgumentException("Address mismatch: expected $address, got $currentAddress")
+                }
+
+                val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
+                    ?: throw IllegalStateException("No crypto provider found")
+
+                // Add User Domain Tag (FLOW-V0.0-USER)
+                val dataToSign = DomainTag.User.bytes + signatureData.encodeToByteArray()
+                val signature = cryptoProvider.signData(dataToSign)
+
+                val model = RNBridge.AccountKeySignature(
+                    public_key = cryptoProvider.getPublicKey(),
+                    hash_algo = cryptoProvider.getHashAlgorithm().cadenceIndex,
+                    sign_algo = cryptoProvider.getSignatureAlgorithm().cadenceIndex,
+                    signature = signature,
+                    sign_message = signatureData,
+                    weight = cryptoProvider.getKeyWeight(),
+                )
+
+                uiScope { promise.resolve(bridgeModelToWritableMap(model)) }
+            } catch (e: Exception) {
+                loge(TAG, "signRotationRequest() error: ${e.message}")
+                uiScope { promise.reject("SIGN_ROTATION_ERROR", e.message, e) }
+            }
+        }
+    }
+
+    override fun setScreenSecurityLevel(level: String) {
+        logd(TAG, "setScreenSecurityLevel: $level")
+        val secure = level.equals("secure", ignoreCase = true)
+        uiScope {
+            val activity = currentActivity
+            if (activity != null) {
+                if (secure) {
+                    activity.window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
+                } else {
+                    activity.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
                 }
             }
         }
@@ -323,6 +508,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
     }
 
     override fun closeRN(id: String?) {
+        logd(TAG, "closeRN() called - id: $id")
         try {
             val currentActivity = reactApplicationContext.currentActivity
             if (currentActivity != null && !currentActivity.isFinishing && !currentActivity.isDestroyed) {

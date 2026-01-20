@@ -309,3 +309,7 @@
 # PdfBox-Android - ignore optional JPEG2000 codec dependencies
 -dontwarn com.gemalto.jp2.JP2Decoder
 -dontwarn com.gemalto.jp2.JP2Encoder
+
+# Keep RNBridge models to ensure Gson serialization works in release builds
+-keep class com.flowfoundation.wallet.reactnative.bridge.RNBridge { *; }
+-keep class com.flowfoundation.wallet.reactnative.bridge.RNBridge$* { *; }

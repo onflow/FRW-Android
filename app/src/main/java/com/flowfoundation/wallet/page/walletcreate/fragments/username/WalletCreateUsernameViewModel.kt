@@ -27,13 +27,13 @@ class WalletCreateUsernameViewModel : ViewModel() {
 
     fun verifyUsername(username: String) {
         this.username = username
+        handler.removeCallbacks(usernameCheckTask)
         val verifyMsg = usernameVerify(username)
         if (!verifyMsg.isNullOrEmpty()) {
             usernameStateLiveData.postValue(Pair(false, verifyMsg))
             return
         }
 
-        handler.removeCallbacks(usernameCheckTask)
         handler.postDelayed(usernameCheckTask, 500)
     }
 

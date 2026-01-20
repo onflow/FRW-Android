@@ -36,6 +36,10 @@ import java.util.concurrent.atomic.AtomicReference
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.flowfoundation.wallet.manager.account.AccountWalletManager
 import com.flowfoundation.wallet.manager.account.KeyStoreMigrationManager
+import com.flowfoundation.wallet.manager.config.AppConfig
+import com.flowfoundation.wallet.manager.rotation.BloctoDetectorService
+import com.flowfoundation.wallet.reactnative.ReactNativeActivity
+import com.flowfoundation.wallet.reactnative.bridge.RNBridge
 
 object WalletManager {
     private val TAG = WalletManager::class.java.simpleName
@@ -47,6 +51,9 @@ object WalletManager {
     private var isInitializing = false
     private val initializationLock = Object()
     private var isInitialized = false
+
+    private var lastRotationCheckTime = 0L
+    private const val ROTATION_CHECK_COOLDOWN = 2000L
 
     // Add a job reference and callback mechanism
     private var initializationJob: kotlinx.coroutines.Job? = null
@@ -466,6 +473,43 @@ object WalletManager {
         }
 
         return networkStr ?: chainNetWorkString()
+    }
+
+    fun checkKeyRotation(activity: android.app.Activity) {
+        if (AppConfig.checkBloctoKeyRotation().not()) {
+            return
+        }
+        val address = wallet()?.walletAddress()
+        logd(TAG, "checkKeyRotation() called with address: $address")
+
+        if (address.isNullOrBlank()) {
+            logd(TAG, "checkKeyRotation() - address is blank, returning")
+            return
+        }
+
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastRotationCheckTime < ROTATION_CHECK_COOLDOWN) {
+            logd(TAG, "checkKeyRotation() - skipped due to cooldown")
+            return
+        }
+        lastRotationCheckTime = currentTime
+
+        if (isChildAccount(address) || EVMWalletManager.isEVMWalletAddress(address)) {
+            logd(TAG, "checkKeyRotation() - address is child account or EVM address, returning")
+            return
+        }
+
+        ioScope {
+            logd(TAG, "checkKeyRotation() - detecting Blocto key...")
+            val result = BloctoDetectorService.detectBloctoKey(address)
+            logd(TAG, "checkKeyRotation() - detection result: $result")
+            if (result.needRevoke) {
+                logd(TAG, "checkKeyRotation() - need revoke, launching BACKUP_TIP")
+                uiScope {
+                    ReactNativeActivity.launch(activity, RNBridge.ScreenType.BACKUP_TIP)
+                }
+            }
+        }
     }
 
     fun selectedWalletAddress(): String {

@@ -2,7 +2,6 @@ package com.flowfoundation.wallet.reactnative
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultReactActivityDelegate
@@ -11,8 +10,17 @@ import com.flowfoundation.wallet.reactnative.bridge.RNBridge
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.reactnative.bridge.createWalletAccountFromAddress
+import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.wallet.toAddress
 import com.google.gson.Gson
+import com.google.gson.annotations.SerializedName
+
+private val RNBridge.ScreenType.value: String
+    get() = try {
+        RNBridge.ScreenType::class.java.getField(this.name).getAnnotation(SerializedName::class.java)?.value ?: this.toString()
+    } catch (e: Exception) {
+        this.toString()
+    }
 
 class ReactNativeActivity : ReactActivity() {
 
@@ -42,15 +50,15 @@ class ReactNativeActivity : ReactActivity() {
                     // Top level props
                     address?.let {
                         launchOptions.putString("address", it)
-                        Log.d(TAG, "Added address to launch options: $it")
+                        logd(TAG, "Added address to launch options: $it")
                     }
                     network?.let {
                         launchOptions.putString("network", it)
-                        Log.d(TAG, "Added network to launch options: $it")
+                        logd(TAG, "Added network to launch options: $it")
                     }
                     initialRoute?.let {
                         launchOptions.putString("initialRoute", it)
-                        Log.d(TAG, "Added initialRoute to launch options: $it")
+                        logd(TAG, "Added initialRoute to launch options: $it")
                     }
 
                     // Create initialProps object if we have screen or sendToConfig
@@ -59,36 +67,37 @@ class ReactNativeActivity : ReactActivity() {
 
                         screen?.let {
                             initialPropsBundle.putString("screen", it)
-                            Log.d(TAG, "Added screen to initialProps: $it")
+                            logd(TAG, "Added screen to initialProps: $it")
                         }
                         sendToConfigJson?.let { jsonString ->
-                            Log.d(TAG, "Processing sendToConfig JSON: $jsonString")
+                            logd(TAG, "Processing sendToConfig JSON: $jsonString")
                             initialPropsBundle.putString("sendToConfig", jsonString)
                         }
 
                         launchOptions.putBundle("initialProps", initialPropsBundle)
-                        Log.d(TAG, "Added initialProps bundle with ${initialPropsBundle.size()} properties")
+                        logd(TAG, "Added initialProps bundle with ${initialPropsBundle.size()} " +
+                          "properties")
                     }
                 }
 
-                Log.d(TAG, "Launch options created with ${launchOptions.size()} properties")
+                logd(TAG, "Launch options created with ${launchOptions.size()} properties")
                 return launchOptions
             }
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        Log.d(TAG, "onCreate called")
+        logd(TAG, "onCreate called")
         super.onCreate(savedInstanceState)
 
         // Log the intent extras for debugging
         intent?.let {
-            Log.d(TAG, "Intent extras:")
-            Log.d(TAG, "  address: ${it.getStringExtra("address")}")
-            Log.d(TAG, "  network: ${it.getStringExtra("network")}")
-            Log.d(TAG, "  initialRoute: ${it.getStringExtra("initialRoute")}")
-            Log.d(TAG, "  screen: ${it.getStringExtra("screen")}")
-            Log.d(TAG, "  sendToConfig: ${it.getStringExtra("sendToConfig")}")
+            logd(TAG, "Intent extras:")
+            logd(TAG, "  address: ${it.getStringExtra("address")}")
+            logd(TAG, "  network: ${it.getStringExtra("network")}")
+            logd(TAG, "  initialRoute: ${it.getStringExtra("initialRoute")}")
+            logd(TAG, "  screen: ${it.getStringExtra("screen")}")
+            logd(TAG, "  sendToConfig: ${it.getStringExtra("sendToConfig")}")
         }
     }
 
@@ -121,7 +130,7 @@ class ReactNativeActivity : ReactActivity() {
                         }
                     } ?: "SelectTokens"
                 }
-                RNBridge.ScreenType.TOKEN_DETAIL -> "Home"
+                RNBridge.ScreenType.BACKUP_TIP -> "KeyRotationTip"
             }
         }
 
@@ -145,10 +154,10 @@ class ReactNativeActivity : ReactActivity() {
          * Launch the React Native Demo Activity with parameters
          */
         fun launch(context: Context, screenType: RNBridge.ScreenType?, address: String?, network: String?) {
-            Log.d(TAG, "Launching ReactNativeActivity with params:")
-            Log.d(TAG, "  screenType: $screenType")
-            Log.d(TAG, "  address: $address")
-            Log.d(TAG, "  network: $network")
+            logd(TAG, "Launching ReactNativeActivity with params:")
+            logd(TAG, "  screenType: $screenType")
+            logd(TAG, "  address: $address")
+            logd(TAG, "  network: $network")
 
             val intent = Intent(context, ReactNativeActivity::class.java)
 
@@ -165,7 +174,7 @@ class ReactNativeActivity : ReactActivity() {
             }
             screenType?.let {
                 // Convert screen enum to string and determine route based on screen type
-                val screenString = if (it == RNBridge.ScreenType.SEND_ASSET) "send-asset" else "token-detail"
+                val screenString = it.value
                 val routeName = getRouteName(it, null)
 
                 intent.putExtra("screen", screenString)
@@ -178,10 +187,10 @@ class ReactNativeActivity : ReactActivity() {
          * Launch with InitialProps containing screen and SendToConfig
          */
         fun launchWithConfig(context: Context, screenType: RNBridge.ScreenType, sendToConfig: RNBridge.SendToConfig?, address: String?, network: String?) {
-            Log.d(TAG, "Launching ReactNativeActivity with config:")
-            Log.d(TAG, "  screenType: $screenType")
-            Log.d(TAG, "  address: $address")
-            Log.d(TAG, "  network: $network")
+            logd(TAG, "Launching ReactNativeActivity with config:")
+            logd(TAG, "  screenType: $screenType")
+            logd(TAG, "  address: $address")
+            logd(TAG, "  network: $network")
 
             val intent = Intent(context, ReactNativeActivity::class.java)
 
@@ -198,7 +207,7 @@ class ReactNativeActivity : ReactActivity() {
             }
 
             // Convert screen enum to string and determine route based on screen type and config
-            val screenString = if (screenType == RNBridge.ScreenType.SEND_ASSET) "send-asset" else "token-detail"
+            val screenString = screenType.value
             val routeName = getRouteName(screenType, sendToConfig)
 
             intent.putExtra("screen", screenString)
@@ -208,7 +217,7 @@ class ReactNativeActivity : ReactActivity() {
             sendToConfig?.let {
                 val sendToConfigJson = Gson().toJson(it)
                 intent.putExtra("sendToConfig", sendToConfigJson)
-                Log.d(TAG, "sendToConfig JSON: $sendToConfigJson")
+                logd(TAG, "sendToConfig JSON: $sendToConfigJson")
             }
 
             context.startActivity(intent)
