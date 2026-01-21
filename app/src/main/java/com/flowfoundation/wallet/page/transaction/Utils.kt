@@ -1,24 +1,10 @@
 package com.flowfoundation.wallet.page.transaction
 
-import com.flowfoundation.wallet.manager.transaction.TransactionState
 import org.onflow.flow.models.TransactionStatus
-import com.flowfoundation.wallet.network.flowscan.model.FlowScanTransaction
-import com.flowfoundation.wallet.page.transaction.record.model.TransactionRecord
-import org.joda.time.format.ISODateTimeFormat
 
+// TransactionRecord conversion removed - Activity screen now uses React Native
 
-fun TransactionState.toTransactionRecord(): TransactionRecord {
-    return TransactionRecord(
-        transaction = FlowScanTransaction(
-            hash = transactionId,
-            time = ISODateTimeFormat.dateTime().print(time),
-            status = state.stateToString(),
-            error = errorMsg,
-        )
-    )
-}
-
-private fun Int.stateToString(): String {
+fun Int.transactionStateToString(): String {
     return when (this) {
         TransactionStatus.UNKNOWN.ordinal -> "Unknown"
         TransactionStatus.PENDING.ordinal -> "Pending"
