@@ -91,7 +91,10 @@ class MainContentPresenter(
                 R.id.bottom_navigation_nft -> onNavigationItemSelected(1)
                 R.id.bottom_navigation_explore -> onNavigationItemSelected(2)
                 R.id.bottom_navigation_profile -> onNavigationItemSelected(3)
-                R.id.bottom_navigation_activity -> onNavigationItemSelected(4)
+                R.id.bottom_navigation_activity -> {
+                    // Launch React Native Activity screen instead of native fragment
+                    ReactNativeActivity.launch(activity, RNBridge.ScreenType.ACTIVITY)
+                }
             }
             true
         }
