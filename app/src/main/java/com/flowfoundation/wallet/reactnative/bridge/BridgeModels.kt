@@ -21,7 +21,8 @@ class RNBridge {
         @SerializedName("send-asset") SEND_ASSET,
         @SerializedName("token-detail") TOKEN_DETAIL,
         @SerializedName("onboarding") ONBOARDING,
-        @SerializedName("receive") RECEIVE
+        @SerializedName("receive") RECEIVE,
+        @SerializedName("activity") ACTIVITY
     }
 
     enum class AccountTypeType {
