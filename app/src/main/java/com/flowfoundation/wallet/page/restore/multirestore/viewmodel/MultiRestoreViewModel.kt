@@ -239,7 +239,6 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                     currentTxId = txId
                     TransactionStateManager.newTransaction(transactionState)
                     pushBubbleStack(transactionState)
-                    startTransactionPolling(txId)
                 } else {
                     logd("MultiRestore", "Failed to create transaction - txId is null")
                     throw RuntimeException("Failed to create add public key transaction")
@@ -272,90 +271,6 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                 logd("MultiRestore", "Transaction not ready: currentTxId match=${currentTxId == state.transactionId}, isSuccess=${state.isSuccess()}")
             }
         } ?: logd("MultiRestore", "No ADD_PUBLIC_KEY transaction found")
-    }
-
-    private fun startTransactionPolling(txId: String) {
-        logd("MultiRestore", "Starting polling for transaction: $txId")
-        ioScope {
-            // First, check if the transaction is already completed before starting polling
-            delay(2000) // Wait 2 seconds for initial transaction processing
-
-            val initialCheck = TransactionStateManager.getTransactionStateList().find {
-                it.transactionId == txId && it.type == TransactionState.TYPE_ADD_PUBLIC_KEY
-            }
-
-            if (initialCheck != null) {
-                logd("MultiRestore", "Initial check found transaction: ${initialCheck.transactionId}, state: ${initialCheck.state}, isSuccess: ${initialCheck.isSuccess()}")
-                if (initialCheck.isSuccess()) {
-                    logd("MultiRestore", "Transaction already completed, calling syncAccountInfo immediately")
-                    if (currentTxId == txId) {
-                        currentTxId = null
-                        syncAccountInfo()
-                    }
-                    return@ioScope
-                }
-            } else {
-                logd("MultiRestore", "Initial check: transaction not found in TransactionStateManager list")
-                logd("MultiRestore", "Current TransactionStateManager list size: ${TransactionStateManager.getTransactionStateList().size}")
-                TransactionStateManager.getTransactionStateList().forEach { tx ->
-                    logd("MultiRestore", "  Transaction in list: ${tx.transactionId}, type: ${tx.type}, state: ${tx.state}")
-                }
-            }
-
-            var attempts = 0
-            val maxAttempts = 6 // Reduce to 6 attempts (1 minute total: 6 × 10 seconds)
-
-            while (attempts < maxAttempts) {
-                try {
-                    logd("MultiRestore", "Polling attempt ${attempts + 1}/$maxAttempts for transaction $txId")
-                    delay(10000) // Wait 10 seconds between checks
-
-                    val transactionList = TransactionStateManager.getTransactionStateList()
-                    logd("MultiRestore", "Polling: TransactionStateManager list size: ${transactionList.size}")
-
-                    val transaction = transactionList.find {
-                        it.transactionId == txId && it.type == TransactionState.TYPE_ADD_PUBLIC_KEY
-                    }
-
-                    if (transaction != null) {
-                        logd("MultiRestore", "Polling found transaction: ${transaction.transactionId}, state: ${transaction.state}, isSuccess: ${transaction.isSuccess()}")
-                        if (transaction.isSuccess()) {
-                            logd("MultiRestore", "Polling detected successful transaction, triggering syncAccountInfo")
-                            if (currentTxId == txId) {
-                                currentTxId = null
-                                syncAccountInfo()
-                            }
-                            break
-                        } else if (transaction.isFailed()) {
-                            logd("MultiRestore", "Polling detected failed transaction")
-                            break
-                        }
-                    } else {
-                        logd("MultiRestore", "Polling: transaction $txId not found in list")
-                        // Log all transactions for debugging
-                        if (transactionList.isEmpty()) {
-                            logd("MultiRestore", "  Transaction list is empty")
-                        } else {
-                            transactionList.forEachIndexed { index, tx ->
-                                logd("MultiRestore", "  [$index] txId: ${tx.transactionId}, type: ${tx.type}, state: ${tx.state}")
-                            }
-                        }
-                    }
-
-                    attempts++
-                } catch (e: Exception) {
-                    logd("MultiRestore", "Polling error: ${e.message}")
-                    attempts++
-                }
-            }
-
-            if (attempts >= maxAttempts) {
-                logd("MultiRestore", "Polling timeout reached for transaction $txId after $maxAttempts attempts")
-                uiScope {
-                    restoreFailed()
-                }
-            }
-        }
     }
 
     @OptIn(ExperimentalStdlibApi::class)

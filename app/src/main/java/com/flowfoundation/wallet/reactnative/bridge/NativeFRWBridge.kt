@@ -363,7 +363,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 }
 
                 if (txId != null) {
-                    logd("MultiRestore", "Transaction created successfully: $txId")
+                    logd(TAG, "Transaction created successfully: $txId")
                     val transactionState = TransactionState(
                         transactionId = txId,
                         time = System.currentTimeMillis(),
@@ -374,6 +374,8 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                     TransactionStateManager.newTransaction(transactionState)
                     pushBubbleStack(transactionState)
                     TransactionStateWatcher(txId).watch { result ->
+                        logd(TAG, "watch transaction ${result.status}, ${result.execution}, " +
+                          "${result.errorMessage}, ${result.isExecuteFinished()}")
                         when {
                             result.isExecuteFinished() -> {
                                 logd(TAG, "Transaction $txId finished successfully")
@@ -386,7 +388,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                         }
                     }
                 } else {
-                    logd("MultiRestore", "Failed to create transaction - txId is null")
+                    logd(TAG, "Failed to create transaction - txId is null")
                     throw RuntimeException("Failed to create add public key transaction")
                 }
             } catch (e: Exception) {
