@@ -118,54 +118,7 @@ object CryptoProviderManager {
                     KeyCompatibilityManager.getPrivateKeyWithFallback(account.prefix!!, storage)
                 } catch (e: HardwareBackedKeyException) {
                     loge(TAG, "Hardware-backed key detected")
-
-                    // Determine the correct algorithms by checking on-chain keys
-                    var determinedSigningAlgorithm = SigningAlgorithm.ECDSA_P256
-                    var determinedHashingAlgorithm: HashingAlgorithm? = null
-
-                    try {
-                        val accountAddress = account.wallet?.walletAddress()
-                        if (accountAddress != null) {
-                            val onChainAccount = runBlocking { FlowCadenceApi.getAccount(accountAddress) }
-                            val onChainKeys = onChainAccount.keys?.toList() ?: emptyList()
-
-                            // Create temporary AndroidKeystoreCryptoProvider to get public key for matching
-                            val tempProvider = AndroidKeystoreCryptoProvider(e.alias!!, SigningAlgorithm.ECDSA_P256)
-                            val keystorePublicKey = tempProvider.getPublicKey()
-
-                            // Find matching on-chain key to determine algorithms
-                            val matchedKey = onChainKeys.find { onChainKey ->
-                                isKeyMatchRobust("0x$keystorePublicKey", onChainKey.publicKey) && !onChainKey.revoked
-                            }
-
-                            if (matchedKey != null) {
-                                determinedSigningAlgorithm = matchedKey.signingAlgorithm
-                                determinedHashingAlgorithm = matchedKey.hashingAlgorithm
-                                logd(TAG, "  Hardware-backed key matched on-chain: signing=$determinedSigningAlgorithm, hashing=$determinedHashingAlgorithm")
-                            } else {
-                                // Try secp256k1 if P256 didn't match
-                                val tempProviderSecp = AndroidKeystoreCryptoProvider(e.alias, SigningAlgorithm.ECDSA_secp256k1)
-                                val keystorePublicKeySecp = tempProviderSecp.getPublicKey()
-
-                                val matchedKeySecp = onChainKeys.find { onChainKey ->
-                                    isKeyMatchRobust("0x$keystorePublicKeySecp", onChainKey.publicKey) && !onChainKey.revoked
-                                }
-
-                                if (matchedKeySecp != null) {
-                                    determinedSigningAlgorithm = matchedKeySecp.signingAlgorithm
-                                    determinedHashingAlgorithm = matchedKeySecp.hashingAlgorithm
-                                    logd(TAG, "  Hardware-backed key matched on-chain with secp256k1: signing=$determinedSigningAlgorithm, hashing=$determinedHashingAlgorithm")
-                                } else {
-                                    logd(TAG, "  Hardware-backed key: Could not find matching on-chain key, using defaults")
-                                }
-                            }
-                        }
-                    } catch (ex: Exception) {
-                        loge(TAG, "  Hardware-backed key: Error determining algorithms: ${ex.message}, using defaults")
-                    }
-
-                    // Return AndroidKeystoreCryptoProvider directly
-                    return AndroidKeystoreCryptoProvider(e.alias!!, determinedSigningAlgorithm, determinedHashingAlgorithm)
+                    return AndroidKeystoreCryptoProvider(e.prefix!!)
                 }
 
                 if (privateKey == null) {
@@ -276,54 +229,8 @@ object CryptoProviderManager {
                 } catch (e: HardwareBackedKeyException) {
                     loge("CryptoProviderManager", "Hardware-backed key detected for switch account")
                     loge("CryptoProviderManager", "Creating AndroidKeystoreCryptoProvider for hardware-backed key")
-
-                    // Determine the correct algorithms by checking on-chain keys
-                    var determinedSigningAlgorithm = SigningAlgorithm.ECDSA_P256
-                    var determinedHashingAlgorithm: HashingAlgorithm? = null
-
-                    try {
-                        val accountAddress = account.wallet?.walletAddress()
-                        if (accountAddress != null) {
-                            val onChainAccount = runBlocking { FlowCadenceApi.getAccount(accountAddress) }
-                            val onChainKeys = onChainAccount.keys?.toList() ?: emptyList()
-
-                            // Create temporary AndroidKeystoreCryptoProvider to get public key for matching
-                            val tempProvider = AndroidKeystoreCryptoProvider(e.alias!!, SigningAlgorithm.ECDSA_P256)
-                            val keystorePublicKey = tempProvider.getPublicKey()
-
-                            // Find matching on-chain key to determine algorithms
-                            val matchedKey = onChainKeys.find { onChainKey ->
-                                isKeyMatchRobust("0x$keystorePublicKey", onChainKey.publicKey) && !onChainKey.revoked
-                            }
-
-                            if (matchedKey != null) {
-                                determinedSigningAlgorithm = matchedKey.signingAlgorithm
-                                determinedHashingAlgorithm = matchedKey.hashingAlgorithm
-                                logd("CryptoProviderManager", "Switch account hardware-backed key matched on-chain: signing=$determinedSigningAlgorithm, hashing=$determinedHashingAlgorithm")
-                            } else {
-                                // Try secp256k1 if P256 didn't match
-                                val tempProviderSecp = AndroidKeystoreCryptoProvider(e.alias, SigningAlgorithm.ECDSA_secp256k1)
-                                val keystorePublicKeySecp = tempProviderSecp.getPublicKey()
-
-                                val matchedKeySecp = onChainKeys.find { onChainKey ->
-                                    isKeyMatchRobust("0x$keystorePublicKeySecp", onChainKey.publicKey) && !onChainKey.revoked
-                                }
-
-                                if (matchedKeySecp != null) {
-                                    determinedSigningAlgorithm = matchedKeySecp.signingAlgorithm
-                                    determinedHashingAlgorithm = matchedKeySecp.hashingAlgorithm
-                                    logd("CryptoProviderManager", "Switch account hardware-backed key matched on-chain with secp256k1: signing=$determinedSigningAlgorithm, hashing=$determinedHashingAlgorithm")
-                                } else {
-                                    logd("CryptoProviderManager", "Switch account hardware-backed key: Could not find matching on-chain key, using defaults")
-                                }
-                            }
-                        }
-                    } catch (ex: Exception) {
-                        loge("CryptoProviderManager", "Switch account hardware-backed key: Error determining algorithms: ${ex.message}, using defaults")
-                    }
-
                     // Return AndroidKeystoreCryptoProvider directly
-                    return AndroidKeystoreCryptoProvider(e.alias!!, determinedSigningAlgorithm, determinedHashingAlgorithm)
+                    return AndroidKeystoreCryptoProvider(e.prefix!!)
                 }
 
                 if (privateKey == null) {
@@ -410,7 +317,7 @@ object CryptoProviderManager {
                     loge("CryptoProviderManager", "Creating AndroidKeystoreCryptoProvider for hardware-backed key")
 
                     // For LocalSwitchAccount, we use defaults since we don't have wallet address
-                    return AndroidKeystoreCryptoProvider(e.alias!!, SigningAlgorithm.ECDSA_P256, null)
+                    return AndroidKeystoreCryptoProvider(e.prefix!!)
                 }
 
                 if (privateKey == null) {

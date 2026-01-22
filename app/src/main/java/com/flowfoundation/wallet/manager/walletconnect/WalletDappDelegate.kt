@@ -174,8 +174,7 @@ internal class WalletDappDelegate : SignClient.DappDelegate {
 
     private fun login(prefix: String, callback: (isSuccess: Boolean) -> Unit) {
         ioScope {
-            val alias = KeyManager.KEYSTORE_ALIAS_PREFIX + prefix
-            val cryptoProvider = AndroidKeystoreCryptoProvider(alias)
+            val cryptoProvider = AndroidKeystoreCryptoProvider(prefix)
             getFirebaseUid { uid ->
                 if (uid.isNullOrBlank()) {
                     callback.invoke(false)

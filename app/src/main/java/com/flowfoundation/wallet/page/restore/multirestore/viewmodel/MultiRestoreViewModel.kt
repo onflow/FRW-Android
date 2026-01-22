@@ -367,8 +367,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                 val storage = FileSystemStorage(baseDir)
 
                 // Use AndroidKeystoreCryptoProvider
-                val alias = KeyManager.KEYSTORE_ALIAS_PREFIX + KeyManager.getCurrentPrefix()
-                val cryptoProvider = AndroidKeystoreCryptoProvider(alias)
+                val cryptoProvider = AndroidKeystoreCryptoProvider(KeyManager.getCurrentPrefix())
                 val newPublicKey = cryptoProvider.getPublicKey()
 
                 logd("MultiRestore", "Using Keystore key for syncAccountInfo: $newPublicKey")
