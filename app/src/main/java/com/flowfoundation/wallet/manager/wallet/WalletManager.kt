@@ -137,7 +137,6 @@ object WalletManager {
             logd(TAG, "Initializing prefix-based wallet")
 
             // Load the stored private key using the prefix-based ID with backward compatibility
-            val keyId = "prefix_key_${account.prefix}"
             logd(TAG, "Attempting to load private key (with fallback to old storage)")
 
             try {

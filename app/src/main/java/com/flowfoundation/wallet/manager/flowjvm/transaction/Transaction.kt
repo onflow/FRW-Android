@@ -30,9 +30,6 @@ import com.ionspin.kotlin.bignum.integer.BigInteger
 import kotlinx.serialization.ExperimentalSerializationApi
 import org.onflow.flow.infrastructure.getTypeName
 import org.onflow.flow.infrastructure.removeHexPrefix
-import com.flowfoundation.wallet.manager.key.MultiRestoreCryptoProvider
-import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.network.functions.executeHttpFunction
 
 private const val TAG = "Transaction"
@@ -48,29 +45,6 @@ suspend fun sendTransaction(
     // Check if this account requires multi-signature (multi-restore account)
     val walletAddress = transactionBuilder.walletAddress?.toAddress()
       ?: throw RuntimeException("No wallet address specified")
-
-    val currentNetworkName = chainNetWorkString()
-
-    // Find local account instance (same logic as in prepare function)
-    val localAccountInstance = AccountManager.list().find { acc ->
-      val accFlowAddress = acc.getFlowAddress(currentNetworkName, TAG)?.toAddress()
-      accFlowAddress == walletAddress
-    } ?: throw RuntimeException("Could not find local Account instance for address $walletAddress on network $currentNetworkName.")
-
-    val cryptoProvider = CryptoProviderManager.generateAccountCryptoProvider(localAccountInstance)
-      ?: throw RuntimeException("Could not generate CryptoProvider for local account ${localAccountInstance.userInfo.username}")
-
-    // Check if this is a multi-restore account that needs multi-signature
-    if (cryptoProvider is MultiRestoreCryptoProvider) {
-      logd(TAG, "Detected multi-restore account with ${cryptoProvider.getAllProviders().size} providers (total weight: ${cryptoProvider.getKeyWeight()})")
-      logd(TAG, "Routing to multi-signature transaction flow")
-
-      // Use multi-signature transaction flow for multi-restore accounts
-      return sendTransactionWithMultiSignature(
-        providers = cryptoProvider.getAllProviders(),
-        builder = builder // Pass the original builder
-      )
-    }
 
     // Use single-signature transaction flow for regular accounts
     logd(TAG, "Using single-signature transaction flow for regular account")
