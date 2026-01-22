@@ -468,30 +468,6 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                                     setRegistered()
                                     setMultiBackupCreated()
                                     ioScope {
-                                        // The key is already stored, now just set up the multi-restore metadata
-                                        val passwordMap = try {
-                                            val pref = readWalletPassword()
-                                            if (pref.isBlank()) {
-                                                HashMap<String, String>()
-                                            } else {
-                                                Gson().fromJson(pref, object : TypeToken<HashMap<String, String>>() {}.type)
-                                            }
-                                        } catch (e: Exception) {
-                                            HashMap<String, String>()
-                                        }
-
-                                        // Store multi-restore metadata
-                                        passwordMap["multi_restore_count"] = mnemonicList.size.toString()
-                                        passwordMap["multi_restore_address"] = restoreAddress
-                                        passwordMap["multi_restore_completed_time"] = System.currentTimeMillis().toString()
-
-                                        mnemonicList.forEachIndexed { index, mnemonic ->
-                                            passwordMap["multi_restore_$index"] = mnemonic
-                                        }
-
-                                        storeWalletPassword(Gson().toJson(passwordMap))
-                                        logd("MultiRestore", "Stored multi-restore metadata for ${mnemonicList.size} mnemonics with completion time")
-
                                         // Add the account to AccountManager
                                         AccountManager.add(
                                             Account(

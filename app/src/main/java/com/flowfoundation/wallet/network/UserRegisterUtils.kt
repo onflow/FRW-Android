@@ -95,62 +95,17 @@ suspend fun registerOutblock(
                         continuation.resume(false)
                         return@ioScope
                     }
-
+                    logd(TAG, "walletListData: $walletListData")
                     if (walletListData == null) {
                         logd(TAG, "No wallet data found for registered user")
                         continuation.resume(false)
                         return@ioScope
                     }
 
-                    // Now that we have the wallet data with account address, use fetchAccountByAddress
-                    // to populate the wallet SDK with the account details from Flow network
-                    val storage = FileSystemStorage(File(Env.getApp().filesDir, "wallet"))
-                    val keyForWalletSDK = KeyCompatibilityManager.getPrivateKeyWithFallback(prefix, storage)
-                    if (keyForWalletSDK == null) {
-                        logd(TAG, "Failed to retrieve stored private key for Wallet SDK init from both new and old storage.")
-                        continuation.resume(false)
-                        return@ioScope
-                    }
-
-                    val walletForSDK = WalletFactory.createKeyWallet(
-                        keyForWalletSDK,
-                        setOf(ChainId.Mainnet, ChainId.Testnet),
-                        storage
-                    )
-
-                    when (chainNetWorkString()) {
-                        "mainnet" -> ChainId.Mainnet
-                        "testnet" -> ChainId.Testnet
-                        else -> ChainId.Mainnet
-                    }
-
-                    // Use fetchAccountByAddress to populate wallet SDK with account from Flow network
-                    walletListData.wallets?.forEach { walletData ->
-                        walletData.blockchain?.forEach { blockchain ->
-                            try {
-                                val chainIdForBlockchain = when (blockchain.chainId.lowercase()) {
-                                    "mainnet" -> ChainId.Mainnet
-                                    "testnet" -> ChainId.Testnet
-                                    else -> null
-                                }
-                                if (chainIdForBlockchain != null && blockchain.address.isNotBlank()) {
-                                    val address = if (blockchain.address.startsWith("0x")) blockchain.address else "0x${blockchain.address}"
-                                    logd(TAG, "Using fetchAccountByAddress to populate wallet SDK with account $address")
-                                    walletForSDK.fetchAccountByAddress(address, chainIdForBlockchain)
-                                    logd(TAG, "Successfully populated wallet SDK with account from Flow network")
-                                }
-                            } catch (e: Exception) {
-                                logd(TAG, "Warning: Could not fetch account ${blockchain.address} into Wallet SDK: ${e.message}")
-                                // Continue anyway, we have the wallet data from server
-                            }
-                        }
-                    }
-
                     AccountManager.add(
                         Account(
                             userInfo = userInfo,
-                            prefix = prefix, // This prefix matches the one used to store the key in registerServer
-                            wallet = walletListData
+                            prefix = prefix
                         ),
                         firebaseUid()
                     )

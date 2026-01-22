@@ -64,6 +64,11 @@ import com.flowfoundation.wallet.utils.Env.getStorage
 import androidx.core.content.edit
 import com.flow.wallet.KeyManager
 import com.flow.wallet.toFormatString
+import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
+import com.flowfoundation.wallet.manager.flowjvm.transactionByMainWallet
+import com.flowfoundation.wallet.manager.transaction.TransactionStateWatcher
+import com.flowfoundation.wallet.manager.transaction.isExecuteFinished
+import com.flowfoundation.wallet.manager.transaction.isFailed
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.network.model.AccountSignRequest
 import com.flowfoundation.wallet.network.model.AccountKeySignature
@@ -71,6 +76,7 @@ import com.flowfoundation.wallet.network.model.AccountKey
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.generatePrefix
+import org.onflow.flow.infrastructure.Cadence.Companion.uint8
 
 class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSpec(reactContext) {
 
@@ -349,10 +355,56 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 val publicKeyStr = keyPair.public.toFormatString()
                 logd(TAG, "keystoreMigration() - generated new public key: $publicKeyStr")
 
+                val txId = CadenceScript.CADENCE_ADD_PUBLIC_KEY.transactionByMainWallet {
+                    arg { string(publicKeyStr) }
+                    arg { uint8(SigningAlgorithm.ECDSA_P256.cadenceIndex.toUByte()) }
+                    arg { uint8(HashingAlgorithm.SHA2_256.cadenceIndex.toUByte()) }
+                    arg { ufix64Safe(1000) }
+                }
+
+                if (txId != null) {
+                    logd("MultiRestore", "Transaction created successfully: $txId")
+                    val transactionState = TransactionState(
+                        transactionId = txId,
+                        time = System.currentTimeMillis(),
+                        state = TransactionStatus.PENDING.ordinal,
+                        type = TransactionState.TYPE_ADD_PUBLIC_KEY,
+                        data = ""
+                    )
+                    TransactionStateManager.newTransaction(transactionState)
+                    pushBubbleStack(transactionState)
+                    TransactionStateWatcher(txId).watch { result ->
+                        when {
+                            result.isExecuteFinished() -> {
+                                logd(TAG, "Transaction $txId finished successfully")
+                                syncKeystoreInfo(account, newPrefix, publicKeyStr, promise)
+                            }
+                            result.isFailed() -> {
+                                logd(TAG, "Transaction $txId failed")
+                                throw RuntimeException("Failed to create add public key transaction")
+                            }
+                        }
+                    }
+                } else {
+                    logd("MultiRestore", "Failed to create transaction - txId is null")
+                    throw RuntimeException("Failed to create add public key transaction")
+                }
+            } catch (e: Exception) {
+                loge(TAG, "keystoreMigration() failed: ${e.message}")
+                e.printStackTrace()
+                uiScope {
+                    promise.reject("MIGRATION_ERROR", e.message, e)
+                }
+            }
+        }
+    }
+
+    private fun syncKeystoreInfo(account: Account, newPrefix: String, publicKeyStr: String, promise: Promise) {
+        ioScope {
+            try {
                 // 3. Prepare signAccount request
                 val service = retrofit().create(ApiService::class.java)
-                val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
-                    ?: throw IllegalStateException("No crypto provider available")
+                val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: throw IllegalStateException("No crypto provider available")
 
                 val jwt = getFirebaseJwt()
                 val signature = cryptoProvider.getUserSignature(jwt)
@@ -382,8 +434,8 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 val response = service.signAccount(request)
 
                 if (response.status > 400) {
-                     logd(TAG, "keystoreMigration() - failed with status ${response.status}: ${response.message}")
-                     throw IllegalStateException("Sign account failed: ${response.message}")
+                    logd(TAG, "keystoreMigration() - failed with status ${response.status}: ${response.message}")
+                    throw IllegalStateException("Sign account failed: ${response.message}")
                 }
                 logd(TAG, "keystoreMigration() - signAccount success")
 
@@ -409,11 +461,9 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                     promise.resolve(null)
                 }
             } catch (e: Exception) {
-                loge(TAG, "keystoreMigration() failed: ${e.message}")
+                loge(TAG, "syncKeystoreInfo() failed: ${e.message}")
                 e.printStackTrace()
-                uiScope {
-                    promise.reject("MIGRATION_ERROR", e.message, e)
-                }
+                promise.reject("MIGRATION_ERROR", e.message, e)
             }
         }
     }
