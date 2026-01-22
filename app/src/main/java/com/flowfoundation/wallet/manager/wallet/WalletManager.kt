@@ -36,6 +36,7 @@ import java.util.concurrent.atomic.AtomicReference
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.flowfoundation.wallet.manager.account.AccountWalletManager
 import com.flowfoundation.wallet.manager.account.KeyStoreMigrationManager
+import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.rotation.BloctoDetectorService
 import com.flowfoundation.wallet.reactnative.ReactNativeActivity
 import com.flowfoundation.wallet.reactnative.bridge.RNBridge
@@ -475,6 +476,9 @@ object WalletManager {
     }
 
     fun checkKeyRotation(activity: android.app.Activity) {
+        if (AppConfig.checkBloctoKeyRotation().not()) {
+            return
+        }
         val address = wallet()?.walletAddress()
         logd(TAG, "checkKeyRotation() called with address: $address")
 
