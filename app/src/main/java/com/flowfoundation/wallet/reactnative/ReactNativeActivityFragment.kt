@@ -10,6 +10,7 @@ import com.flowfoundation.wallet.base.fragment.BaseFragment
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.wallet.toAddress
+import com.flowfoundation.wallet.utils.isNightMode
 import com.flowfoundation.wallet.utils.logd
 
 /**
@@ -48,9 +49,11 @@ class ReactNativeActivityFragment : BaseFragment() {
         val launchOptions = Bundle().apply {
             val address = WalletManager.selectedWalletAddress().toAddress()
             val network = chainNetWorkString()
+            val isDarkMode = isNightMode(requireActivity())
 
             putString("address", address)
             putString("network", network)
+            putBoolean("isDarkMode", isDarkMode)
 
             // Create initialProps with screen type
             val initialPropsBundle = Bundle().apply {
