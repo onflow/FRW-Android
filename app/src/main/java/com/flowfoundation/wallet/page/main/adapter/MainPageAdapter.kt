@@ -7,12 +7,12 @@ import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.page.nft.nftlist.NFTFragment
 import com.flowfoundation.wallet.page.profile.SettingFragment
 import com.flowfoundation.wallet.page.wallet.WalletFragment
+import com.flowfoundation.wallet.reactnative.ReactNativeActivityFragment
 
 class MainPageAdapter(
     activity: MainActivity
 ) : FragmentStatePagerAdapter(activity.supportFragmentManager) {
-    // Activity tab (index 4) is now handled by React Native, not ViewPager
-    override fun getCount(): Int = 4
+    override fun getCount(): Int = 5
 
     override fun getItem(position: Int): Fragment {
         return when (position) {
@@ -20,6 +20,7 @@ class MainPageAdapter(
             1 -> NFTFragment()
             2 -> ExploreFragment()
             3 -> SettingFragment()
+            4 -> ReactNativeActivityFragment()
             else -> throw IllegalStateException("Unexpected position: $position")
         }
     }

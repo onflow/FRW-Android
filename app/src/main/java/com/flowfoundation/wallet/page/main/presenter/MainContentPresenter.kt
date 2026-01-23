@@ -34,10 +34,8 @@ class MainContentPresenter(
 
     init {
         setupListener()
-        binding.viewPager.offscreenPageLimit = 4
+        binding.viewPager.offscreenPageLimit = 5
         binding.viewPager.adapter = MainPageAdapter(activity)
-
-
     }
 
     suspend fun checkAndShowContent() {
@@ -91,10 +89,7 @@ class MainContentPresenter(
                 R.id.bottom_navigation_nft -> onNavigationItemSelected(1)
                 R.id.bottom_navigation_explore -> onNavigationItemSelected(2)
                 R.id.bottom_navigation_profile -> onNavigationItemSelected(3)
-                R.id.bottom_navigation_activity -> {
-                    // Launch React Native Activity screen instead of native fragment
-                    ReactNativeActivity.launch(activity, RNBridge.ScreenType.ACTIVITY)
-                }
+                R.id.bottom_navigation_activity -> onNavigationItemSelected(4)
             }
             true
         }
