@@ -274,7 +274,7 @@ suspend fun cadenceClaimInboxNft(
 }
 
 suspend fun cadenceQueryMinFlowBalance(): BigDecimal? {
-    val walletAddress = WalletManager.wallet()?.walletAddress() ?: return null
+    val walletAddress = WalletManager.wallet().walletAddress() ?: return null
     logd(TAG, "cadenceQueryMinFlowBalance address:$walletAddress")
     val result = CadenceScript.CADENCE_QUERY_MIN_FLOW_BALANCE.executeCadence {
         arg { Cadence.address(walletAddress) }
@@ -317,7 +317,7 @@ suspend fun cadenceQueryEVMAddress(): String? {
 }
 
 suspend fun cadenceQueryCOATokenBalance(): BigDecimal? {
-    val walletAddress = WalletManager.wallet()?.walletAddress() ?: return null
+    val walletAddress = WalletManager.wallet().walletAddress() ?: return null
     logd(TAG, "cadenceQueryCOATokenBalance address:$walletAddress")
     val result = CadenceScript.CADENCE_QUERY_COA_FLOW_BALANCE.executeCadence {
         arg { Cadence.address(walletAddress) }

@@ -61,11 +61,11 @@ class AddressBookPersonPresenter(
                 avatarView.setVisible(!avatar.isNullOrEmpty(), invisible = true)
                 avatarView.loadAvatar(avatar.orEmpty())
                 namePrefixView.setVisible(avatar.isNullOrEmpty())
-            } else if (address == WalletManager.wallet()?.walletAddress() || EVMWalletManager
+            } else if (address == WalletManager.wallet().walletAddress() || EVMWalletManager
                     .isEVMWalletAddress(address)
             ) {
                 val emojiInfo =
-                    AccountEmojiManager.getEmojiByAddress(WalletManager.wallet()?.walletAddress())
+                    AccountEmojiManager.getEmojiByAddress(WalletManager.wallet().walletAddress())
                 namePrefixView.text = Emoji.getEmojiById(emojiInfo.emojiId)
                 namePrefixView.backgroundTintList =
                     ColorStateList.valueOf(Emoji.getEmojiColorRes(emojiInfo.emojiId))

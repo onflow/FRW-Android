@@ -75,7 +75,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
     val addressListLiveData = MutableLiveData<List<KeystoreAddress>>()
     val optionChangeLiveData = MutableLiveData<KeyStoreOption>()
     val loadingLiveData = MutableLiveData<Boolean>()
-    
+
     /**
      * LiveData for keystore format errors - when true, shows the red error message with Extension download link
      * For invalid JSON or invalid keystore format only
@@ -101,19 +101,19 @@ class KeyStoreRestoreViewModel : ViewModel() {
             val hasVersion = jsonObj.has("version") && jsonObj.getInt("version") == 3
             val hasId = jsonObj.has("id")
             val hasCrypto = jsonObj.has("crypto") || jsonObj.has("Crypto") // Some keystores use capital C
-            
+
             if (!hasCrypto) {
                 logd("KeyStoreRestoreViewModel", "Keystore validation failed: missing 'crypto' field")
                 return false
             }
-            
+
             val crypto = if (jsonObj.has("crypto")) jsonObj.getJSONObject("crypto") else jsonObj.getJSONObject("Crypto")
             val hasCiphertext = crypto.has("ciphertext")
             val hasCipherparams = crypto.has("cipherparams")
             val hasKdf = crypto.has("kdf")
             val hasKdfparams = crypto.has("kdfparams")
             val hasMac = crypto.has("mac")
-            
+
             val isValid = hasVersion && hasId && hasCiphertext && hasCipherparams && hasKdf && hasKdfparams && hasMac
             if (!isValid) {
                 logd("KeyStoreRestoreViewModel", "Keystore validation failed: version=$hasVersion, id=$hasId, ciphertext=$hasCiphertext, cipherparams=$hasCipherparams, kdf=$hasKdf, kdfparams=$hasKdfparams, mac=$hasMac")
@@ -139,10 +139,10 @@ class KeyStoreRestoreViewModel : ViewModel() {
     fun importKeyStore(json: String, password: String, address: String) {
         loadingLiveData.postValue(true)
         restoreType = RestoreType.KEYSTORE
-        
+
         logd("KeyStoreRestoreViewModel", "Starting keystore import")
         logd("KeyStoreRestoreViewModel", "JSON length: ${json.length}, first 200 chars: ${json.take(200)}")
-        
+
         // Pre-validate keystore format before passing to Trust Wallet Core
         if (!isValidKeystoreFormat(json)) {
             logd("KeyStoreRestoreViewModel", "Pre-validation failed: invalid keystore format")
@@ -150,12 +150,12 @@ class KeyStoreRestoreViewModel : ViewModel() {
             // Show the red error message with Extension download link
             keystoreFormatErrorLiveData.postValue(true)
             ErrorReporter.reportWithMixpanel(
-                BackupError.KEYSTORE_RESTORE_FAILED, 
+                BackupError.KEYSTORE_RESTORE_FAILED,
                 IllegalArgumentException("Invalid keystore JSON format - missing required fields")
             )
             return
         }
-        
+
         ioScope {
             try {
                 val storage = getStorage()
@@ -256,7 +256,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
     private fun handleKeystoreError(errorType: KeystoreImportError, details: String) {
         logd("KeyStoreRestoreViewModel", "Keystore error: $errorType - $details")
         loadingLiveData.postValue(false)
-        
+
         when (errorType) {
             KeystoreImportError.INVALID_JSON, KeystoreImportError.INVALID_KEYSTORE -> {
                 // For invalid JSON or keystore format, show the red error message with Extension download link
@@ -271,9 +271,9 @@ class KeyStoreRestoreViewModel : ViewModel() {
                 toast(msgRes = R.string.restore_failed)
             }
         }
-        
+
         ErrorReporter.reportWithMixpanel(
-            BackupError.KEYSTORE_RESTORE_FAILED, 
+            BackupError.KEYSTORE_RESTORE_FAILED,
             IllegalArgumentException("$errorType: $details")
         )
     }
@@ -443,7 +443,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
         publicKey: String
     ): Boolean {
         logd("KeyStoreRestoreViewModel", "Checking if key matches account: $account")
-        
+
         // Normalize the local public key for comparison
         val localPubKeyHex = publicKey.removePrefix("0x").lowercase()
         val localPubKeyStripped = if (localPubKeyHex.startsWith("04") && localPubKeyHex.length == 130) {
@@ -451,7 +451,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
         } else {
             localPubKeyHex
         }
-        
+
         val accountKey = account.keys?.lastOrNull { acctKey ->
             val acctPubKeyHex = acctKey.publicKey.removePrefix("0x").lowercase()
             acctPubKeyHex == localPubKeyHex || acctPubKeyHex == localPubKeyStripped
@@ -491,7 +491,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
         // Normalize public keys for comparison
         val k1ResponsePubKey = k1Response.publicKey.removePrefix("0x").lowercase()
         val k1LocalPubKey = k1PublicKey.removePrefix("0x").lowercase()
-        
+
         if (k1ResponsePubKey == k1LocalPubKey && k1Response.accounts.isNotEmpty()) {
             logd("KeyStoreRestoreViewModel", "Found K1 accounts: ${k1Response.accounts}")
             addressList.addAll(k1Response.accounts.map {
@@ -514,7 +514,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
         // Normalize public keys for comparison
         val p1ResponsePubKey = p1Response.publicKey.removePrefix("0x").lowercase()
         val p1LocalPubKey = p1PublicKey.removePrefix("0x").lowercase()
-        
+
         if (p1ResponsePubKey == p1LocalPubKey && p1Response.accounts.isNotEmpty()) {
             logd("KeyStoreRestoreViewModel", "Found P256 accounts: ${p1Response.accounts}")
             addressList.addAll(p1Response.accounts.map {
@@ -564,7 +564,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
                     // We return true here to indicate that a login attempt has been initiated.
                     // The success/failure of that login is handled by loginWithPrivateKey's own callback.
                     loginWithPrivateKey(privateKey, publicKey, signAlgo) { isLoginSuccess ->
-                        // This callback is primarily for any specific actions needed *immediately after* 
+                        // This callback is primarily for any specific actions needed *immediately after*
                         // loginWithPrivateKey completes, if checkIsLogin itself needed to do more.
                         // In the current structure, loginWithPrivateKey handles navigation, so this callback here
                         // might not need to do much more than log.
@@ -634,7 +634,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
             toast(msgRes = R.string.login_failure)
             return
         }
-        if (WalletManager.wallet()?.walletAddress() == currentKeyStoreAddress?.address) {
+        if (WalletManager.wallet().walletAddress() == currentKeyStoreAddress?.address) {
             toast(msgRes = R.string.wallet_already_logged_in, duration = Toast.LENGTH_LONG)
             val activity = BaseActivity.getCurrentActivity() ?: return
             activity.finish()
@@ -662,7 +662,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
                 val currentKey = currentKeyStoreAddress?.run {
                     val flowAccount = FlowCadenceApi.getAccount(this.address)
                     logd("KeyStoreRestoreViewModel", "Got Flow account, keys count: ${flowAccount.keys?.size}")
-                    
+
                     // Normalize the local public key for comparison
                     val localPubKeyHex = publicKey.removePrefix("0x").lowercase()
                     val localPubKeyStripped = if (localPubKeyHex.startsWith("04") && localPubKeyHex.length == 130) {
@@ -670,10 +670,10 @@ class KeyStoreRestoreViewModel : ViewModel() {
                     } else {
                         localPubKeyHex
                     }
-                    
+
                     logd("KeyStoreRestoreViewModel", "Comparing keys - Local public key (normalized): $localPubKeyHex")
                     logd("KeyStoreRestoreViewModel", "Comparing keys - Local public key (stripped): $localPubKeyStripped")
-                    
+
                     flowAccount.keys?.find { acctKey ->
                         val acctPubKeyHex = acctKey.publicKey.removePrefix("0x").lowercase()
                         val isMatch = acctPubKeyHex == localPubKeyHex || acctPubKeyHex == localPubKeyStripped
@@ -944,9 +944,9 @@ class KeyStoreRestoreViewModel : ViewModel() {
 
                                         logd("KeyStoreRestoreViewModel", "Creating KeystoreAddress with: address=$finalWalletAddress, keyId=$determinedKeyId, signAlgo=$determinedSignAlgo, hashAlgo=$determinedHashAlgo")
                                         val keystoreAddress = KeystoreAddress(
-                                            address = finalWalletAddress, 
+                                            address = finalWalletAddress,
                                             publicKey = formattedPublicKey,
-                                            privateKey = privateKey, 
+                                            privateKey = privateKey,
                                             keyId = determinedKeyId,
                                             weight = determinedWeight,
                                             hashAlgo = determinedHashAlgo,
@@ -968,23 +968,23 @@ class KeyStoreRestoreViewModel : ViewModel() {
 
                                     } catch (e: Exception) {
                                         logd("KeyStoreRestoreViewModel", "Error during post-login data processing: ${e.message}")
-                                        loge(e) 
-                                        ErrorReporter.reportWithMixpanel(BackupError.RESTORE_LOGIN_FAILED, e) 
+                                        loge(e)
+                                        ErrorReporter.reportWithMixpanel(BackupError.RESTORE_LOGIN_FAILED, e)
                                         // accountSuccessfullyAdded remains false
                                     }
 
                                     if (accountSuccessfullyAdded) {
-                                        delay(500) 
+                                        delay(500)
                                         loadingLiveData.postValue(false)
                                         val activity = BaseActivity.getCurrentActivity()
                                         if (activity != null) {
                                             MainActivity.relaunch(activity, clearTop = true)
                                         }
-                                        loginProcessCallback.invoke(true) 
+                                        loginProcessCallback.invoke(true)
                                     } else {
                                         loadingLiveData.postValue(false)
-                                        toast(msgRes = R.string.login_failure) 
-                                        loginProcessCallback.invoke(false) 
+                                        toast(msgRes = R.string.login_failure)
+                                        loginProcessCallback.invoke(false)
                                     }
                                 }
                             } else {
@@ -1008,7 +1008,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
     }
 
     private fun loginWithKeyStoreAddress(flowAccountKey: AccountPublicKey, keystoreAddress: KeystoreAddress) {
-        if (WalletManager.wallet()?.walletAddress() == keystoreAddress.address) {
+        if (WalletManager.wallet().walletAddress() == keystoreAddress.address) {
             toast(msgRes = R.string.wallet_already_logged_in, duration = Toast.LENGTH_LONG)
             val activity = BaseActivity.getCurrentActivity() ?: return
             activity.finish()
@@ -1125,9 +1125,9 @@ class KeyStoreRestoreViewModel : ViewModel() {
     ): String {
         logd("KeyStoreRestoreViewModel", "Generating signature using wallet module PrivateKey")
         logd("KeyStoreRestoreViewModel", "Hash algorithm: $hashAlgo, Sign algorithm: $signAlgo")
-        
+
         val storage = getStorage()
-        
+
         // Create PrivateKey instance from wallet module
         val key = PrivateKey.create(storage).apply {
             val keyBytes = privateKey.hexToBytes()
@@ -1139,12 +1139,12 @@ class KeyStoreRestoreViewModel : ViewModel() {
         val domainTagBytes = DomainTag.User.bytes
         val jwtBytes = jwt.encodeToByteArray()
         val dataToSign = domainTagBytes + jwtBytes
-        
+
         logd("KeyStoreRestoreViewModel", "Data to sign length: ${dataToSign.size}")
-        
+
         // Sign using the wallet module's signing method
         val signatureBytes = key.sign(dataToSign, signAlgo, hashAlgo)
-        
+
         // Remove recovery ID if present (wallet module includes it, but server expects standard 64-byte signature)
         val finalSignatureBytes = if (signatureBytes.size == 65) {
             logd("KeyStoreRestoreViewModel", "Removing recovery ID from 65-byte signature")
@@ -1153,12 +1153,12 @@ class KeyStoreRestoreViewModel : ViewModel() {
             logd("KeyStoreRestoreViewModel", "Using signature as-is (${signatureBytes.size} bytes)")
             signatureBytes
         }
-        
+
         val signature = finalSignatureBytes.joinToString("") { "%02x".format(it) }
-        
+
         logd("KeyStoreRestoreViewModel", "Generated signature: $signature")
         logd("KeyStoreRestoreViewModel", "Signature length: ${signature.length}")
-        
+
         return signature
     }
 }

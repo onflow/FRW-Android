@@ -139,7 +139,7 @@ fun isSelectedWalletAddress(address: String?): Boolean {
  * Generate WalletAccount model from address, following the same logic as getSelectedAccount
  */
 fun createWalletAccountFromAddress(address: String): RNBridge.WalletAccount {
-    val mainAddress = WalletManager.wallet()?.walletAddress()
+    val mainAddress = WalletManager.wallet().walletAddress()
 
     // Determine account type based on address using utility methods
     val accountType = when {

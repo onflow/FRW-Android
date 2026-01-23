@@ -58,7 +58,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
     private var isFlowCoin = false
     private var moveFromAddress: String = WalletManager.selectedWalletAddress()
     private var moveToAddress: String = if (EVMWalletManager.isEVMWalletAddress(moveFromAddress)) {
-        WalletManager.wallet()?.walletAddress().orEmpty()
+        WalletManager.wallet().walletAddress().orEmpty()
     } else {
         EVMWalletManager.getEVMAddress().orEmpty()
     }
@@ -132,7 +132,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
     }
 
     private fun getEligibleAccounts(): List<String> {
-        val flowAddress = WalletManager.wallet()?.walletAddress().orEmpty()
+        val flowAddress = WalletManager.wallet().walletAddress().orEmpty()
         val childAccounts = WalletManager.childAccountList(flowAddress)
             ?.get()
             ?.map { it.address } ?: emptyList()
@@ -155,7 +155,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
     private fun setupViews() {
         // Initialize addresses based on whether EVM is selected
         moveToAddress = if (EVMWalletManager.isEVMWalletAddress(moveFromAddress)) {
-            WalletManager.wallet()?.walletAddress().orEmpty()
+            WalletManager.wallet().walletAddress().orEmpty()
         } else {
             EVMWalletManager.getEVMAddress().orEmpty()
         }
@@ -213,7 +213,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                         moveFromAddress = selected
                         // Update to address based on new from address
                         moveToAddress = if (EVMWalletManager.isEVMWalletAddress(selected)) {
-                            WalletManager.wallet()?.walletAddress().orEmpty()
+                            WalletManager.wallet().walletAddress().orEmpty()
                         } else {
                             EVMWalletManager.getEVMAddress().orEmpty()
                         }
@@ -359,7 +359,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
             return
         }
         binding.btnMove.setProgressVisible(true)
-        
+
         ioScope {
             val amount = binding.etAmount.text.ifBlank { "0" }.toString().toSafeDecimal()
             val token = currentToken

@@ -169,7 +169,7 @@ fun sendEthereumTransaction(transaction: EvmTransaction, callback: (txHash: Stri
 private fun evmTransactionSigned(txId: String, isSuccess: Boolean) {
     MixpanelManager.evmTransactionSigned(
         txId = txId,
-        flowAddress = WalletManager.wallet()?.walletAddress().orEmpty(),
+        flowAddress = WalletManager.wallet().walletAddress().orEmpty(),
         evmAddress = EVMWalletManager.getEVMAddress().orEmpty(),
         isSuccess = isSuccess
     )
@@ -194,7 +194,7 @@ fun refreshBalance(value: Float) {
 
 suspend fun signTypedData(data: ByteArray): String {
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return ""
-    val address = WalletManager.wallet()?.walletAddress() ?: return ""
+    val address = WalletManager.wallet().walletAddress() ?: return ""
     val flowAddress = FlowAddress(address)
     val keyIndex = flowAddress.currentKeyId(cryptoProvider.getPublicKey())
 
@@ -213,7 +213,7 @@ suspend fun signTypedData(data: ByteArray): String {
 
 suspend fun signEthereumMessage(message: String): String {
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return ""
-    val address = WalletManager.wallet()?.walletAddress() ?: return ""
+    val address = WalletManager.wallet().walletAddress() ?: return ""
     val flowAddress = FlowAddress(address)
     val keyIndex = flowAddress.currentKeyId(cryptoProvider.getPublicKey())
 

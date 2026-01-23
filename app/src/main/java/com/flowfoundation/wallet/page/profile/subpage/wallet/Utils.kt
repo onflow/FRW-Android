@@ -14,20 +14,20 @@ import org.onflow.flow.infrastructure.Cadence
 
 fun queryStorageInfo() {
     ioScope {
-        val address = WalletManager.wallet()?.walletAddress()
+        val address = WalletManager.wallet().walletAddress()
         if (address.isNullOrEmpty()) {
             return@ioScope
         }
-        
+
         var retryCount = 0
         val maxRetries = 3
-        
+
         while (retryCount <= maxRetries) {
             try {
                 val response = CadenceScript.CADENCE_QUERY_STORAGE_INFO.executeCadence {
                     arg { Cadence.address(address) }
                 }?.decode<StorageInfo>()
-                
+
                 if (response == null) {
                     if (retryCount < maxRetries) {
                         retryCount++
@@ -39,14 +39,14 @@ fun queryStorageInfo() {
                         return@ioScope
                     }
                 }
-                
+
                 storageInfoCache().cache(response)
                 logd("StorageInfo", "Storage info successfully cached")
                 return@ioScope
-                
+
             } catch (e: Exception) {
                 logd("StorageInfo", "Error querying storage info (attempt ${retryCount + 1}): ${e.message}")
-                
+
                 if (retryCount < maxRetries) {
                     retryCount++
                     val delayMs = 2000L * retryCount // 2s, 4s, 6s

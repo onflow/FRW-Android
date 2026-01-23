@@ -31,7 +31,7 @@ object AccountInfoManager {
     fun refreshAccountInfo() {
         ioScope {
             try {
-                val walletAddress = WalletManager.wallet()?.walletAddress() ?: return@ioScope
+                val walletAddress = WalletManager.wallet().walletAddress() ?: return@ioScope
 
                 val result = fetchOnChainAccountInfo(walletAddress)
 

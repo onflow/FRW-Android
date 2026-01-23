@@ -60,7 +60,7 @@ fun instabugInitialize(application: Application) {
             report.setUserAttribute("uid", it)
         }
         report.setUserAttribute("username", AccountManager.userInfo()?.username.orEmpty())
-        report.setUserAttribute("FlowAccount", WalletManager.wallet()?.walletAddress().orEmpty())
+        report.setUserAttribute("FlowAccount", WalletManager.wallet().walletAddress().orEmpty())
         report.setUserAttribute("SelectedAccount", WalletManager.selectedWalletAddress())
         val childAccounts = WalletManager.childAccountList()?.get()?.map { it.address } ?: emptyList()
         if (childAccounts.isNotEmpty())

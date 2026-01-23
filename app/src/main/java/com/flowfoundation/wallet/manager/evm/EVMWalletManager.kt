@@ -287,7 +287,7 @@ object EVMWalletManager {
             } else {
                 cadenceBridgeNFTFromEvm(nft.getNFTIdentifier(), id)
             }
-            val parentAddress = WalletManager.wallet()?.walletAddress().orEmpty()
+            val parentAddress = WalletManager.wallet().walletAddress().orEmpty()
             MixpanelManager.transferNFT(
                 if (isMoveToEVM) parentAddress else getEVMAddress().orEmpty(),
                 if (isMoveToEVM) getEVMAddress().orEmpty() else parentAddress,
@@ -353,7 +353,7 @@ object EVMWalletManager {
                 } else {
                     cadenceBridgeNFTListFromEvm(nftIdentifier, idList)
                 }
-                val parentAddress = WalletManager.wallet()?.walletAddress().orEmpty()
+                val parentAddress = WalletManager.wallet().walletAddress().orEmpty()
                 MixpanelManager.transferNFT(
                     if (isMoveToEVM) parentAddress else getEVMAddress().orEmpty(),
                     if (isMoveToEVM) getEVMAddress().orEmpty() else parentAddress,

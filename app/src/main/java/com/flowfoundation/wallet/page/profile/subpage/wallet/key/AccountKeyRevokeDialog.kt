@@ -50,7 +50,7 @@ class AccountKeyRevokeDialog : BottomSheetDialogFragment() {
                 return@ioScope
             }
             val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return@ioScope
-            val address = WalletManager.wallet()?.walletAddress() ?: return@ioScope
+            val address = WalletManager.wallet().walletAddress() ?: return@ioScope
             val flowAddress = FlowAddress(address)
             val keyIndex = flowAddress.currentKeyId(cryptoProvider.getPublicKey())
             if (keyIndex == indexId) {

@@ -310,7 +310,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         logd(TAG, "signRotationRequest() called - address: $address, signatureData: $signatureData")
         ioScope {
             try {
-                val currentAddress = WalletManager.wallet()?.walletAddress() ?: ""
+                val currentAddress = WalletManager.wallet().walletAddress() ?: ""
                 if (currentAddress != address) {
                     throw IllegalArgumentException("Address mismatch: expected $address, got $currentAddress")
                 }
@@ -560,7 +560,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
 
                 // Get main wallet address - for hardware-backed keys, wallet() returns null,
                 // so we need to use selectedWalletAddress() as fallback
-                var mainAddress = WalletManager.wallet()?.walletAddress()
+                var mainAddress = WalletManager.wallet().walletAddress()
                 if (mainAddress.isNullOrEmpty()) {
                     // Hardware-backed key fallback: use the selected address
                     mainAddress = WalletManager.selectedWalletAddress()
@@ -685,7 +685,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
     override fun getSignKeyIndex(): Double {
         return try {
             // Use the same logic as getWalletAccounts() for consistency
-            var address = WalletManager.wallet()?.walletAddress()
+            var address = WalletManager.wallet().walletAddress()
             if (address.isNullOrEmpty()) {
                 // Hardware-backed key fallback: use the selected address
                 address = WalletManager.selectedWalletAddress()
@@ -757,7 +757,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 logd(TAG, "getSelectedAccount() - selected address: $selectedAddress")
 
                 // Determine account type based on address using utility methods
-                val mainAddress = WalletManager.wallet()?.walletAddress()
+                val mainAddress = WalletManager.wallet().walletAddress()
 
                 val accountType = when {
                     EVMWalletManager.isEVMWalletAddress(selectedAddress) -> RNBridge.AccountType.EVM

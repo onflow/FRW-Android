@@ -72,7 +72,7 @@ class DrawerLayoutPresenter(
     private val activity by lazy { findActivity(drawer) as FragmentActivity }
     private var isUpdatingWallet = false
     private val walletUpdateLock = Object()
-    
+
     private var lastRefreshTime = 0L
     private var refreshJob: Job? = null
     private val refreshDebounceMs = 1000L // 1 second debounce
@@ -120,12 +120,12 @@ class DrawerLayoutPresenter(
 
         bindData()
         logd(TAG, "Initial wallet list refresh")
-        
+
         WalletManager.onWalletReady {
             logd(TAG, "Wallet is ready, scheduling debounced refresh")
             scheduleDeboucedRefresh(true)
             uiScope {
-                val address = WalletManager.wallet()?.walletAddress()
+                val address = WalletManager.wallet().walletAddress()
                 val lockMode = if (address.isNullOrBlank()) DrawerLayout.LOCK_MODE_LOCKED_CLOSED else DrawerLayout.LOCK_MODE_UNLOCKED
                 logd(TAG, "Updating drawer lock mode to: $lockMode after wallet ready")
                 drawer.setDrawerLockMode(lockMode)
@@ -141,16 +141,16 @@ class DrawerLayoutPresenter(
     private fun scheduleDeboucedRefresh(refreshBalance: Boolean = false) {
         synchronized(refreshLock) {
             val currentTime = System.currentTimeMillis()
-            
+
             // If we're already refreshing or too soon since last refresh, skip
             if (isRefreshing || (currentTime - lastRefreshTime) < refreshDebounceMs) {
                 logd(TAG, "Skipping refresh - too frequent or already refreshing")
                 return
             }
-            
+
             // Cancel any pending refresh
             refreshJob?.cancel()
-            
+
             refreshJob = ioScope {
                 try {
                     isRefreshing = true
@@ -214,7 +214,7 @@ class DrawerLayoutPresenter(
         ioScope {
             val userInfo = AccountManager.userInfo()
             logd(TAG, "User info: ${userInfo?.nickname}, avatar: ${userInfo?.avatar}")
-            
+
             uiScope {
                 with(binding) {
                     nickNameView.text = userInfo?.nickname ?: ""
@@ -270,13 +270,13 @@ class DrawerLayoutPresenter(
             logd(TAG, "Drawer opened")
             bindData()
             bindEVMInfo()
-            
+
             // Debug the current state before refresh
             binding.debugDrawerAccounts()
-            
+
             logd(TAG, "Drawer opened, scheduling immediate refresh (not just balance)")
             scheduleDeboucedRefresh(refreshBalance = false)
-            
+
             // Also try to immediately set up accounts if we have the data
             ioScope {
                 try {
@@ -286,7 +286,7 @@ class DrawerLayoutPresenter(
                     logd(TAG, "UserInfo available: ${userInfo != null}")
                     logd(TAG, "Wallet available: ${wallet != null}")
                     logd(TAG, "Wallet address: ${wallet?.walletAddress()}")
-                    
+
                     if (userInfo != null) {
                         if (wallet != null) {
                             logd(TAG, "Setting up accounts immediately on drawer open with wallet")
@@ -337,7 +337,7 @@ class DrawerLayoutPresenter(
         accounts.forEach { account ->
             logd(TAG, "Child account: ${account.address}, name: ${account.name}")
         }
-        
+
         if (accounts.isNotEmpty()) {
             logd(TAG, "Child accounts available, scheduling debounced refresh")
             scheduleDeboucedRefresh(refreshBalance = false)
@@ -366,25 +366,25 @@ class DrawerLayoutPresenter(
                     logd(TAG, "Starting wallet update process")
                     // Update the wallet first
                     WalletManager.updateWallet(wallet)
-                    
+
                     // Wait a short moment for the wallet to be initialized
                     var retryCount = 0
                     var currentWallet = WalletManager.wallet()
-                    
+
                     while (currentWallet == null && retryCount < 3) {
                         logd(TAG, "Waiting for wallet initialization, attempt ${retryCount + 1}")
                         kotlinx.coroutines.delay(100)
                         currentWallet = WalletManager.wallet()
                         retryCount++
                     }
-                    
+
                     uiScope {
                         if (currentWallet != null) {
                             logd(TAG, "Wallet initialized successfully with address: ${currentWallet.walletAddress()}")
                             val lockMode = DrawerLayout.LOCK_MODE_UNLOCKED
                             logd(TAG, "Updating drawer lock mode to: $lockMode after wallet update")
                             drawer.setDrawerLockMode(lockMode)
-                            
+
                             logd(TAG, "Wallet updated, scheduling debounced refresh")
                             scheduleDeboucedRefresh(refreshBalance = true)
                         } else {

@@ -136,7 +136,7 @@ object StakingManager {
     }
 
     private suspend fun queryStakingInfo(): StakingInfo? {
-        val address = WalletManager.wallet()?.walletAddress() ?: return null
+        val address = WalletManager.wallet().walletAddress() ?: return null
 
         logv(TAG, "queryStakingInfo ")
         return runCatching {
@@ -189,7 +189,7 @@ suspend fun createStakingDelegatorId(provider: StakingProvider, amount: BigDecim
                 TransactionStateWatcher(txId!!).watch { result ->
                     if (result.isExecuteFinished()) {
                         MixpanelManager.delegationCreated(
-                            WalletManager.wallet()?.walletAddress().orEmpty(),
+                            WalletManager.wallet().walletAddress().orEmpty(),
                             provider.id,
                             amount.toString()
                         )

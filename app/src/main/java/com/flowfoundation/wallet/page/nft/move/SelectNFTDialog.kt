@@ -110,7 +110,7 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                     return@setOnClickListener
                 }
                 btnMove.setProgressVisible(true)
-                
+
                 ioScope {
                     viewModel.moveSelectedNFT(layoutFromAccount.getAccountAddress(), layoutToAccount.getAccountAddress()) {
                         isSuccess ->
@@ -259,12 +259,12 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
 
 
     private val initialFromAddress = WalletManager.selectedWalletAddress()
-    private var moveToAddress: String = WalletManager.wallet()?.walletAddress().orEmpty()
+    private var moveToAddress: String = WalletManager.wallet().walletAddress().orEmpty()
 
 
     private fun configureFromAccount() {
         with(binding) {
-            val walletAddress = WalletManager.wallet()?.walletAddress() ?: return@with
+            val walletAddress = WalletManager.wallet().walletAddress() ?: return@with
             val allAccounts = mutableSetOf<String>().apply {
                 add(walletAddress)
                 WalletManager.childAccountList(walletAddress)
@@ -317,7 +317,7 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
         with(binding) {
             // Build eligible list of To accounts based on current wallet state.
             val eligibleList = mutableListOf<String>()
-            val walletAddress = WalletManager.wallet()?.walletAddress() ?: return@with
+            val walletAddress = WalletManager.wallet().walletAddress() ?: return@with
 
             // Only add the parent's address if it's not the current From.
             if (walletAddress != moveFromAddress) {

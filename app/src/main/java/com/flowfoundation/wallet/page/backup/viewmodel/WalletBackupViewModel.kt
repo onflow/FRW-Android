@@ -60,7 +60,7 @@ class WalletBackupViewModel : ViewModel(), OnTransactionStateChange {
                     it.backupInfo != null && it.backupInfo.type >= 0
                 }
                 logd(TAG, "Filtered backup key list size: ${backupKeyList?.size}")
-                
+
                 // Log each backup key found
                 backupKeyList?.forEachIndexed { index, keyInfo ->
                     logd(TAG, "  [$index] Backup: type=${keyInfo.backupInfo?.type}, name=${keyInfo.backupInfo?.name}, pubKey=${keyInfo.pubKey.publicKey}")
@@ -75,7 +75,7 @@ class WalletBackupViewModel : ViewModel(), OnTransactionStateChange {
                 }
 
                 val account = FlowAddress(
-                    WalletManager.wallet()?.walletAddress().orEmpty()
+                    WalletManager.wallet().walletAddress().orEmpty()
                 ).lastBlockAccount()
                 val currentKey = CryptoProviderManager.getCurrentCryptoProvider()?.getPublicKey()
                 val keys = account.keys ?: emptyList()
@@ -97,7 +97,7 @@ class WalletBackupViewModel : ViewModel(), OnTransactionStateChange {
                             // Normalize public keys for comparison
                             val infoPubKey = info.pubKey.publicKey.removePrefix("0x").lowercase()
                             val currentKeyNormalized = currentKey?.removePrefix("0x")?.lowercase()
-                            
+
                             BackupKey(
                                 matchingKey.index.toInt(),
                                 info,
@@ -155,7 +155,7 @@ class WalletBackupViewModel : ViewModel(), OnTransactionStateChange {
                 } ?: emptyList()
 
                 val account = FlowAddress(
-                    WalletManager.wallet()?.walletAddress().orEmpty()
+                    WalletManager.wallet().walletAddress().orEmpty()
                 ).lastBlockAccount()
                 val keys = account.keys ?: emptyList()
                 val deviceList = mutableListOf<DeviceKeyModel>()

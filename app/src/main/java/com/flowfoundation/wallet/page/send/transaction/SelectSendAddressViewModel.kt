@@ -57,7 +57,7 @@ class SelectSendAddressViewModel : ViewModel() {
 
     private fun loadAccounts() {
         viewModelIOScope(this) {
-            val parentAddress = WalletManager.wallet()?.walletAddress() ?: return@viewModelIOScope
+            val parentAddress = WalletManager.wallet().walletAddress() ?: return@viewModelIOScope
             val accountList = mutableListOf<Any>()
             accountList.add(AddressBookAccountModel(parentAddress))
             val linkedAccounts = WalletManager.childAccountList(parentAddress)?.get()?.map{

@@ -57,7 +57,7 @@ class FclMessageHandler(
 
     private fun wallet(): String {
         // Try getting from WalletManager first
-        val walletAddress = WalletManager.wallet()?.walletAddress().orEmpty()
+        val walletAddress = WalletManager.wallet().walletAddress().orEmpty()
         if (walletAddress.isNotBlank()) {
             logd(TAG, "Got wallet address from WalletManager: '$walletAddress'")
             return walletAddress

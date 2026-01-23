@@ -883,7 +883,3 @@ fun Wallet?.walletAddress(): String? {
     logd("WalletManager", "No wallet address available")
     return null
 }
-
-fun WalletListData.walletAddress(): String? {
-    return wallet()?.address()?.toAddress()
-}

@@ -36,6 +36,7 @@ import com.flowfoundation.wallet.utils.ioScope
 import org.onflow.flow.models.FlowAddress
 import com.flow.wallet.wallet.KeyWallet
 import com.flow.wallet.wallet.WalletFactory
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.utils.Env.getStorage
 import org.onflow.flow.ChainId
 import java.io.File
@@ -190,16 +191,16 @@ class BackupCompletedFragment : Fragment() {
         )
         val backupProvider = createBackupCryptoProvider(seedPhraseKey)
 
-        val blockAccount = FlowAddress(WalletManager.wallet()?.accounts?.values?.flatten()?.firstOrNull()?.address.orEmpty()).lastBlockAccount()
-        
+        val blockAccount = FlowAddress(WalletManager.wallet().walletAddress().orEmpty()).lastBlockAccount()
+
         // Normalize public keys for comparison - remove prefixes and convert to lowercase
         val backupPubKey = backupProvider.getPublicKey().removePrefix("0x").removePrefix("04").lowercase()
-        
+
         isRecoveryPhraseBackupSuccess = blockAccount.keys?.firstOrNull { key ->
             val onChainPubKey = key.publicKey.removePrefix("0x").removePrefix("04").lowercase()
             backupPubKey == onChainPubKey
         } != null
-        
+
 
         // Update UI on main thread
         requireActivity().runOnUiThread {

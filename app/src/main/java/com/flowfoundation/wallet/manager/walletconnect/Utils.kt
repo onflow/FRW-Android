@@ -63,7 +63,7 @@ private fun pair(
             }
         }.toList()
     } else {
-        chains.map { "$it:${WalletManager.wallet()?.walletAddress().orEmpty()}" }.toList()
+        chains.map { "$it:${WalletManager.wallet().walletAddress().orEmpty()}" }.toList()
     }
     val methods = if (caip2Namespace.lowercase() == ETHEREUM_NETWORK) {
         WalletConnectMethod.getSupportedEVMMethod()

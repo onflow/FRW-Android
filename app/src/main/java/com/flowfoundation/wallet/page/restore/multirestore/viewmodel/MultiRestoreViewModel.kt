@@ -195,7 +195,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
 
     @OptIn(ExperimentalStdlibApi::class)
     fun restoreWallet() {
-        if (WalletManager.wallet()?.walletAddress() == restoreAddress) {
+        if (WalletManager.wallet().walletAddress() == restoreAddress) {
             logd("MultiRestore", "Wallet already logged in for address: $restoreAddress")
             toast(msgRes = R.string.wallet_already_logged_in, duration = Toast.LENGTH_LONG)
             val activity = BaseActivity.getCurrentActivity()
