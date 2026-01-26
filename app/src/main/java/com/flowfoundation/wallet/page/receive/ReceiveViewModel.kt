@@ -21,10 +21,9 @@ class ReceiveViewModel : ViewModel() {
                 val account = WalletManager.childAccount(WalletManager.selectedWalletAddress())
                 account?.address.orEmpty() to account?.name.orEmpty()
             } else {
-                val wallet = WalletManager.wallet() ?: return@viewModelIOScope
-                wallet.walletAddress().orEmpty() to ""
+                val walletAddress = WalletManager.wallet().walletAddress() ?: return@viewModelIOScope
+                walletAddress to ""
             }
-            WalletManager.wallet() ?: return@viewModelIOScope
             walletLiveData.postValue(ReceiveData(walletName = name, address = address))
 
             val drawable = address.toAddress().toQRDrawable()
