@@ -75,14 +75,14 @@ object AccountManager {
             }
             isInitializing = true
         }
-        
+
         logd(TAG, "Starting AccountManager initialization")
         accounts.clear()
         userPrefixes.clear()
         switchAccounts.clear()
         currentAccount = null
         currentWallet = null
-        
+
         ioScope {
             try {
                 // Load user prefixes first
@@ -91,7 +91,7 @@ object AccountManager {
                     userPrefixes.addAll(userPrefixList)
                     logd(TAG, "Loaded ${userPrefixes.size} user prefixes from cache")
                 }
-                
+
                 // Load accounts
                 val accountList = AccountCacheManager.read()
                 if (accountList.isNullOrEmpty()) {
@@ -102,14 +102,14 @@ object AccountManager {
                     }
                     return@ioScope
                 }
-                
+
                 logd(TAG, "Found ${accountList.size} cached accounts")
                 accounts.addAll(accountList)
-                
+
                 // Find the active account or use the first one
                 val activeAccount = accountList.firstOrNull { it.isActive } ?: accountList.first()
                 logd(TAG, "Setting active account: ${activeAccount.userInfo.username}")
-                
+
                 // Ensure only one account is marked as active
                 accounts.forEach { it.isActive = (it == activeAccount) }
                 currentAccount = activeAccount
@@ -141,7 +141,7 @@ object AccountManager {
 
                         // Update WalletManager
                         activeAccount.wallet?.let { WalletManager.updateWallet(it) }
-                        
+
                     } catch (e: Exception) {
                         loge(TAG, "Failed to restore wallet from keystore: $e")
                         // Don't fail initialization, but log the error
@@ -152,42 +152,42 @@ object AccountManager {
                 } else {
                     logd(TAG, "Warning: Account has neither keystore nor prefix - may need re-authentication")
                 }
-                
+
                 // Initialize uploaded address set
                 uploadedAddressSet = getUploadedAddressSet().toMutableSet()
-                
+
                 // Dispatch to listeners
                 dispatchListeners(activeAccount)
-                
+
                 synchronized(this@AccountManager) {
                     isInitialized = true
                     isInitializing = false
                 }
-                
+
                 logd(TAG, "AccountManager initialization completed successfully")
-                
+
             } catch (e: Exception) {
                 loge(TAG, "AccountManager initialization failed: $e")
                 ErrorReporter.reportWithMixpanel(AccountError.INIT_FAILED, e)
-                
+
                 synchronized(this@AccountManager) {
                     isInitializing = false
                     // Don't set isInitialized = true on failure
                 }
-                
+
                 // Clear potentially corrupted state
                 accounts.clear()
                 userPrefixes.clear()
                 switchAccounts.clear()
                 currentAccount = null
                 currentWallet = null
-                
+
                 // Try to recover from backup or show login screen
                 retryInitialization()
             }
         }
     }
-    
+
     private fun retryInitialization() {
         logd(TAG, "Attempting to retry initialization with backup recovery")
         ioScope {
@@ -195,7 +195,7 @@ object AccountManager {
                 // Try to clear and reload from backup
                 AccountCacheManager.clearCache()
                 delay(1000) // Give some time
-                
+
                 // This will trigger the backup recovery mechanism
                 val recoveredAccounts = AccountCacheManager.read()
                 if (!recoveredAccounts.isNullOrEmpty()) {
@@ -215,15 +215,15 @@ object AccountManager {
         logd(TAG, "getSwitchAccountList() called")
         logd(TAG, "Current accounts: $accounts")
         logd(TAG, "Current switchAccounts: $switchAccounts")
-        
+
         val list = mutableListOf<Any>()
         list.addAll(accounts)
         val addressSet = accounts.mapNotNull { it.wallet?.walletAddress() }.toSet()
         logd(TAG, "Address set from accounts: $addressSet")
-        
+
         val filteredSwitchAccounts = switchAccounts.filter { it.address !in addressSet }
         logd(TAG, "Filtered switch accounts: $filteredSwitchAccounts")
-        
+
         list.addAll(filteredSwitchAccounts)
         logd(TAG, "Final list size: ${list.size}")
         return list
@@ -252,14 +252,6 @@ object AccountManager {
         return account
     }
 
-    fun wallet(): com.flow.wallet.wallet.Wallet? {
-        val wmWallet = WalletManager.wallet()
-        if (wmWallet != null) return wmWallet
-
-        // fall back to the copy we may have created in init()
-        return currentWallet
-    }
-
     fun userInfo(): UserInfoData? {
         return currentAccount?.userInfo
     }
@@ -285,30 +277,30 @@ object AccountManager {
                 logd(TAG, "No active account found to remove")
                 return@ioScope
             }
-            
+
             logd(TAG, "Removing active account and clearing all related state")
-            
+
             // Set Firebase to anonymous before clearing state
             setToAnonymous()
-            
+
             // Clear the account from the list
             val account = accounts.removeAt(index)
             logd(TAG, "Removed account: ${account.userInfo.username}")
-            
+
             // Clear current account and wallet references
             currentAccount = null
             currentWallet = null
             logd(TAG, "Cleared current account and wallet references")
-            
+
             // Clear user prefixes
             userPrefixes.removeAll { it.userId == account.wallet?.id}
             UserPrefixCacheManager.cache(UserPrefixes().apply { addAll(userPrefixes) })
             logd(TAG, "Cleared user prefixes")
-            
+
             // Clear account cache
             AccountCacheManager.cache(Accounts().apply { addAll(accounts) })
             logd(TAG, "Cleared account cache")
-            
+
             // Clear WalletManager state
             try {
                 WalletManager.clear()
@@ -316,7 +308,7 @@ object AccountManager {
             } catch (e: Exception) {
                 logd(TAG, "Error clearing WalletManager: ${e.message}")
             }
-            
+
             // Clear CryptoProviderManager state
             try {
                 CryptoProviderManager.clear()
@@ -324,7 +316,7 @@ object AccountManager {
             } catch (e: Exception) {
                 logd(TAG, "Error clearing CryptoProviderManager: ${e.message}")
             }
-            
+
             // Clear EVM and emoji state
             try {
                 EVMWalletManager.clear()
@@ -332,14 +324,14 @@ object AccountManager {
             } catch (e: Exception) {
                 logd(TAG, "Error clearing EVMWalletManager: ${e.message}")
             }
-            
+
             try {
                 AccountEmojiManager.clear()
                 logd(TAG, "Cleared AccountEmojiManager state")
             } catch (e: Exception) {
                 logd(TAG, "Error clearing AccountEmojiManager: ${e.message}")
             }
-            
+
             // Remove only this account's password from the map, preserve others
             try {
                 removeAccountFromPasswordMap(account)
@@ -347,17 +339,17 @@ object AccountManager {
             } catch (e: Exception) {
                 logd(TAG, "Error removing account wallet password: ${e.message}")
             }
-            
+
             // Clear uploaded address set
             uploadedAddressSet.clear()
             setUploadedAddressSet(emptySet())
             logd(TAG, "Cleared uploaded address set")
-            
+
             uiScope {
                 // Clear user cache
                 clearUserCache()
                 logd(TAG, "Cleared user cache")
-                
+
                 // Navigate to main activity (which should show the get started screen)
                 logd(TAG, "Relaunching MainActivity after account reset")
                 MainActivity.relaunch(Env.getApp(), true)
@@ -433,7 +425,7 @@ object AccountManager {
 
     fun switch(account: Account, onFinish: () -> Unit) {
         logd(TAG, "switch() called. Switching to account: $account")
-        
+
         // Check if we're already on this account
         if (account.isActive && currentAccount?.userInfo?.username == account.userInfo.username) {
             logd(TAG, "Account is already active, but still triggering navigation")
@@ -461,7 +453,7 @@ object AccountManager {
             onFinish()
             return
         }
-        
+
         ioScope {
             if (isSwitching) {
                 logd(TAG, "Already switching accounts, aborting switch.")
@@ -534,7 +526,7 @@ object AccountManager {
                 callback.invoke(false)
                 return
             }
-            
+
             // Debug the CryptoProvider being used
             logd(TAG, "CryptoProvider details:")
             logd(TAG, "  Type: ${cryptoProvider.javaClass.simpleName}")
@@ -542,36 +534,36 @@ object AccountManager {
             logd(TAG, "  Hash Algorithm: ${cryptoProvider.getHashAlgorithm()}")
             logd(TAG, "  Sign Algorithm: ${cryptoProvider.getSignatureAlgorithm()}")
             logd(TAG, "  Key Weight: ${cryptoProvider.getKeyWeight()}")
-            
+
             // Get JWT with force refresh to avoid token expiration issues
             val jwt = getFirebaseJwt(true)
             logd(TAG, "Retrieved JWT for account switch (length: ${jwt.length})")
-            
+
             val publicKey = cryptoProvider.getPublicKey()
-            
+
             // Debug signature generation step by step
             logd(TAG, "Starting signature generation...")
             logd(TAG, "  JWT (first 50 chars): ${jwt.take(50)}...")
-            
+
             val signature = cryptoProvider.getUserSignature(jwt)
-            
+
             logd(TAG, "Signature generation completed:")
             logd(TAG, "  Generated signature: $signature")
             logd(TAG, "  Signature length: ${signature.length} chars (${signature.length / 2} bytes)")
-            
+
             val accountKey = AccountKey(
                 publicKey = publicKey,
                 hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
                 signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
             )
-            
+
             logd(TAG, "Account switch request details:")
             logd(TAG, "  Public Key: $publicKey")
             logd(TAG, "  Hash Algorithm: ${cryptoProvider.getHashAlgorithm()}")
             logd(TAG, "  Sign Algorithm: ${cryptoProvider.getSignatureAlgorithm()}")
             logd(TAG, "  Signature length: ${signature.length}")
             logd(TAG, "  Account: ${account.userInfo.username} (${account.wallet?.walletAddress()})")
-            
+
             val resp = service.login(
                 LoginRequest(
                     signature = signature,
@@ -598,7 +590,7 @@ object AccountManager {
             }
         } catch (e: retrofit2.HttpException) {
             loge(tag = "SWITCH_ACCOUNT", msg = "HTTP Exception during account switch: ${e.code()} - ${e.message()}")
-            
+
             // Try to get the response body for more details
             try {
                 val errorBody = e.response()?.errorBody()?.string()
@@ -606,7 +598,7 @@ object AccountManager {
             } catch (bodyException: Exception) {
                 loge(tag = "SWITCH_ACCOUNT", msg = "Could not read error response body: ${bodyException.message}")
             }
-            
+
             if (e.code() == 404) {
                 loge(tag = "SWITCH_ACCOUNT", msg = "Server returned 404 - possible signature verification failure")
                 logd(TAG, "This might be due to:")
@@ -615,7 +607,7 @@ object AccountManager {
                 logd(TAG, "  3. JWT token issues or expiration")
                 logd(TAG, "  4. Account not found on server")
             }
-            
+
             loge(tag = "SWITCH_ACCOUNT", msg = "Invoking callback with isSuccess=false due to HTTP ${e.code()}")
             callback.invoke(false)
         } catch (e: Exception) {
@@ -712,7 +704,7 @@ object AccountManager {
                 callback.invoke(false)
                 return
             }
-            
+
             // Debug the CryptoProvider being used
             logd(TAG, "CryptoProvider details:")
             logd(TAG, "  Type: ${cryptoProvider.javaClass.simpleName}")
@@ -720,36 +712,36 @@ object AccountManager {
             logd(TAG, "  Hash Algorithm: ${cryptoProvider.getHashAlgorithm()}")
             logd(TAG, "  Sign Algorithm: ${cryptoProvider.getSignatureAlgorithm()}")
             logd(TAG, "  Key Weight: ${cryptoProvider.getKeyWeight()}")
-            
+
             // Get JWT with force refresh to avoid token expiration issues
             val jwt = getFirebaseJwt(true)
             logd(TAG, "Retrieved JWT for local account switch (length: ${jwt.length})")
-            
+
             val publicKey = cryptoProvider.getPublicKey()
-            
+
             // Debug signature generation step by step
             logd(TAG, "Starting signature generation...")
             logd(TAG, "  JWT (first 50 chars): ${jwt.take(50)}...")
-            
+
             val signature = cryptoProvider.getUserSignature(jwt)
-            
+
             logd(TAG, "Signature generation completed:")
             logd(TAG, "  Generated signature: $signature")
             logd(TAG, "  Signature length: ${signature.length} chars (${signature.length / 2} bytes)")
-            
+
             val accountKey = AccountKey(
                 publicKey = publicKey,
                 hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
                 signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
             )
-            
+
             logd(TAG, "Local account switch request details:")
             logd(TAG, "  Public Key: $publicKey")
             logd(TAG, "  Hash Algorithm: ${cryptoProvider.getHashAlgorithm()}")
             logd(TAG, "  Sign Algorithm: ${cryptoProvider.getSignatureAlgorithm()}")
             logd(TAG, "  Signature length: ${signature.length}")
             logd(TAG, "  Account: ${switchAccount.username} (${switchAccount.address})")
-            
+
             val resp = service.login(
                 LoginRequest(
                     signature = signature,
@@ -782,7 +774,7 @@ object AccountManager {
             }
         } catch (e: retrofit2.HttpException) {
             loge(tag = "SWITCH_ACCOUNT", msg = "HTTP Exception during LocalSwitchAccount switch: ${e.code()} - ${e.message()}")
-            
+
             // Try to get the response body for more details
             try {
                 val errorBody = e.response()?.errorBody()?.string()
@@ -790,7 +782,7 @@ object AccountManager {
             } catch (bodyException: Exception) {
                 loge(tag = "SWITCH_ACCOUNT", msg = "Could not read error response body: ${bodyException.message}")
             }
-            
+
             if (e.code() == 404) {
                 loge(tag = "SWITCH_ACCOUNT", msg = "Server returned 404 - possible signature verification failure")
                 logd(TAG, "This might be due to:")
@@ -799,7 +791,7 @@ object AccountManager {
                 logd(TAG, "  3. JWT token issues or expiration")
                 logd(TAG, "  4. Account not found on server")
             }
-            
+
             loge(tag = "SWITCH_ACCOUNT", msg = "Invoking callback with isSuccess=false due to HTTP ${e.code()}")
             callback.invoke(false)
         } catch (e: Exception) {

@@ -93,7 +93,7 @@ class DrawerLayoutPresenter(
         ioScope {
             val wallet = WalletManager.wallet()
             logd(TAG, "Wallet state: ${if (wallet == null) "null" else "not null"}")
-            val address = wallet?.walletAddress()
+            val address = wallet.walletAddress()
             logd(TAG, "Wallet address: $address")
             val lockMode = if (address.isNullOrBlank()) DrawerLayout.LOCK_MODE_LOCKED_CLOSED else DrawerLayout.LOCK_MODE_UNLOCKED
             logd(TAG, "Initial drawer lock mode set to: $lockMode, address is ${if (address.isNullOrBlank()) "null/blank" else "present"}")

@@ -710,15 +710,7 @@ suspend fun CadenceScript.transactionByMainWallet(arguments: CadenceArgumentsBui
 }
 
 suspend fun String.transactionByMainWallet(scriptId: String, arguments: CadenceArgumentsBuilder.() -> Unit): String? {
-    // For hardware-backed keys, WalletManager.wallet() returns null, but we can still get the address
-    val wallet = WalletManager.wallet()
-    val walletAddress = if (wallet != null) {
-        wallet.walletAddress()
-    } else {
-        // Handle hardware-backed keys where wallet() returns null
-        logd(TAG, "Wallet is null (likely hardware-backed key), getting address from walletAddress() extension")
-        wallet.walletAddress() // This will use the enhanced extension function that handles null wallets
-    }
+    val walletAddress = WalletManager.wallet().walletAddress()
 
     if (walletAddress == null) {
         logd(TAG, "transactionByMainWallet() failed: no wallet address available")
@@ -744,15 +736,7 @@ suspend fun String.transactionByMainWallet(scriptId: String, arguments: CadenceA
 }
 
 suspend fun CadenceScript.transactionWithBridgePayer(arguments: CadenceArgumentsBuilder.() -> Unit): String? {
-    // For hardware-backed keys, WalletManager.wallet() returns null, but we can still get the address
-    val wallet = WalletManager.wallet()
-    val walletAddress = if (wallet != null) {
-        wallet.walletAddress()
-    } else {
-        // Handle hardware-backed keys where wallet() returns null
-        logd(TAG, "Wallet is null (likely hardware-backed key), getting address from walletAddress() extension")
-        wallet.walletAddress() // This will use the enhanced extension function that handles null wallets
-    }
+    val walletAddress = WalletManager.wallet().walletAddress()
 
     if (walletAddress == null) {
         logd(TAG, "transactionWithBridgePayer() failed: no wallet address available")

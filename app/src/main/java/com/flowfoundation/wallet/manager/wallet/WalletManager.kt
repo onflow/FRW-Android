@@ -273,12 +273,7 @@ object WalletManager {
         }
 
         /* 4. Make sure WalletManager knows which address is selected */
-        val address = currentWallet?.walletAddress() ?: run {
-            // For hardware-backed keys, try to get address from account data
-            val walletData = account.wallet?.wallets?.firstOrNull()
-            val blockchainData = walletData?.blockchain?.firstOrNull()
-            blockchainData?.address
-        }
+        val address = currentWallet.walletAddress()
 
         // Only set the address if no address is currently selected (avoid overriding user selections)
         if (!address.isNullOrBlank() && selectedWalletAddressRef.get().isBlank()) {
@@ -301,12 +296,14 @@ object WalletManager {
         } else {
             // Hardware-backed key - initialize child accounts using selected address
             val selectedAddress = selectedWalletAddress()
-            if (!selectedAddress.isNullOrEmpty()) {
+            if (selectedAddress.isNotEmpty()) {
                 logd(TAG, "Hardware-backed key detected in walletUpdate, initializing child accounts for: $selectedAddress")
                 refreshChildAccountForHardwareBackedKey(selectedAddress)
             }
         }
     }
+
+    fun isWalletReady(): Boolean = isInitialized
 
     fun wallet(): Wallet? = synchronized(initializationLock) {
         if (!isInitialized) init()           // first pass

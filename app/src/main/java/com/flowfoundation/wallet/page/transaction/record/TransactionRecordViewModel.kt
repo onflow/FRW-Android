@@ -42,19 +42,6 @@ class TransactionRecordViewModel : ViewModel(), OnTransactionStateChange {
 
     private fun loadTransfer() {
         logd("TransactionRecordViewModel", "Starting loadTransfer(), checking wallet status")
-        // Check if WalletManager is initialized
-        if (WalletManager.wallet() == null) {
-            logd("TransactionRecordViewModel", "WalletManager.wallet() is null, attempting to initialize")
-            try {
-                // Try to initialize WalletManager if not already initialized
-                WalletManager.init()
-                logd("TransactionRecordViewModel", "WalletManager initialized. New wallet status: ${WalletManager.wallet() != null}")
-            } catch (e: Exception) {
-                loge("TransactionRecordViewModel", "Failed to initialize WalletManager: ${e.message}")
-                loge("TransactionRecordViewModel", "Error stacktrace: ${e.stackTraceToString()}")
-            }
-        }
-
         // Get the selected wallet address first
         val walletAddress = WalletManager.selectedWalletAddress()
         logd("TransactionRecordViewModel", "Selected wallet address: '$walletAddress'")
