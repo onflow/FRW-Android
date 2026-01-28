@@ -257,7 +257,7 @@ android {
         }
         // Ensure native libraries are properly aligned for 16KB page sizes
         jniLibs {
-            useLegacyPackaging = false
+            useLegacyPackaging = true
         }
     }
 

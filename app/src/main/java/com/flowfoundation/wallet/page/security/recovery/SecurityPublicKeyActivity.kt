@@ -24,11 +24,11 @@ class SecurityPublicKeyActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivitySecurityPublicKeyBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        
+
         // Configure status bar to prevent overlap with system UI
         UltimateBarX.with(this).fitWindow(false).light(!isNightMode(this)).applyStatusBar()
         UltimateBarX.with(this).fitWindow(true).light(!isNightMode(this)).applyNavigationBar()
-        
+
         setupToolbar()
         initPrivateKey()
     }
@@ -47,7 +47,7 @@ class SecurityPublicKeyActivity : BaseActivity() {
             publicKeyView.text = cryptoProvider.getPublicKey()
 
             publicKeyCopyButton.setOnClickListener { copyToClipboard(cryptoProvider.getPublicKey()) }
-            tvLearnMore.setOnClickListener { openBrowser(this@SecurityPublicKeyActivity, "https://frw.gitbook.io/doc/faq/faq#where-is-my-seed-phrase-i-cant-find-it-on-flow-wallet-ios-or-android") }
+            tvLearnMore.setOnClickListener { openBrowser(this@SecurityPublicKeyActivity, "https://docs.wallet.flow.com/docs/faq#where-is-my-seed-phrase-i-cant-find-it-on-flow-wallet-ios-or-android") }
 
             hashAlgorithm.text = getString(R.string.hash_algorithm, cryptoProvider.getHashAlgorithm().algorithm)
             signAlgorithm.text = getString(R.string.sign_algorithm, cryptoProvider.getSignatureAlgorithm().value)
