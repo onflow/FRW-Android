@@ -94,6 +94,7 @@ class ReactNativeActivity : ReactActivity() {
         private fun getScreenName(screenType: RNBridge.ScreenType): String {
             return when (screenType) {
                 RNBridge.ScreenType.SEND_ASSET -> "send-asset"
+                RNBridge.ScreenType.BACKUP_TIP -> "backup-tip"
                 RNBridge.ScreenType.TOKEN_DETAIL -> "token-detail"
                 RNBridge.ScreenType.ONBOARDING -> "onboarding"
                 RNBridge.ScreenType.RECEIVE -> "receive"
@@ -120,6 +121,7 @@ class ReactNativeActivity : ReactActivity() {
                         }
                     } ?: RNBridge.InitialRoute.SELECT_TOKENS.routeName
                 }
+                RNBridge.ScreenType.BACKUP_TIP -> "BackupTip"
                 RNBridge.ScreenType.TOKEN_DETAIL -> RNBridge.InitialRoute.HOME.routeName
                 RNBridge.ScreenType.ONBOARDING -> RNBridge.InitialRoute.GET_STARTED.routeName
                 RNBridge.ScreenType.RECEIVE -> "Receive"
