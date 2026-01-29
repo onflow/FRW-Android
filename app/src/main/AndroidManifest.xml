@@ -30,7 +30,6 @@
         android:required="false"/>
 
     <application
-        android:extractNativeLibs="true"
         android:name=".FlowWalletApplication"
         android:allowBackup="false"
         android:fullBackupContent="false"
