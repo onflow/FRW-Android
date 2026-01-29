@@ -6,8 +6,8 @@ import com.flowfoundation.wallet.page.explore.ExploreFragment
 import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.page.nft.nftlist.NFTFragment
 import com.flowfoundation.wallet.page.profile.SettingFragment
-import com.flowfoundation.wallet.page.transaction.record.TransactionRecordFragment
 import com.flowfoundation.wallet.page.wallet.WalletFragment
+import com.flowfoundation.wallet.reactnative.ReactNativeActivityFragment
 
 class MainPageAdapter(
     activity: MainActivity
@@ -20,7 +20,7 @@ class MainPageAdapter(
             1 -> NFTFragment()
             2 -> ExploreFragment()
             3 -> SettingFragment()
-            4 -> TransactionRecordFragment()
+            4 -> ReactNativeActivityFragment()
             else -> throw IllegalStateException("Unexpected position: $position")
         }
     }

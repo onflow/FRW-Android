@@ -1,15 +1,12 @@
 package com.flowfoundation.wallet.page.token.detail.presenter
 
-import android.transition.TransitionManager
-import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.LayoutTokenDetailActivitiesBinding
 import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.page.token.detail.model.TokenDetailActivitiesModel
-import com.flowfoundation.wallet.page.transaction.record.TransactionRecordActivity
-import com.flowfoundation.wallet.page.transaction.record.adapter.TransactionRecordListAdapter
+import com.flowfoundation.wallet.reactnative.ReactNativeActivity
+import com.flowfoundation.wallet.reactnative.bridge.RNBridge
 import com.flowfoundation.wallet.utils.extensions.setVisible
 
 
@@ -19,21 +16,19 @@ class TokenDetailActivitiesPresenter(
     private val token: FungibleToken,
 ) : BasePresenter<TokenDetailActivitiesModel> {
 
-    private val adapter by lazy { TransactionRecordListAdapter() }
-
     init {
-        with(binding.recyclerView) {
-            adapter = this@TokenDetailActivitiesPresenter.adapter
-            layoutManager = LinearLayoutManager(activity)
+        // Hide the recycler view since we now use React Native for activity display
+        binding.recyclerView.setVisible(false)
+        // "More" button launches React Native Activity screen
+        binding.activitiesMoreButton.setOnClickListener {
+            ReactNativeActivity.launch(activity, RNBridge.ScreenType.ACTIVITY)
         }
-        binding.activitiesMoreButton.setOnClickListener { TransactionRecordActivity.launch(activity, token.contractId()) }
     }
 
     override fun bind(model: TokenDetailActivitiesModel) {
         model.recordList?.let {
-            TransitionManager.beginDelayedTransition(binding.root.parent as ViewGroup)
+            // Show the section header if there are activities, but use RN for the list
             binding.root.setVisible(it.isNotEmpty())
-            adapter.setNewDiffData(it)
         }
     }
 

@@ -3,6 +3,7 @@ package com.flowfoundation.wallet.reactnative.bridge
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReadableArray
+import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.bridge.WritableNativeArray
 import com.facebook.react.bridge.WritableNativeMap
@@ -199,6 +200,23 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
     override fun setScreenSecurityLevel(level: String) = utilsHandler.setScreenSecurityLevel(level)
 
     override fun launchNativeScreen(screenName: String, params: String?) = uiHandler.launchNativeScreen(screenName, params)
+
+    // Key rotation methods - TODO: implement properly for key rotation feature
+    override fun createSeedKey(strength: Double, promise: Promise) {
+        promise.reject("NOT_IMPLEMENTED", "createSeedKey is not yet implemented on Android")
+    }
+
+    override fun saveNewKey(key: ReadableMap, promise: Promise) {
+        promise.reject("NOT_IMPLEMENTED", "saveNewKey is not yet implemented on Android")
+    }
+
+    override fun removeOldKey(address: String, publicKey: String, promise: Promise) {
+        promise.reject("NOT_IMPLEMENTED", "removeOldKey is not yet implemented on Android")
+    }
+
+    override fun signRotationRequest(address: String, signatureData: String, promise: Promise) {
+        promise.reject("NOT_IMPLEMENTED", "signRotationRequest is not yet implemented on Android")
+    }
 
     companion object {
         const val NAME = "NativeFRWBridge"

@@ -289,10 +289,6 @@
             android:theme="@style/AppTheme.Transparent.FullScreen"/>
 
         <activity
-            android:name=".page.transaction.record.TransactionRecordActivity"
-            android:screenOrientation="portrait"/>
-
-        <activity
             android:name=".page.profile.subpage.wallet.WalletSettingActivity"
             android:screenOrientation="portrait"/>
 

@@ -34,10 +34,8 @@ class MainContentPresenter(
 
     init {
         setupListener()
-        binding.viewPager.offscreenPageLimit = 4
+        binding.viewPager.offscreenPageLimit = 5
         binding.viewPager.adapter = MainPageAdapter(activity)
-
-
     }
 
     suspend fun checkAndShowContent() {
