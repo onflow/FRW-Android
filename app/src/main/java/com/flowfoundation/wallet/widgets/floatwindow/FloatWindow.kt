@@ -8,6 +8,8 @@ import android.view.ViewGroup
 import com.flowfoundation.wallet.utils.Env
 import java.util.concurrent.ConcurrentHashMap
 
+import com.flowfoundation.wallet.utils.logd
+
 object FloatWindow {
     private val containerViews = mutableMapOf<String, View>()
     private val configs = ConcurrentHashMap<String, FloatWindowConfig>()
@@ -15,8 +17,14 @@ object FloatWindow {
     fun builder(): FloatWindowBuilder = FloatWindowBuilder()
 
     fun dismiss(tag: String) {
-        (containerViews[tag]?.parent as? ViewGroup)?.removeView(containerViews[tag])
+        detach(tag)
         removeConfig(tag)
+    }
+
+    private fun detach(tag: String) {
+        if (containerViews[tag]?.parent != null) {
+            (containerViews[tag]?.parent as? ViewGroup)?.removeView(containerViews[tag])
+        }
     }
 
     fun isShowing(tag: String): Boolean {
@@ -25,22 +33,46 @@ object FloatWindow {
 
     internal fun show(config: FloatWindowConfig, activity: Activity) {
         if (isShowing(config.tag)) {
-            return
+            // Check if attached to the same activity
+            if (containerViews[config.tag]?.parent == activity.rootView()) {
+                containerViews[config.tag]?.bringToFront()
+                return
+            }
+            // If attached to a different activity, detach first
+            detach(config.tag)
         }
 
         configs[config.tag] = config
 
         val contentView = config.contentView ?: LayoutInflater.from(Env.getApp()).inflate(config.layoutId, null)
         containerViews[config.tag] = contentView
-        activity.rootView()?.addView(contentView, createParams(config))
+
+        val decorView = activity.rootView()
+        decorView?.post {
+            if (contentView.parent != null && contentView.parent != decorView) {
+                (contentView.parent as? ViewGroup)?.removeView(contentView)
+            }
+
+            if (contentView.parent == null) {
+                decorView.addView(contentView, createParams(config))
+            }
+
+            contentView.elevation = 9999f
+            contentView.bringToFront()
+        }
 
         FloatWindowPageObserver.register(Env.getApp() as Application)
     }
 
     internal fun onPageChange(activity: Activity) {
         configs.forEach { (tag, config) ->
-            if (isShowing(tag) && !config.ignorePage.contains(activity::class)) {
-                dismiss(tag)
+            if (config.ignorePage.contains(activity::class)) {
+                if (isShowing(tag)) {
+                    detach(tag)
+                }
+            } else {
+                // Always try to show if config exists and page is not ignored
+                // The show() method handles the check if it's already showing on current activity
                 show(config, activity)
             }
         }

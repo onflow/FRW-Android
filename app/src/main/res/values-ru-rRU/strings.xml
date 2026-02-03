@@ -65,6 +65,8 @@
     <string name="multiple_accounts_found">Найдено несколько учетных записей.</string>
     <string name="enter_password">Введите пароль</string>
     <string name="continue_str">Продолжить</string>
+    <string name="dapp_prompt_title">Действуйте с осторожностью</string>
+    <string name="dapp_prompt_body">Вы были перенаправлены сюда третьей стороной, а не Flow Wallet. Если вы продолжите, откроется Dapp.</string>
     <string name="restore_with_google_drive">Восстановление с помощью Google Drive</string>
     <string name="wrong_password">неправильный пароль</string>
     <string name="word_not_found">Упс, слово не найдено.</string>
