@@ -11,6 +11,7 @@ import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.manager.walletconnect.WalletConnect
 import com.flowfoundation.wallet.network.model.AddressBookContact
 import com.flowfoundation.wallet.page.browser.openBrowser
+import com.flowfoundation.wallet.page.deeplink.DappPromptActivity
 import com.flowfoundation.wallet.reactnative.ReactNativeActivity
 import com.flowfoundation.wallet.reactnative.bridge.RNBridge
 import com.flowfoundation.wallet.manager.app.isTestnet
@@ -77,7 +78,15 @@ suspend fun executePendingDeepLink(uri: Uri) {
                 DeepLinkPath.DAPP -> {
                     val dappUrl = uri.getQueryParameter("url")
                     if (dappUrl != null) {
-                        dispatchDapp(dappUrl)
+                        val dappUri = Uri.parse(dappUrl)
+                        val scheme = dappUri.scheme?.lowercase()
+                        if (scheme == "http" || scheme == "https") {
+                            BaseActivity.getCurrentActivity()?.let { activity ->
+                                DappPromptActivity.launch(activity, dappUrl)
+                            }
+                        } else {
+                            loge(TAG, "Blocked invalid Dapp URI scheme: $scheme")
+                        }
                     }
                 }
 

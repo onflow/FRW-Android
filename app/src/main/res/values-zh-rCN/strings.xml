@@ -65,6 +65,8 @@
     <string name="multiple_accounts_found">发现多个账户。</string>
     <string name="enter_password">输入密码</string>
     <string name="continue_str">继续</string>
+    <string name="dapp_prompt_title">谨慎操作</string>
+    <string name="dapp_prompt_body">您是由第三方而非 Flow Wallet 引导至此。继续操作将打开 Dapp。</string>
     <string name="restore_with_google_drive">用Google Drive恢复</string>
     <string name="wrong_password">密码错误</string>
     <string name="word_not_found">哎呀，词找不到了。</string>

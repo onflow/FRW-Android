@@ -371,6 +371,12 @@
         </activity>
 
         <activity
+            android:name=".page.deeplink.DappPromptActivity"
+            android:theme="@style/AppTheme.Transparent.FullScreen"
+            android:exported="false"
+            android:screenOrientation="portrait"/>
+
+        <activity
             android:name="com.dropbox.core.android.AuthActivity"
             android:exported="true"
             android:configChanges="orientation|keyboard"

@@ -65,6 +65,8 @@
     <string name="multiple_accounts_found">Multiple Accounts found.</string>
     <string name="enter_password">Enter Password</string>
     <string name="continue_str">Continue</string>
+    <string name="dapp_prompt_title">Proceed with caution</string>
+    <string name="dapp_prompt_body">You were sent here by a third party, not Flow Wallet. You will open Dapp if you continue.</string>
     <string name="restore_with_google_drive">Restore with Google Drive</string>
     <string name="wrong_password">wrong password</string>
     <string name="word_not_found">Oops, word not found.</string>
