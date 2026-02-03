@@ -17,6 +17,7 @@ import com.flowfoundation.wallet.utils.saveWalletStoreNameAesKey
 import com.flowfoundation.wallet.utils.secret.aesDecrypt
 import com.flowfoundation.wallet.utils.secret.aesEncrypt
 import com.flowfoundation.wallet.wallet.WalletStore
+import com.flowfoundation.wallet.network.model.WalletListData
 import wallet.core.jni.StoredKey
 import java.io.File
 import java.util.UUID
@@ -35,10 +36,22 @@ fun accountMigrateV1(callback: (() -> Unit)? = null) {
 
 fun migrateV1() {
     logd("xxx", "migrate start")
+    val userInfo = userInfoCache().read()!!
+    val existingWallet = walletCache().read()
+
+    val walletData = existingWallet ?: run {
+        val userId = uid() ?: ""
+        WalletListData(
+            id = userId,
+            username = userInfo.username,
+            wallets = null
+        )
+    }
+
     val account = Account(
-        userInfo = userInfoCache().read()!!,
+        userInfo = userInfo,
         isActive = true,
-        wallet = walletCache().read()
+        wallet = walletData
     )
     AccountManager.add(account)
     userInfoCache().clear()

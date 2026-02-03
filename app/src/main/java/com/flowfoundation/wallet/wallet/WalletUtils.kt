@@ -16,7 +16,7 @@ import org.onflow.flow.models.DomainTag
 import com.flowfoundation.wallet.utils.Env.getStorage
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 
-private const val DERIVATION_PATH = "m/44'/539'/0'/0/0"
+const val DERIVATION_PATH = "m/44'/539'/0'/0/0"
 
 fun getPublicKey(removePrefix: Boolean = true): String {
     return try {
@@ -42,7 +42,6 @@ fun getKeyWallet(): KeyWallet {
             mnemonicString = Wallet.store().mnemonic(),
             passphrase = "",
             derivationPath = DERIVATION_PATH,
-            keyPair = null,
             storage = getStorage()
         )
         WalletFactory.createKeyWallet(
@@ -66,27 +65,27 @@ suspend fun sign(text: String, domainTag: ByteArray = DomainTag.User.bytes): Str
         getKeyWallet()
         val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
             ?: throw WalletError.EmptySignKey
-        
+
         // Validate provider before attempting to sign
         val publicKey = cryptoProvider.getPublicKey()
         if (publicKey.isBlank() || publicKey == "0x" || publicKey.length < 64) {
             loge("WalletUtils", "Invalid public key from crypto provider: $publicKey")
             throw WalletError.EmptySignKey
         }
-        
+
         val signature = cryptoProvider.signData(domainTag + text.encodeToByteArray())
-        
+
         if (signature.isBlank()) {
             loge("WalletUtils", "Empty signature returned from crypto provider")
             throw WalletError.EmptySignKey
         }
-        
+
         logd("WalletUtils", "Successfully signed data, signature length: ${signature.length}")
         signature
     } catch (e: WalletError) {
         loge("WalletUtils", "Failed to sign text: ${e.message}")
         ErrorReporter.reportWithMixpanel(AccountError.WALLET_ERROR, e)
-        
+
         // Try to clear and regenerate crypto provider as fallback
         try {
             loge("WalletUtils", "Attempting to regenerate crypto provider as fallback")
@@ -99,7 +98,7 @@ suspend fun sign(text: String, domainTag: ByteArray = DomainTag.User.bytes): Str
         } catch (fallbackException: Exception) {
             loge("WalletUtils", "Fallback crypto provider regeneration failed: ${fallbackException.message}")
         }
-        
+
         ""
     } catch (e: Exception) {
         loge("WalletUtils", "Unexpected error signing text: ${e.message}")

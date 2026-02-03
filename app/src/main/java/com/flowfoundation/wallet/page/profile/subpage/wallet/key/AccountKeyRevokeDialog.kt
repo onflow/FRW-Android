@@ -12,7 +12,6 @@ import com.flowfoundation.wallet.manager.account.AccountKeyManager
 import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.safeRun
 import com.flowfoundation.wallet.utils.toast
@@ -50,7 +49,7 @@ class AccountKeyRevokeDialog : BottomSheetDialogFragment() {
                 return@ioScope
             }
             val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return@ioScope
-            val address = WalletManager.wallet().walletAddress() ?: return@ioScope
+            val address = WalletManager.getCurrentFlowWalletAddress() ?: return@ioScope
             val flowAddress = FlowAddress(address)
             val keyIndex = flowAddress.currentKeyId(cryptoProvider.getPublicKey())
             if (keyIndex == indexId) {

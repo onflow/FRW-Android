@@ -11,10 +11,11 @@ import com.flowfoundation.wallet.page.main.activeColor
 import com.flowfoundation.wallet.page.main.adapter.MainPageAdapter
 import com.flowfoundation.wallet.page.main.model.MainContentModel
 import com.flowfoundation.wallet.page.main.setSvgDrawable
-import com.flowfoundation.wallet.page.wallet.fragment.WalletUnregisteredFragment
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.isRegistered
+import com.flowfoundation.wallet.reactnative.ReactNativeActivity
+import com.flowfoundation.wallet.reactnative.bridge.RNBridge
 
 class MainContentPresenter(
     private val activity: MainActivity,
@@ -40,7 +41,14 @@ class MainContentPresenter(
     }
 
     suspend fun checkAndShowContent() {
-        if (isRegistered() && isUserSignIn()) {
+        // Check if user has existing accounts (in case KEY_REGISTERED was reset but accounts exist)
+        val hasExistingAccounts = com.flowfoundation.wallet.manager.account.AccountManager.list().isNotEmpty()
+        
+        if ((isRegistered() || hasExistingAccounts) && isUserSignIn()) {
+            // If user has accounts but KEY_REGISTERED is false, fix it
+            if (hasExistingAccounts && !isRegistered()) {
+                com.flowfoundation.wallet.utils.setRegistered()
+            }
             showMainContent()
         } else {
             showUnregisteredFragment()
@@ -48,10 +56,7 @@ class MainContentPresenter(
     }
 
     private fun showUnregisteredFragment() {
-        binding.flContainer.visible()
-        binding.clContent.gone()
-        activity.supportFragmentManager.beginTransaction()
-            .replace(R.id.fl_container, WalletUnregisteredFragment()).commitAllowingStateLoss()
+        ReactNativeActivity.launchWithRoute(activity, RNBridge.ScreenType.ONBOARDING, RNBridge.InitialRoute.GET_STARTED)
     }
 
     private fun showMainContent() {

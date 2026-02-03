@@ -8,6 +8,7 @@ import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.ActivityReceiveBinding
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.page.main.widget.CopyCOAAddressDialog
 import com.flowfoundation.wallet.page.receive.ReceiveActivity
 import com.flowfoundation.wallet.page.receive.model.ReceiveData
 import com.flowfoundation.wallet.page.receive.model.ReceiveModel
@@ -71,7 +72,12 @@ class ReceivePresenter(
     }
 
     private fun copy() {
-        textToClipboard(binding.tvWalletAddress.text.toString().trim())
+        val address = binding.tvWalletAddress.text.toString().trim()
+        if (EVMWalletManager.isEVMWalletAddress(address)) {
+            CopyCOAAddressDialog(activity, address).show()
+            return
+        }
+        textToClipboard(address)
         toast(msgRes = R.string.copy_address_toast)
     }
 

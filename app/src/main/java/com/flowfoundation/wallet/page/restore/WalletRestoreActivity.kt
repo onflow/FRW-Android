@@ -11,6 +11,8 @@ import com.flowfoundation.wallet.databinding.ActivityWalletRestoreBinding
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.page.restore.multirestore.MultiRestoreActivity
 import com.flowfoundation.wallet.page.wallet.sync.WalletSyncActivity
+import com.flowfoundation.wallet.reactnative.ReactNativeActivity
+import com.flowfoundation.wallet.reactnative.bridge.RNBridge
 import com.flowfoundation.wallet.utils.isNightMode
 import com.flowfoundation.wallet.widgets.DialogType
 import com.flowfoundation.wallet.widgets.SwitchNetworkDialog
@@ -19,12 +21,16 @@ import com.flowfoundation.wallet.widgets.SwitchNetworkDialog
 class WalletRestoreActivity : BaseActivity() {
 
     private lateinit var binding: ActivityWalletRestoreBinding
+    private var launchedFromRN: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityWalletRestoreBinding.inflate(layoutInflater)
         setContentView(binding.root)
         UltimateBarX.with(this).fitWindow(true).colorRes(R.color.background).light(!isNightMode(this)).applyStatusBar()
+
+        // Check if this activity was launched from RN GetStartedScreen
+        launchedFromRN = intent.getBooleanExtra("launchedFromRN", false)
 
         with(binding) {
             llImportFromDevice.setOnClickListener {
@@ -56,10 +62,35 @@ class WalletRestoreActivity : BaseActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            android.R.id.home -> finish()
+            android.R.id.home -> {
+                // Navigate back to React Native onboarding GetStarted screen
+                // instead of just closing the activity
+                navigateBackToOnboarding()
+            }
             else -> super.onOptionsItemSelected(item)
         }
         return true
+    }
+
+    override fun onBackPressed() {
+        // Handle system back button the same as toolbar back button
+        navigateBackToOnboarding()
+    }
+
+    private fun navigateBackToOnboarding() {
+        // Only launch RN GetStarted screen if we came from RN
+        // Otherwise, just finish this activity to return to wherever we came from
+        if (launchedFromRN) {
+            // Launch React Native onboarding flow - skip GetStarted and go directly to profile type selection
+            // since this is an existing user importing a wallet
+            ReactNativeActivity.launchWithRoute(
+                this,
+                RNBridge.ScreenType.ONBOARDING,
+                RNBridge.InitialRoute.PROFILE_TYPE_SELECTION
+            )
+        }
+        // Finish this activity in both cases
+        finish()
     }
 
     private fun setupToolbar() {

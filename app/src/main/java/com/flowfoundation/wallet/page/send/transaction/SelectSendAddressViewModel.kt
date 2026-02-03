@@ -7,7 +7,6 @@ import com.flowfoundation.wallet.cache.addressBookCache
 import com.flowfoundation.wallet.cache.recentTransactionCache
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.model.AddressBookContact
 import com.flowfoundation.wallet.network.retrofit
@@ -57,13 +56,12 @@ class SelectSendAddressViewModel : ViewModel() {
 
     private fun loadAccounts() {
         viewModelIOScope(this) {
-            val parentAddress = WalletManager.wallet().walletAddress() ?: return@viewModelIOScope
+            val parentAddress = WalletManager.getCurrentFlowWalletAddress() ?: return@viewModelIOScope
             val accountList = mutableListOf<Any>()
             accountList.add(AddressBookAccountModel(parentAddress))
-            val linkedAccounts = WalletManager.childAccountList(parentAddress)?.get()?.map{
-                    child ->
+            val linkedAccounts = WalletManager.childAccountList(parentAddress).map{ child ->
                 AddressBookAccountModel(child.address)
-            }?.toMutableList() ?: mutableListOf()
+            }.toMutableList()
             val evmAddress = EVMWalletManager.getEVMAddress().orEmpty()
             if (evmAddress.isNotEmpty()) {
                 linkedAccounts.add(0, AddressBookAccountModel(evmAddress))

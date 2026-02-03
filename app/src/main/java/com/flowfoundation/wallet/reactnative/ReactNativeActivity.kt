@@ -10,15 +10,15 @@ import com.flowfoundation.wallet.reactnative.bridge.RNBridge
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.reactnative.bridge.createWalletAccountFromAddress
-import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.wallet.toAddress
+import com.flowfoundation.wallet.utils.logd
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 
 private val RNBridge.ScreenType.value: String
     get() = try {
         RNBridge.ScreenType::class.java.getField(this.name).getAnnotation(SerializedName::class.java)?.value ?: this.toString()
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         this.toString()
     }
 
@@ -37,7 +37,7 @@ class ReactNativeActivity : ReactActivity() {
             mainComponentName,
             false, // fabricEnabled
         ) {
-            override fun getLaunchOptions(): Bundle? {
+            override fun getLaunchOptions(): Bundle {
                 val launchOptions = Bundle()
 
                 intent?.let { intent ->
@@ -47,7 +47,6 @@ class ReactNativeActivity : ReactActivity() {
                     val screen = intent.getStringExtra("screen")
                     val sendToConfigJson = intent.getStringExtra("sendToConfig")
 
-                    // Top level props
                     address?.let {
                         launchOptions.putString("address", it)
                         logd(TAG, "Added address to launch options: $it")
@@ -101,6 +100,12 @@ class ReactNativeActivity : ReactActivity() {
         }
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        // When activity is reused with SINGLE_TOP, update the intent so getLaunchOptions() uses new data
+        setIntent(intent)
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
@@ -120,19 +125,43 @@ class ReactNativeActivity : ReactActivity() {
                     sendToConfig?.let { config ->
                         when {
                             // If both targetAddress and selectedToken exist, go to sendToken
-                            config.targetAddress != null && config.selectedToken != null -> "SendTokens"
+                            config.targetAddress != null && config.selectedToken != null -> RNBridge.InitialRoute.SEND_TOKENS.routeName
                             // If only selectedToken exists, go to selectAddress
-                            config.selectedToken != null -> "SendTo"
+                            config.selectedToken != null -> RNBridge.InitialRoute.SEND_TO.routeName
                             // If selectedNFTs exist and not empty, go to selectAddress
-                            config.selectedNFTs != null && config.selectedNFTs.isNotEmpty() -> "SendTo"
+                            config.selectedNFTs != null && config.selectedNFTs.isNotEmpty() -> RNBridge.InitialRoute.SEND_TO.routeName
                             // Otherwise, go to selectAssets
-                            else -> "SelectTokens"
+                            else -> RNBridge.InitialRoute.SELECT_TOKENS.routeName
                         }
-                    } ?: "SelectTokens"
+                    } ?: RNBridge.InitialRoute.SELECT_TOKENS.routeName
                 }
                 RNBridge.ScreenType.BACKUP_TIP -> "KeyRotationTip"
                 RNBridge.ScreenType.KEYSTORE_MIGRATION -> "KeystoreMigrationTip"
+                RNBridge.ScreenType.TOKEN_DETAIL -> RNBridge.InitialRoute.HOME.routeName
+                RNBridge.ScreenType.ONBOARDING -> RNBridge.InitialRoute.GET_STARTED.routeName
+                RNBridge.ScreenType.RECEIVE -> "Receive"
             }
+        }
+
+        /**
+         * Launch with specific screen type and initial route using enums
+         */
+        fun launchWithRoute(context: Context, screenType: RNBridge.ScreenType, initialRoute: RNBridge.InitialRoute) {
+            val intent = Intent(context, ReactNativeActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+            // For onboarding, always create a fresh instance with CLEAR_TOP
+            // This ensures the initialRoute is properly set when launched from MainActivity
+            if (screenType == RNBridge.ScreenType.ONBOARDING) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            } else {
+                intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+            }
+
+            intent.putExtra("screen", screenType.value)
+            intent.putExtra("initialRoute", initialRoute.routeName)
+            context.startActivity(intent)
         }
 
         /**
@@ -162,9 +191,10 @@ class ReactNativeActivity : ReactActivity() {
 
             val intent = Intent(context, ReactNativeActivity::class.java)
 
-            // Add flags to ensure the activity comes to the foreground prominently
+            // Add flags to ensure only one instance of ReactNativeActivity exists
+            // SINGLE_TOP prevents creating a new instance if one already exists at the top of the stack
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            intent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT)
+            intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
             intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
 
             address?.let {
@@ -175,10 +205,9 @@ class ReactNativeActivity : ReactActivity() {
             }
             screenType?.let {
                 // Convert screen enum to string and determine route based on screen type
-                val screenString = it.value
                 val routeName = getRouteName(it, null)
 
-                intent.putExtra("screen", screenString)
+                intent.putExtra("screen", it.value)
                 intent.putExtra("initialRoute", routeName)
             }
             context.startActivity(intent)
@@ -195,9 +224,10 @@ class ReactNativeActivity : ReactActivity() {
 
             val intent = Intent(context, ReactNativeActivity::class.java)
 
-            // Add flags to ensure the activity comes to the foreground prominently
+            // Add flags to ensure only one instance of ReactNativeActivity exists
+            // SINGLE_TOP prevents creating a new instance if one already exists at the top of the stack
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            intent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT)
+            intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
             intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
 
             address?.let {
@@ -207,11 +237,10 @@ class ReactNativeActivity : ReactActivity() {
                 intent.putExtra("network", it)
             }
 
-            // Convert screen enum to string and determine route based on screen type and config
-            val screenString = screenType.value
+            // Use screenName property from enum and determine route based on screen type and config
             val routeName = getRouteName(screenType, sendToConfig)
 
-            intent.putExtra("screen", screenString)
+            intent.putExtra("screen", screenType.value)
             intent.putExtra("initialRoute", routeName)
 
             // Serialize SendToConfig to JSON

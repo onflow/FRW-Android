@@ -237,9 +237,7 @@
     <string name="restore_with_recovery_phrase">Wiederherstellen mit Recovery Phrase</string>
     <string name="not_logged_in_toast">Sie sind nicht bei der Brieftasche eingeloggt</string>
     <string name="free_gas_fee">Kostenlose Gasgebühr</string>
-    <string name="free_gas_fee_desc">Erlauben Sie Flow Wallet, die Gasgebühr für alle meine Transaktionen zu zahlen
-        .</string>
-    <string name="file_picker_title">Datei auswählen</string>
+    <string name="free_gas_fee_desc">* Erlauben Sie Flow Wallet, die Gasgebühr für alle meine Transaktionen zu zahlen.</string>
     <string name="transaction_fee">Transaktionsgebühr</string>
     <string name="hold_to_confirm">Halten zum Bestätigen</string>
     <string name="hold_to_sign">Zum Link halten</string>
@@ -654,8 +652,8 @@
     <string name="raw_key_restore_private_key_note">Mit rohem Hex-Schlüssel importieren.</string>
     <string name="sign_type_message_from">Signaturtyp Nachricht von</string>
     <string name="message">Nachricht</string>
-    <string name="current_account">Aktuelles Konto</string>
-    <string name="other_accounts">Andere Konten</string>
+    <string name="current_account">Aktuelles konto</string>
+    <string name="other_accounts">Andere konten</string>
     <string name="local_account_keys">Lokale Kontoschlüssel</string>
     <string name="reload_config">Konfigurationsdatei neu laden</string>
     <string name="move_fee">Verschiebe Gebühr</string>
@@ -697,7 +695,6 @@
     <string name="connect_to_dropbox">Mit Dropbox verbinden</string>
     <string name="connect_dropbox">Dropbox verbinden</string>
     <string name="deposit_evm_tip">Bitte stellen Sie sicher, dass Ihre Einzahlung über FLOW EVM Netzwerk erfolgt, wenn Ihre Einzahlung über ein anderes Netzwerk verloren geht.</string>
-    <string name="legal_message">"     <![CDATA[     Durch die Verwendung von Flow Wallet stimmen Sie den <a href="https://wallet.flow.com/terms-of-service"><u>Nutzungsbedingungen</u></a> und <a href="https://wallet.flow.com/privacy-policy"><u>Datenschutzrichtlinie</u></a>     zu     ]]>     "</string>
     <string name="get_started">Los geht\'s</string>
     <string name="on_flow">#onFlow</string>
     <string name="choose_swap_provider">Swap-Anbieter auswählen</string>
@@ -725,7 +722,67 @@
     <string name="import_from_pdf">Aus PDF importieren</string>
     <string name="pdf_parse_error_message">Ungültiges Keystore-JSON-Format. Bitte laden Sie die Flow Wallet Extension herunter, um Ihre Keystore-Datei korrekt zu exportieren.</string>
     <string name="extension_download_url">https://chromewebstore.google.com/detail/flow-wallet/hpclkefagolihohboafpheddmmgdffjm?hl=en</string>
-    
+    <string name="surge_pricing_title">Sind Sie wirklich sicher, dass Sie mit der Überlastungspreisstellung fortfahren möchten?</string>
+    <string name="surge_current_fee">Ihre Transaktionsgebühr:</string>
+    <string name="surge_active">Überlastungspreisstellung aktiv</string>
+    <string name="surge_description">Aufgrund hoher Netzwerkaktivität sind die Transaktionsgebühren erhöht, und Flow Wallet zahlt vorübergehend nicht für Ihr Gas. Die aktuellen Netzwerkgebühren sind 4× höher als üblich.</string>
+    <string name="surge_hold_to_confirm">Halten Sie gedrückt, um der Überlastungspreisstellung zuzustimmen</string>
+    <string name="selected_account">Ausgewähltes Konto</string>
+    <string name="connecting_on">Verbinde auf %1$s</string>
+    <string name="connecting_account">Verbinde Konto</string>
+    <string name="requesting_access">%1$s fordert Zugang zu:</string>
+    <string name="show_in_account_list">In Kontoliste anzeigen</string>
+    <string name="file_picker_title">Datei auswählen</string>
+    <string name="select_account">Konto auswählen</string>
+    <string name="label_flow">FLOW</string>
+    <string name="label_eoa">EOA</string>
+    <string name="telegram_not_installed">Telegram-App ist nicht installiert</string>
+    <string name="legal_message">"     <![CDATA[     Durch die Nutzung von Flow Wallet stimmen Sie den <a href="https://wallet.flow.com/terms-of-service"><u>Nutzungsbedingungen</u></a> und der <a href="https://wallet.flow.com/privacy-policy"><u>Datenschutzrichtlinie</u></a> zu     ]]>     "</string>
+    <string name="punch_swap" translatable="false">Punch Swap</string>
+    <string name="punch_swap_url" translatable="false">swap.kittypunch.xyz</string>
+    <string name="trado_url" translatable="false">trado.one</string>
+    <string name="trado" translatable="false">Trado</string>
+    <string name="increment_finance" translatable="false">Increment Finance</string>
+    <string name="increment_url" translatable="false">increment.fi</string>
+    <string name="json" translatable="false">JSON</string>
+    <string name="required_asterisk" translatable="false">" *"</string>
+    <string name="cadence_script_version" translatable="false">Cadence Script Version: %1$s</string>
+    <string name="return_to_browser_to_continue">Bitte kehren Sie zum Browser zurück, um Ihre Sitzung fortzusetzen.</string>
+    <string name="manage_tokens">Token verwalten</string>
+    <string name="filters">Filter</string>
+    <string name="hide_dust_token">Dust-Token ausblenden</string>
+    <string name="display_verified_token">Nur verifizierte Token anzeigen</string>
+    <string name="tokens">Token</string>
+    <string name="verified">Verifiziert</string>
+    <string name="contract_address">Vertragsadresse</string>
+    <string name="no">Nein</string>
+    <string name="yes">Ja</string>
+    <string name="wallet_connect_no_proposal">Verbindung kann nicht hergestellt werden. Bitte versuchen Sie es erneut.</string>
+    <string name="wallet_connect_pairing_error">Verbindung fehlgeschlagen. Bitte versuchen Sie es erneut.</string>
+    <string name="wallet_connect_generic_error">Ein Fehler ist beim Verbinden aufgetreten. Bitte versuchen Sie es erneut.</string>
+    <string name="wallet_connect_proposal_expired">Verbindungsanfrage ist abgelaufen. Bitte versuchen Sie es erneut.</string>
+    <string name="wallet_connect_request_expired">Anfrage ist abgelaufen. Bitte versuchen Sie es erneut.</string>
+    <string name="wallet_connect_activity_error">Verbindungsaufforderung kann nicht angezeigt werden. Bitte versuchen Sie es erneut.</string>
+    <string name="wallet_connect_proposal_error">Verbindungsanfrage konnte nicht verarbeitet werden. Bitte versuchen Sie es erneut.</string>
+    <string name="wallet_connect_initialization_error">Fehler beim Initialisieren von Wallet Connect.</string>
+    <string name="wallet_connect_approval_error">Fehler beim Genehmigen der Wallet Connect-Sitzung.</string>
+    <string name="verified_tip">Dies ist ein nicht verifizierter Token, interagieren Sie nur mit Token, denen Sie vertrauen.</string>
+    <string name="hide_dust_token_tip">Token mit weniger als 0,01$ USD Guthaben</string>
+    <string name="transfer_success">Transaktion erfolgreich</string>
+    <string name="transfer_failed">Transaktion fehlgeschlagen</string>
+    <string name="nft_amount_items">%1$s Artikel</string>
+    <string name="pending_request_from">Sie haben eine ausstehende Anfrage von %1$s</string>
+    <string name="my_own_address">Meine eigene Adresse</string>
+    <string name="custom_address">Benutzerdefinierte Adresse</string>
+    <string name="enter_custom_address">Benutzerdefinierte Adresse eingeben</string>
+    <string name="add_evm_account">Ein %1$s-Konto auf Flow hinzufügen</string>
+    <string name="active_account">Aktives Konto</string>
+    <string name="add_account">Konto hinzufügen</string>
+    <string name="confirm_to_copy_address">Bestätigen Sie, um die Adresse zu kopieren</string>
+    <string name="confirm_copy_address_tips">Sie haben eine EVM-Adresse im Flow-Netzwerk kopiert. Bitte stellen Sie sicher, dass Sie nur Assets im Flow-Netzwerk an diese Adresse senden, andernfalls gehen sie verloren.</string>
+    <string name="evm_on_flow_address">EVM auf Flow-Adresse</string>
+    <string name="recover_profile">Profil wiederherstellen</string>
+
     <!-- PDF Import Feature - TODO: Translate -->
     <string name="pdf_password_hint">Geben Sie Ihr PDF-Passwort ein</string>
     <string name="pdf_password_protected_info">Diese PDF ist passwortgeschützt. Bitte geben Sie Ihr Passwort ein, um den privaten Schlüssel zu extrahieren.</string>

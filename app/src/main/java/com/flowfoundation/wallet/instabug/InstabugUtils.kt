@@ -7,7 +7,6 @@ import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.instabug.library.Feature
 import com.instabug.library.Instabug
 import com.instabug.library.IssueType
@@ -60,15 +59,16 @@ fun instabugInitialize(application: Application) {
             report.setUserAttribute("uid", it)
         }
         report.setUserAttribute("username", AccountManager.userInfo()?.username.orEmpty())
-        report.setUserAttribute("FlowAccount", WalletManager.wallet().walletAddress().orEmpty())
+        report.setUserAttribute("FlowAccount", WalletManager.getCurrentFlowWalletAddress().orEmpty())
         report.setUserAttribute("SelectedAccount", WalletManager.selectedWalletAddress())
-        val childAccounts = WalletManager.childAccountList()?.get()?.map { it.address } ?: emptyList()
+        val childAccounts = WalletManager.childAccountList().map { it.address }
         if (childAccounts.isNotEmpty())
             report.setUserAttribute(
                 "ChildAccounts",
                 childAccounts.toString()
             )
         report.setUserAttribute("COA", EVMWalletManager.getEVMAddress().orEmpty())
+        report.setUserAttribute("EOA", WalletManager.getEOAAddress().orEmpty())
         report.setUserAttribute("Network", chainNetWorkString())
     }
     val configuration = ProactiveReportingConfigs.Builder()

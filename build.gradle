@@ -2,7 +2,7 @@
 buildscript {
     ext {
         buildToolsVersion = "35.0.0"
-        minSdkVersion = 24
+        minSdkVersion = 28
         compileSdkVersion = 36
         targetSdkVersion = 36
         ndkVersion = "27.1.12297006"
@@ -38,20 +38,29 @@ allprojects {
         google()
         mavenCentral()
         maven { url 'https://jitpack.io' }
+
+        // Load local.properties once for reuse in maven repos
+        def localProperties = new Properties()
+        def localPropertiesFile = rootProject.file('local.properties')
+        if (localPropertiesFile.exists()) {
+            localPropertiesFile.withInputStream { localProperties.load(it) }
+        }
+
         maven {
             url = uri("https://maven.pkg.github.com/trustwallet/wallet-core")
             credentials {
-                username = System.getenv("GITHUB_USERNAME") ?: "lealobanov"
-                password = System.getenv("GITHUB_TOKEN") ?: project.findProperty("github.token") ?: ""
+                // Read from local.properties, gradle.properties, or environment variables
+                username = localProperties.getProperty("gpr.user") ?: project.findProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME")
+                password = localProperties.getProperty("gpr.key") ?: project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
             }
         }
         // Flow Wallet Kit (Android) from GitHub Packages
         maven {
             url = uri("https://maven.pkg.github.com/onflow/Flow-Wallet-Kit")
             credentials {
-                // Prefer Gradle properties (gpr.user/gpr.key), fallback to env vars
-                username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME")
-                password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
+                // Read from local.properties, gradle.properties, or environment variables
+                username = localProperties.getProperty("gpr.user") ?: project.findProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME")
+                password = localProperties.getProperty("gpr.key") ?: project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
             }
         }
     }

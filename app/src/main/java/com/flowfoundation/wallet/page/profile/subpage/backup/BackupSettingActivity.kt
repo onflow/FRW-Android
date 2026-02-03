@@ -30,6 +30,7 @@ import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.ProgressDialog
 import kotlinx.coroutines.delay
 
+@Deprecated("Use WalletSettingActivity instead")
 class BackupSettingActivity : BaseActivity() {
 
     private lateinit var binding: ActivityBackupSettingBinding

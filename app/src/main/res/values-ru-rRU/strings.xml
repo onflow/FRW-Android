@@ -237,9 +237,7 @@
     <string name="restore_with_recovery_phrase">Восстановление с помощью фразы восстановления</string>
     <string name="not_logged_in_toast">Вы не вошли в кошелек</string>
     <string name="free_gas_fee">Бесплатная плата за газ</string>
-    <string name="free_gas_fee_desc">Разрешите Flow Wallet оплачивать газовый сбор за все мои транзакции
-        .</string>
-    <string name="file_picker_title">Выберите файл</string>
+    <string name="free_gas_fee_desc">* Разрешите Flow Wallet оплачивать газовый сбор за все моитранзакции.</string>
     <string name="transaction_fee">Комиссия за транзакцию</string>
     <string name="hold_to_confirm">Удерживайте, чтобы подтвердить</string>
     <string name="hold_to_sign">Удерживайте, чтобы подписать</string>
@@ -694,7 +692,6 @@
     <string name="connect_to_dropbox">Соединить с Dropbox</string>
     <string name="connect_dropbox">Подключить Dropbox</string>
     <string name="deposit_evm_tip">Пожалуйста, убедитесь, что Ваш депозит находится в сети FLOW EVM, если Ваш депозит через другую сеть Ваши активы могут быть утеряны.</string>
-    <string name="legal_message">"     <![CDATA[     Используя Flow Wallet, вы соглашаетесь с <a href="https://wallet.flow.com/terms-of-service"><u>Условиями обслуживания</u></a> и <a href="https://wallet.flow.com/privacy-policy"><u>Политикой конфиденциальности</u></a>     ]]>     "</string>
     <string name="get_started">Поехали!</string>
     <string name="on_flow">#onFlow</string>
     <string name="choose_swap_provider">Выберите поставщика обмена</string>
@@ -722,7 +719,7 @@
     <string name="import_from_pdf">Импорт из PDF</string>
     <string name="pdf_parse_error_message">Неверный формат JSON хранилища ключей. Пожалуйста, загрузите расширение Flow Wallet для правильного экспорта файла хранилища ключей.</string>
     <string name="extension_download_url">https://chromewebstore.google.com/detail/flow-wallet/hpclkefagolihohboafpheddmmgdffjm?hl=en</string>
-    
+
     <!-- PDF Import Feature -->
     <string name="pdf_password_hint">Введите пароль PDF</string>
     <string name="pdf_password_protected_info">Этот PDF защищён паролем. Введите пароль для извлечения закрытого ключа.</string>
@@ -740,4 +737,64 @@
     <string name="pdf_password_required_desc">Этот PDF защищён паролем. Пожалуйста, введите пароль.</string>
     <string name="unlock">Разблокировать</string>
     <string name="pdf_contains_private_key">Этот PDF содержит приватный ключ. Используйте опцию импорта приватного ключа.</string>
+    <string name="surge_pricing_title">Вы действительно уверены, что хотите продолжить с повышенной ценой?</string>
+    <string name="surge_current_fee">Ваша комиссия за транзакцию:</string>
+    <string name="surge_active">Повышенная цена активна</string>
+    <string name="surge_description">Из-за высокой активности сети комиссии за транзакции повышены, и Flow Wallet временно не оплачивает ваш газ. Текущие комиссии сети в 4 раза выше обычных.</string>
+    <string name="surge_hold_to_confirm">Удерживайте, чтобы согласиться с повышенной ценой</string>
+    <string name="selected_account">Выбранный аккаунт</string>
+    <string name="connecting_on">Подключение к %1$s</string>
+    <string name="connecting_account">Подключение аккаунта</string>
+    <string name="requesting_access">%1$s запрашивает доступ к:</string>
+    <string name="show_in_account_list">Показать в списке аккаунтов</string>
+    <string name="file_picker_title">Выберите файл</string>
+    <string name="select_account">Выберите аккаунт</string>
+    <string name="label_flow">FLOW</string>
+    <string name="label_eoa">EOA</string>
+    <string name="telegram_not_installed">Приложение Telegram не установлено</string>
+    <string name="legal_message">"     <![CDATA[     Используя Flow Wallet, вы соглашаетесь с <a href="https://wallet.flow.com/terms-of-service"><u>Условиями обслуживания</u></a> и <a href="https://wallet.flow.com/privacy-policy"><u>Политикой конфиденциальности</u></a>     ]]>     "</string>
+    <string name="punch_swap" translatable="false">Punch Swap</string>
+    <string name="punch_swap_url" translatable="false">swap.kittypunch.xyz</string>
+    <string name="trado_url" translatable="false">trado.one</string>
+    <string name="trado" translatable="false">Trado</string>
+    <string name="increment_finance" translatable="false">Increment Finance</string>
+    <string name="increment_url" translatable="false">increment.fi</string>
+    <string name="json" translatable="false">JSON</string>
+    <string name="required_asterisk" translatable="false">" *"</string>
+    <string name="cadence_script_version" translatable="false">Cadence Script Version: %1$s</string>
+    <string name="return_to_browser_to_continue">Пожалуйста, вернитесь в браузер, чтобы продолжить вашу сессию.</string>
+    <string name="manage_tokens">Управлять токенами</string>
+    <string name="filters">Фильтры</string>
+    <string name="hide_dust_token">Скрыть пылевые токены</string>
+    <string name="display_verified_token">Показывать только проверенные токены</string>
+    <string name="tokens">Токены</string>
+    <string name="verified">Проверено</string>
+    <string name="contract_address">Адрес контракта</string>
+    <string name="no">Нет</string>
+    <string name="yes">Да</string>
+    <string name="wallet_connect_no_proposal">Невозможно установить соединение. Пожалуйста, попробуйте еще раз.</string>
+    <string name="wallet_connect_pairing_error">Подключение не удалось. Пожалуйста, попробуйте еще раз.</string>
+    <string name="wallet_connect_generic_error">Произошла ошибка при подключении. Пожалуйста, попробуйте еще раз.</string>
+    <string name="wallet_connect_proposal_expired">Запрос на подключение истек. Пожалуйста, попробуйте еще раз.</string>
+    <string name="wallet_connect_request_expired">Запрос истек. Пожалуйста, попробуйте еще раз.</string>
+    <string name="wallet_connect_activity_error">Невозможно показать запрос подключения. Пожалуйста, попробуйте еще раз.</string>
+    <string name="wallet_connect_proposal_error">Не удалось обработать запрос подключения. Пожалуйста, попробуйте еще раз.</string>
+    <string name="wallet_connect_initialization_error">Ошибка инициализации Wallet Connect.</string>
+    <string name="wallet_connect_approval_error">Ошибка одобрения сессии Wallet Connect.</string>
+    <string name="verified_tip">Это неверифицированный токен, взаимодействуйте только с токенами, которым доверяете.</string>
+    <string name="hide_dust_token_tip">Токены с балансом менее $0.01 USD</string>
+    <string name="transfer_success">Транзакция успешна</string>
+    <string name="transfer_failed">Транзакция не удалась</string>
+    <string name="nft_amount_items">%1$s предметов</string>
+    <string name="pending_request_from">У вас есть ожидающий запрос от %1$s</string>
+    <string name="my_own_address">Мой собственный адрес</string>
+    <string name="custom_address">Пользовательский адрес</string>
+    <string name="enter_custom_address">Введите пользовательский адрес</string>
+    <string name="add_evm_account">Добавить аккаунт %1$s в Flow</string>
+    <string name="active_account">Активный аккаунт</string>
+    <string name="add_account">Добавить аккаунт</string>
+    <string name="confirm_to_copy_address">Подтвердите копирование адреса</string>
+    <string name="confirm_copy_address_tips">Вы скопировали EVM адрес в сети Flow, убедитесь, что отправляете только активы сети Flow на этот адрес, иначе они будут потеряны.</string>
+    <string name="evm_on_flow_address">EVM адрес в Flow</string>
+    <string name="recover_profile">Восстановить профиль</string>
 </resources>

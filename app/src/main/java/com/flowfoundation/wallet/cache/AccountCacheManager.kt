@@ -2,7 +2,10 @@ package com.flowfoundation.wallet.cache
 
 import androidx.annotation.WorkerThread
 import com.flowfoundation.wallet.manager.account.Account
+import com.flowfoundation.wallet.manager.account.AccountManager.walletNodes
 import com.flowfoundation.wallet.manager.account.AccountWalletManager
+import com.flowfoundation.wallet.manager.app.chainNetWorkString
+import com.flowfoundation.wallet.manager.walletdata.FlowWallet
 import com.flowfoundation.wallet.utils.*
 import com.flowfoundation.wallet.utils.error.AccountError
 import com.flowfoundation.wallet.utils.error.ErrorReporter
@@ -101,7 +104,9 @@ object AccountCacheManager{
             if (validAccounts.isNotEmpty()) {
                 logd(TAG, "Returning ${validAccounts.size} valid accounts")
                 logd(TAG, "First account username: ${validAccounts.firstOrNull()?.userInfo?.username}")
-                logd(TAG, "First account wallet address: ${validAccounts.firstOrNull()?.wallet?.walletAddress()}")
+                logd(TAG, "First account wallet address: ${validAccounts.firstOrNull()?.walletNodes?.
+                filterIsInstance<FlowWallet>()?.firstOrNull { it.chainIdString.equals(
+                  chainNetWorkString(), ignoreCase = true) }}")
                 logd(TAG, "First account keystore info present: ${!validAccounts.firstOrNull()?.keyStoreInfo.isNullOrBlank()}")
             }
 
@@ -120,6 +125,7 @@ object AccountCacheManager{
 
     fun cache(data: List<Account>) {
         logd(TAG, "cache() called with ${data.size} accounts")
+        logd(TAG, "cache() called with accounts: $data")
         if (data.isEmpty()) {
             logd(TAG, "Warning: Caching empty accounts list")
         } else {
@@ -146,18 +152,33 @@ object AccountCacheManager{
     }
 
     private fun cacheSync(data: List<Account>) {
-        val str = Json.encodeToString(ListSerializer(Account.serializer()), data)
-
-        // Validate JSON before writing
         try {
-            Json.decodeFromString(ListSerializer(Account.serializer()), str)
-        } catch (e: Exception) {
-            loge(TAG, "Generated invalid JSON, not writing to cache: $e")
-            return
-        }
+            val str = Json.encodeToString(ListSerializer(Account.serializer()), data)
 
-        str.saveToFile(file)
-        logd(TAG, "Successfully cached ${data.size} accounts")
+            // Validate JSON before writing
+            try {
+                Json.decodeFromString(ListSerializer(Account.serializer()), str)
+            } catch (e: Exception) {
+                loge(TAG, "Generated invalid JSON, not writing to cache: $e")
+                return
+            }
+
+            str.saveToFile(file)
+            logd(TAG, "Successfully cached ${data.size} accounts")
+        } catch (e: Exception) {
+            loge(TAG, "Error during cacheSync: $e")
+            loge(TAG, "Exception type: ${e.javaClass.name}")
+            e.printStackTrace()
+            // Log account structure for debugging
+            if (data.isNotEmpty()) {
+                val firstAccount = data.first()
+                loge(TAG, "First account structure: userInfo=${firstAccount.userInfo.javaClass.name}, " +
+                    "wallet=${firstAccount.wallet?.javaClass?.name}, " +
+                    "walletEmojiList=${firstAccount.walletEmojiList?.javaClass?.name}, " +
+                    "walletNodes=${firstAccount.walletNodes.javaClass.name}")
+            }
+            throw e
+        }
     }
 
     fun clearCache() {

@@ -2,12 +2,11 @@ package com.flowfoundation.wallet.page.wallet
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountInfoManager
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.OnUserInfoReload
-import com.flowfoundation.wallet.manager.account.OnWalletDataUpdate
 import com.flowfoundation.wallet.manager.account.OnAccountUpdate
-import com.flowfoundation.wallet.manager.account.WalletFetcher
 import com.flowfoundation.wallet.manager.app.isMainnet
 import com.flowfoundation.wallet.manager.price.CurrencyManager
 import com.flowfoundation.wallet.manager.price.CurrencyUpdateListener
@@ -18,7 +17,7 @@ import com.flowfoundation.wallet.manager.token.FungibleTokenListUpdateListener
 import com.flowfoundation.wallet.manager.token.FungibleTokenUpdateListener
 import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.manager.wallet.walletAddress
+import com.flowfoundation.wallet.manager.walletdata.WalletDataManager
 import com.flowfoundation.wallet.network.model.WalletListData
 import com.flowfoundation.wallet.page.profile.subpage.wallet.ChildAccountCollectionManager
 import com.flowfoundation.wallet.page.wallet.model.WalletCoinItemModel
@@ -33,7 +32,7 @@ import java.util.concurrent.CopyOnWriteArrayList
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, CurrencyUpdateListener, StakingInfoUpdateListener,
+class WalletFragmentViewModel : ViewModel(), CurrencyUpdateListener, StakingInfoUpdateListener,
     OnUserInfoReload, FungibleTokenListUpdateListener, FungibleTokenUpdateListener, OnAccountUpdate {
 
     val dataListLiveData = MutableLiveData<List<WalletCoinItemModel>>()
@@ -52,7 +51,6 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, CurrencyUpdateL
 
     init {
         AccountManager.addListener(this)
-        WalletFetcher.addListener(this)
         FungibleTokenListManager.addTokenUpdateListener(this)
         FungibleTokenListManager.addTokenListUpdateListener(this)
         CurrencyManager.addCurrencyUpdateListener(this)
@@ -64,6 +62,9 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, CurrencyUpdateL
             logd(TAG, "view model load")
             loadWallet(isRefresh)
             CurrencyManager.fetch()
+            if (isRefresh) {
+                WalletDataManager.updateCurrentAccount()
+            }
         }
     }
 
@@ -82,7 +83,7 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, CurrencyUpdateL
             var filteredTokens = allTokens
 
             if (isHideDust) {
-                filteredTokens = filteredTokens.filter { it.tokenBalanceInUSD() > java.math.BigDecimal(0.01) }
+                filteredTokens = filteredTokens.filter { it.tokenBalanceInUSD() > BigDecimal(0.01) }
                 logd(TAG, "refreshWithCurrentTokens: After dust filter: ${filteredTokens.size}")
             }
 
@@ -116,15 +117,10 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, CurrencyUpdateL
         }
     }
 
-    override fun onAccountUpdate(account: com.flowfoundation.wallet.manager.account.Account) {
+    override fun onAccountUpdate(account: Account) {
         viewModelIOScope(this) {
             loadWallet(true)
         }
-    }
-
-    override fun onWalletDataUpdate(wallet: WalletListData) {
-        updateWalletHeader(wallet = wallet)
-        loadCoinInfo(false)
     }
 
     override fun onCurrencyUpdate(flag: String, price: Float) {
@@ -218,7 +214,8 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, CurrencyUpdateL
     }
 
     private fun loadWallet(isRefresh: Boolean) {
-        if (WalletManager.isWalletReady().not()) {
+        val wallet = AccountManager.get()?.wallet
+        if (wallet == null) {
             headerLiveData.postValue(null)
             dataList.clear()
             dataListLiveData.postValue(emptyList())
@@ -226,11 +223,10 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, CurrencyUpdateL
             logd(TAG, "loadWallet :: null")
         } else {
             logd(TAG, "loadWallet :: wallet")
-            updateWalletHeader()
+            updateWalletHeader(wallet)
             needReload = true
             loadCoinInfo(isRefresh)
         }
-        WalletFetcher.fetch()
     }
 
     private fun loadCoinInfo(isRefresh: Boolean) {

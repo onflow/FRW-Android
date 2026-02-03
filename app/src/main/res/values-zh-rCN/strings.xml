@@ -235,9 +235,7 @@
     <string name="restore_with_recovery_phrase">用助记词恢复</string>
     <string name="not_logged_in_toast">您尚未登录钱包</string>
     <string name="free_gas_fee">免加密货币手续费</string>
-    <string name="free_gas_fee_desc">让 Flow Wallet 为我的所有交易支付加密货币手续费
-。</string>
-    <string name="file_picker_title">选择文件</string>
+    <string name="free_gas_fee_desc">* 让 Flow Wallet 为我的所有交易支付加密货币手续费。</string>
     <string name="transaction_fee">交易手续费</string>
     <string name="hold_to_confirm">按住确认</string>
     <string name="hold_to_sign">按住以签名</string>
@@ -696,7 +694,6 @@
     <string name="connect_to_dropbox">连接到 Dropbox</string>
     <string name="connect_dropbox">绑定 Dropbox</string>
     <string name="deposit_evm_tip">如果您的资产可能会丢失，请确保您的存款存入FLOW EVM网络。</string>
-    <string name="legal_message">"     <![CDATA[     通过使用流钱包，您同意 <a href="https://wallet.flow.com/terms-of-service"><u>服务条款</u></a> 和 <a href="https://wallet.flow.com/privacy-policy"><u>隐私政策</u></a>     ]]>     "</string>
     <string name="get_started">开始</string>
     <string name="on_flow">#onFlow</string>
     <string name="choose_swap_provider">选择交换提供商</string>
@@ -724,7 +721,7 @@
     <string name="import_from_pdf">从 PDF 导入</string>
     <string name="pdf_parse_error_message">密钥库 JSON 格式无效。请下载 Flow Wallet Extension 以正确导出您的密钥库文件。</string>
     <string name="extension_download_url">https://chromewebstore.google.com/detail/flow-wallet/hpclkefagolihohboafpheddmmgdffjm?hl=en</string>
-    
+
     <!-- PDF Import Feature -->
     <string name="pdf_password_hint">输入您的 PDF 密码</string>
     <string name="pdf_password_protected_info">此 PDF 受密码保护。请输入密码以提取私钥。</string>
@@ -742,4 +739,64 @@
     <string name="pdf_password_required_desc">此 PDF 受密码保护。请提供密码。</string>
     <string name="unlock">解锁</string>
     <string name="pdf_contains_private_key">此 PDF 包含私钥。请使用私钥导入选项。</string>
+    <string name="surge_pricing_title">您真的确定要继续进行激增定价吗？</string>
+    <string name="surge_current_fee">您的交易费用：</string>
+    <string name="surge_active">激增价格激活</string>
+    <string name="surge_description">由于网络活动频繁，交易费用较高，Flow Wallet 暂时不为您支付 gas 费用。当前网络费用比平时高 4 倍。</string>
+    <string name="surge_hold_to_confirm">长按以同意激增定价</string>
+    <string name="selected_account">选择的账户</string>
+    <string name="connecting_on">正在连接到 %1$s</string>
+    <string name="connecting_account">正在连接账户</string>
+    <string name="requesting_access">%1$s 正在请求访问：</string>
+    <string name="show_in_account_list">在账户列表中显示</string>
+    <string name="file_picker_title">选择文件</string>
+    <string name="select_account">选择账户</string>
+    <string name="label_flow">FLOW</string>
+    <string name="label_eoa">EOA</string>
+    <string name="telegram_not_installed">Telegram 应用未安装</string>
+    <string name="legal_message">"     <![CDATA[     通过使用 Flow Wallet，您同意<a href="https://wallet.flow.com/terms-of-service"><u>服务条款</u></a>和<a href="https://wallet.flow.com/privacy-policy"><u>隐私政策</u></a>     ]]>     "</string>
+    <string name="punch_swap" translatable="false">Punch Swap</string>
+    <string name="punch_swap_url" translatable="false">swap.kittypunch.xyz</string>
+    <string name="trado_url" translatable="false">trado.one</string>
+    <string name="trado" translatable="false">Trado</string>
+    <string name="increment_finance" translatable="false">Increment Finance</string>
+    <string name="increment_url" translatable="false">increment.fi</string>
+    <string name="json" translatable="false">JSON</string>
+    <string name="required_asterisk" translatable="false">" *"</string>
+    <string name="cadence_script_version" translatable="false">Cadence Script Version: %1$s</string>
+    <string name="return_to_browser_to_continue">请返回浏览器继续您的会话。</string>
+    <string name="manage_tokens">管理代币</string>
+    <string name="filters">过滤器</string>
+    <string name="hide_dust_token">隐藏尘埃代币</string>
+    <string name="display_verified_token">仅显示已验证代币</string>
+    <string name="tokens">代币</string>
+    <string name="verified">已验证</string>
+    <string name="contract_address">合约地址</string>
+    <string name="no">否</string>
+    <string name="yes">是</string>
+    <string name="wallet_connect_no_proposal">无法建立连接。请重试。</string>
+    <string name="wallet_connect_pairing_error">连接失败。请重试。</string>
+    <string name="wallet_connect_generic_error">连接时发生错误。请重试。</string>
+    <string name="wallet_connect_proposal_expired">连接请求已过期。请重试。</string>
+    <string name="wallet_connect_request_expired">请求已过期。请重试。</string>
+    <string name="wallet_connect_activity_error">无法显示连接提示。请重试。</string>
+    <string name="wallet_connect_proposal_error">处理连接请求失败。请重试。</string>
+    <string name="wallet_connect_initialization_error">初始化 Wallet Connect 时出错。</string>
+    <string name="wallet_connect_approval_error">批准 Wallet Connect 会话时出错。</string>
+    <string name="verified_tip">这是未经验证的代币，请仅与您信任的代币进行交互。</string>
+    <string name="hide_dust_token_tip">余额少于 0.01 美元的代币</string>
+    <string name="transfer_success">交易成功</string>
+    <string name="transfer_failed">交易失败</string>
+    <string name="nft_amount_items">%1$s 个项目</string>
+    <string name="pending_request_from">您有来自 %1$s 的待处理请求</string>
+    <string name="my_own_address">我自己的地址</string>
+    <string name="custom_address">自定义地址</string>
+    <string name="enter_custom_address">输入自定义地址</string>
+    <string name="add_evm_account">在 Flow 上添加 %1$s 账户</string>
+    <string name="active_account">活跃账户</string>
+    <string name="add_account">添加账户</string>
+    <string name="confirm_to_copy_address">确认复制地址</string>
+    <string name="confirm_copy_address_tips">您已复制了 Flow 网络上的 EVM 地址，请确保仅将 Flow 网络上的资产发送到此地址，否则将丢失。</string>
+    <string name="evm_on_flow_address">Flow 上的 EVM 地址</string>
+    <string name="recover_profile">恢复个人资料</string>
 </resources>

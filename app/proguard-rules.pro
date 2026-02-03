@@ -197,6 +197,7 @@
 -keep class org.onflow.flow.models.** { *; }
 -keep enum org.onflow.flow.** { *; }
 
+-dontwarn coil3.PlatformContext
 -dontwarn java.lang.management.RuntimeMXBean
 -dontwarn com.google.devtools.build.android.desugar.runtime.ThrowableExtension
 -dontwarn com.google.protobuf.nano.CodedOutputByteBufferNano

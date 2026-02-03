@@ -1,17 +1,12 @@
 package com.flowfoundation.wallet.reactnative.bridge
 
-import android.os.Bundle
-import android.util.Log
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.emoji.model.Emoji
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.manager.token.model.FungibleTokenType
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.network.model.Nft
-import org.json.JSONArray
-import org.json.JSONObject
 
 /**
  * Convert FungibleToken to RNBridge.TokenModel
@@ -139,12 +134,13 @@ fun isSelectedWalletAddress(address: String?): Boolean {
  * Generate WalletAccount model from address, following the same logic as getSelectedAccount
  */
 fun createWalletAccountFromAddress(address: String): RNBridge.WalletAccount {
-    val mainAddress = WalletManager.wallet().walletAddress()
+    val mainAddress = WalletManager.getCurrentFlowWalletAddress()
 
     // Determine account type based on address using utility methods
     val accountType = when {
         EVMWalletManager.isEVMWalletAddress(address) -> RNBridge.AccountType.EVM
         WalletManager.isChildAccount(address) -> RNBridge.AccountType.CHILD
+        EVMWalletManager.isEOAAddress(address) -> RNBridge.AccountType.EOA
         else -> RNBridge.AccountType.MAIN
     }
 
@@ -154,11 +150,13 @@ fun createWalletAccountFromAddress(address: String): RNBridge.WalletAccount {
             RNBridge.AccountType.MAIN -> "main"
             RNBridge.AccountType.CHILD -> "child"
             RNBridge.AccountType.EVM -> "evm"
+            RNBridge.AccountType.EOA -> "eoa"
         },
         name = emojiInfo?.name ?: when (accountType) {
             RNBridge.AccountType.MAIN -> "Main Account"
             RNBridge.AccountType.CHILD -> "Child Account"
             RNBridge.AccountType.EVM -> "EVM Account"
+            RNBridge.AccountType.EOA -> "EOA Account"
         },
         address = address,
         emojiInfo = emojiInfo,

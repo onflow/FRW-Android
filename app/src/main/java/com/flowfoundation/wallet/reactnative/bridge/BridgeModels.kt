@@ -1,6 +1,6 @@
 //
 //  BridgeModels.kt
-//  
+//
 //  Auto-generated from TypeScript bridge types
 //  Do not edit manually
 //
@@ -13,13 +13,23 @@ class RNBridge {
     enum class AccountType {
         @SerializedName("main") MAIN,
         @SerializedName("child") CHILD,
-        @SerializedName("evm") EVM
+        @SerializedName("evm") EVM,
+        @SerializedName("eoa") EOA
     }
 
     enum class ScreenType {
         @SerializedName("send-asset") SEND_ASSET,
+        @SerializedName("token-detail") TOKEN_DETAIL,
+        @SerializedName("onboarding") ONBOARDING,
+        @SerializedName("receive") RECEIVE,
         @SerializedName("backup-tip") BACKUP_TIP,
         @SerializedName("keystore-migration") KEYSTORE_MIGRATION
+    }
+
+    enum class AccountTypeType {
+        @SerializedName("full") FULL,
+        @SerializedName("hardware") HARDWARE,
+        @SerializedName("null") NULL
     }
 
     data class EmojiInfo(
@@ -100,7 +110,7 @@ class RNBridge {
         @SerializedName("name")
         val name: String,
         @SerializedName("avatar")
-        val avatar: String,
+        val avatar: String?,
         @SerializedName("uid")
         val uid: String,
         @SerializedName("accounts")
@@ -167,6 +177,163 @@ class RNBridge {
         @SerializedName("rate")
         val rate: String
     )
+
+    data class SaveMnemonicResponse(
+        @SerializedName("success")
+        val success: Boolean,
+        @SerializedName("error")
+        val error: String
+    )
+
+    data class CreateAccountResponse(
+        @SerializedName("success")
+        val success: Boolean,
+        @SerializedName("address")
+        val address: String,
+        @SerializedName("username")
+        val username: String,
+        @SerializedName("accountType")
+        val accountType: AccountTypeType,
+        @SerializedName("txId")
+        val txId: String,
+        @SerializedName("error")
+        val error: String
+    )
+
+    data class CreateEOAAccountResponse(
+        @SerializedName("success")
+        val success: Boolean,
+        @SerializedName("address")
+        val address: String,
+        @SerializedName("username")
+        val username: String,
+        @SerializedName("mnemonic")
+        val mnemonic: String,
+        @SerializedName("phrase")
+        val phrase: String,
+        @SerializedName("accountType")
+        val accountType: AccountTypeType,
+        @SerializedName("error")
+        val error: String
+    )
+
+    data class AccountKey(
+        @SerializedName("publicKey")
+        val publicKey: String,
+        @SerializedName("hashAlgoStr")
+        val hashAlgoStr: String,
+        @SerializedName("signAlgoStr")
+        val signAlgoStr: String,
+        @SerializedName("weight")
+        val weight: Int,
+        @SerializedName("hashAlgo")
+        val hashAlgo: Int,
+        @SerializedName("signAlgo")
+        val signAlgo: Int
+    )
+
+    data class SeedPhraseGenerationResponse(
+        @SerializedName("mnemonic")
+        val mnemonic: String,
+        @SerializedName("accountKey")
+        val accountKey: AccountKey,
+        @SerializedName("drivepath")
+        val drivepath: String,
+        @SerializedName("evmAddress")
+        val evmAddress: String?
+    )
+
+    data class SPResponse(
+        @SerializedName("mnemonic")
+        val mnemonic: String,
+        @SerializedName("accountKey")
+        val accountKey: AccountKey,
+        @SerializedName("drivepath")
+        val drivepath: String,
+        @SerializedName("evmAddress")
+        val evmAddress: String?
+    )
+
+    data class DeviceInfo(
+        @SerializedName("device_id")
+        val device_id: String?,
+        @SerializedName("name")
+        val name: String?,
+        @SerializedName("type")
+        val type: String?,
+        @SerializedName("user_agent")
+        val user_agent: String?,
+        @SerializedName("ip")
+        val ip: String?,
+        @SerializedName("city")
+        val city: String?,
+        @SerializedName("country")
+        val country: String?,
+        @SerializedName("countryCode")
+        val countryCode: String?,
+        @SerializedName("continent")
+        val continent: String?,
+        @SerializedName("continentCode")
+        val continentCode: String?,
+        @SerializedName("regionName")
+        val regionName: String?,
+        @SerializedName("district")
+        val district: String?,
+        @SerializedName("zip")
+        val zip: String?,
+        @SerializedName("lat")
+        val lat: Int?,
+        @SerializedName("lon")
+        val lon: Int?,
+        @SerializedName("isp")
+        val isp: String?,
+        @SerializedName("org")
+        val org: String?,
+        @SerializedName("currency")
+        val currency: String?
+    )
+
+    enum class InitialRoute(val routeName: String) {
+        @SerializedName("GetStarted") GET_STARTED("GetStarted"),
+        @SerializedName("ProfileTypeSelection") PROFILE_TYPE_SELECTION("ProfileTypeSelection"),
+        @SerializedName("ImportProfile") IMPORT_PROFILE("ImportProfile"),
+        @SerializedName("SelectTokens") SELECT_TOKENS("SelectTokens"),
+        @SerializedName("SendTo") SEND_TO("SendTo"),
+        @SerializedName("SendTokens") SEND_TOKENS("SendTokens"),
+        @SerializedName("Home") HOME("Home")
+    }
+
+    enum class NativeScreenName {
+        @SerializedName("multiBackup") MULTI_BACKUP,
+        @SerializedName("deviceBackup") DEVICE_BACKUP,
+        @SerializedName("seedPhraseBackup") SEED_PHRASE_BACKUP,
+        @SerializedName("backupOptions") BACKUP_OPTIONS,
+        @SerializedName("walletRestore") WALLET_RESTORE,
+        @SerializedName("recoveryPhraseRestore") RECOVERY_PHRASE_RESTORE,
+        @SerializedName("keyStoreRestore") KEY_STORE_RESTORE,
+        @SerializedName("privateKeyRestore") PRIVATE_KEY_RESTORE,
+        @SerializedName("googleDriveRestore") GOOGLE_DRIVE_RESTORE,
+        @SerializedName("icloudRestore") ICLOUD_RESTORE,
+        @SerializedName("multiRestore") MULTI_RESTORE
+    }
+
+    enum class ScreenName {
+        @SerializedName("GetStarted") GET_STARTED,
+        @SerializedName("ProfileTypeSelection") PROFILE_TYPE_SELECTION,
+        @SerializedName("RecoveryPhrase") RECOVERY_PHRASE,
+        @SerializedName("ConfirmRecoveryPhrase") CONFIRM_RECOVERY_PHRASE,
+        @SerializedName("SecureEnclave") SECURE_ENCLAVE,
+        @SerializedName("ImportProfile") IMPORT_PROFILE,
+        @SerializedName("ImportOtherMethods") IMPORT_OTHER_METHODS,
+        @SerializedName("ConfirmImportProfile") CONFIRM_IMPORT_PROFILE,
+        @SerializedName("NotificationPreferences") NOTIFICATION_PREFERENCES,
+        @SerializedName("SelectTokens") SELECT_TOKENS,
+        @SerializedName("SendTo") SEND_TO,
+        @SerializedName("SendTokens") SEND_TOKENS,
+        @SerializedName("SendSummary") SEND_SUMMARY,
+        @SerializedName("NFTList") NFT_LIST,
+        @SerializedName("NFTDetail") NFT_DETAIL
+    }
 
     data class NFTModel(
         @SerializedName("id")

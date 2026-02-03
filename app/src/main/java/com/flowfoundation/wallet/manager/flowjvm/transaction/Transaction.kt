@@ -23,8 +23,6 @@ import com.flowfoundation.wallet.wallet.toAddress
 import com.instabug.library.Instabug
 import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
 import org.onflow.flow.models.*
-import com.flowfoundation.wallet.manager.account.AccountManager
-import com.flowfoundation.wallet.manager.account.getFlowAddress
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.ionspin.kotlin.bignum.integer.BigInteger
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -462,12 +460,12 @@ suspend fun Transaction.send(): Transaction {
     // The user can check the transaction status on FlowScan using the transaction ID
     TransactionResult(
       blockId = "",
-      status = org.onflow.flow.models.TransactionStatus.SEALED,
+      status = TransactionStatus.SEALED,
       statusCode = 0,
       errorMessage = "Result parsing failed due to Flow SDK JSON deserialization issue. Transaction was submitted successfully. Check status on FlowScan.",
       computationUsed = "0",
       events = emptyList(),
-      execution = org.onflow.flow.models.TransactionExecution.success,
+      execution = TransactionExecution.success,
       links = null
     )
   } catch (e: RuntimeException) {
@@ -481,12 +479,12 @@ suspend fun Transaction.send(): Transaction {
       // Return a mock sealed result since the transaction was submitted successfully
       TransactionResult(
         blockId = "",
-        status = org.onflow.flow.models.TransactionStatus.SEALED,
+        status = TransactionStatus.SEALED,
         statusCode = 0,
         errorMessage = "Result parsing failed due to Flow SDK JSON parsing issue. Transaction was submitted successfully. Check status on FlowScan.",
         computationUsed = "0",
         events = emptyList(),
-        execution = org.onflow.flow.models.TransactionExecution.success,
+        execution = TransactionExecution.success,
         links = null
       )
     } else {
@@ -666,26 +664,15 @@ suspend fun prepare(builder: TransactionBuilder): Transaction {
   logd(TAG, "prepare target walletAddress (from builder.walletAddress): $walletAddress")
 
   val flowAccount = FlowCadenceApi.getAccount(walletAddress)
-  val currentNetworkName = chainNetWorkString()
-  logd(TAG, "Current network for account lookup: $currentNetworkName. Target transaction address: $walletAddress")
-
-  // Find local account instance
-  val localAccountInstance = AccountManager.list().find { acc ->
-    val accFlowAddress = acc.getFlowAddress(currentNetworkName, TAG)?.toAddress()
-    logd(TAG, "Iterating AccountManager.list(): Checking local account '${acc.userInfo.username}', its address for $currentNetworkName is '$accFlowAddress'")
-    accFlowAddress == walletAddress
-  } ?: throw RuntimeException("Could not find local Account instance for address $walletAddress on network $currentNetworkName.")
-
-  logd(TAG, "Successfully found local account ${localAccountInstance.userInfo.username} for address $walletAddress. Generating CryptoProvider.")
 
   // Get crypto provider
-  val cryptoProvider = CryptoProviderManager.generateAccountCryptoProvider(localAccountInstance)
-    ?: throw RuntimeException("Could not generate CryptoProvider for local account ${localAccountInstance.userInfo.username} (address $walletAddress)")
+  val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
+    ?: throw RuntimeException("Could not get CryptoProvider for wallet $walletAddress")
 
   // Get account keys and find matching key
   val accountKeys = flowAccount.keys?.toList() ?: throw InvalidKeyException("On-chain account $walletAddress has no keys")
   logd(TAG, "On-chain keys for $walletAddress: $accountKeys")
-  logd(TAG, "Provider public key from local account ${localAccountInstance.userInfo.username} (for $walletAddress): ${cryptoProvider.getPublicKey()}")
+  logd(TAG, "Provider public key from wallet $walletAddress): ${cryptoProvider.getPublicKey()}")
 
   val providerPublicKey = cryptoProvider.getPublicKey().ensureHexFormat()
   logd(TAG, "Normalized provider public key: $providerPublicKey")

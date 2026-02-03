@@ -8,7 +8,6 @@ import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.executeCadence
 import com.flowfoundation.wallet.manager.notification.WalletNotificationManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.utils.format
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
@@ -31,13 +30,13 @@ object AccountInfoManager {
     fun refreshAccountInfo() {
         ioScope {
             try {
-                val walletAddress = WalletManager.wallet().walletAddress() ?: return@ioScope
+                val walletAddress = WalletManager.getCurrentFlowWalletAddress() ?: return@ioScope
 
                 val result = fetchOnChainAccountInfo(walletAddress)
 
                 _accountResultFlow.value = result
 
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 _accountResultFlow.value = null
             }
             WalletNotificationManager.onWalletUpdate()

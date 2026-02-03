@@ -5,6 +5,7 @@ import com.flow.wallet.keys.SeedPhraseKey
 import org.onflow.flow.models.DomainTag
 import org.onflow.flow.models.HashingAlgorithm
 import org.onflow.flow.models.SigningAlgorithm
+import org.onflow.flow.models.Transaction
 
 class HDWalletCryptoProvider(
     private val seedPhraseKey: SeedPhraseKey,
@@ -40,7 +41,7 @@ class HDWalletCryptoProvider(
     @OptIn(ExperimentalStdlibApi::class)
     override suspend fun signData(data: ByteArray): String {
         val signatureBytes = seedPhraseKey.sign(data, signingAlgorithm, hashingAlgorithm)
-        
+
         // Recovery ID trimming - ensure consistency with other providers
         // Remove recovery ID if present (Flow expects 64-byte signatures, not 65-byte with recovery ID)
         val finalSignature = if (signatureBytes.size == 65) {
@@ -48,7 +49,7 @@ class HDWalletCryptoProvider(
         } else {
             signatureBytes
         }
-        
+
         return finalSignature.toHexString()
     }
 
@@ -56,52 +57,39 @@ class HDWalletCryptoProvider(
         return object : org.onflow.flow.models.Signer {
             override var address: String = ""
             override var keyIndex: Int = 0
-            
-            override suspend fun sign(transaction: org.onflow.flow.models.Transaction?, bytes: ByteArray): ByteArray {
+
+            override suspend fun sign(bytes: ByteArray, transaction: Transaction?): ByteArray {
                 val signature = seedPhraseKey.sign(bytes, signingAlgorithm, hashingAlgorithm)
-                
+
                 // Remove recovery ID if present (Flow expects 64-byte signatures, not 65-byte with recovery ID)
                 val finalSignature = if (signature.size == 65) {
                     signature.copyOfRange(0, 64) // Remove the last byte (recovery ID)
                 } else {
                     signature
                 }
-                
+
                 return finalSignature
             }
 
-            override suspend fun sign(bytes: ByteArray): ByteArray {
-                val signature = seedPhraseKey.sign(bytes, signingAlgorithm, hashingAlgorithm)
-                
-                // Remove recovery ID if present (Flow expects 64-byte signatures, not 65-byte with recovery ID)
-                val finalSignature = if (signature.size == 65) {
-                    signature.copyOfRange(0, 64) // Remove the last byte (recovery ID)
-                } else {
-                    signature
-                }
-                
-                return finalSignature
-            }
-            
-            override suspend fun signWithDomain(bytes: ByteArray, domain: ByteArray): ByteArray {
+            override suspend fun signWithDomain(bytes: ByteArray, domain: ByteArray, transaction: Transaction?): ByteArray {
                 val signature = seedPhraseKey.sign(domain + bytes, signingAlgorithm, hashingAlgorithm)
-                
+
                 // Remove recovery ID if present (Flow expects 64-byte signatures, not 65-byte with recovery ID)
                 val finalSignature = if (signature.size == 65) {
                     signature.copyOfRange(0, 64) // Remove the last byte (recovery ID)
                 } else {
                     signature
                 }
-                
+
                 return finalSignature
             }
-            
+
             override suspend fun signAsUser(bytes: ByteArray): ByteArray {
-                return signWithDomain(bytes, DomainTag.User.bytes)
+                return signWithDomain(bytes, DomainTag.User.bytes, null)
             }
-            
-            override suspend fun signAsTransaction(bytes: ByteArray): ByteArray {
-                return signWithDomain(bytes, DomainTag.Transaction.bytes)
+
+            override suspend fun signAsTransaction(bytes: ByteArray, transaction: Transaction?): ByteArray {
+                return signWithDomain(bytes, DomainTag.Transaction.bytes, transaction)
             }
         }
     }

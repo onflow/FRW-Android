@@ -236,9 +236,7 @@
     <string name="restore_with_recovery_phrase">Restore with Recovery Phrase</string>
     <string name="not_logged_in_toast">You are not logged in to the wallet</string>
     <string name="free_gas_fee">Free gas fee</string>
-    <string name="free_gas_fee_desc">Allow Flow Wallet to pay the gas fee for all my transactions
-        .</string>
-    <string name="file_picker_title">Select File</string>
+    <string name="free_gas_fee_desc">* Allow Flow Wallet to pay the gas fee for all my transactions.</string>
     <string name="transaction_fee">Transaction fee</string>
     <string name="hold_to_confirm">Hold to Confirm</string>
     <string name="hold_to_sign">Hold to sign</string>
@@ -665,8 +663,8 @@
     <string name="raw_key_restore_private_key_note">Import with raw hex key.</string>
     <string name="sign_type_message_from">Sign Type Message from</string>
     <string name="message">Message</string>
-    <string name="current_account">Current Account</string>
-    <string name="other_accounts">Other Accounts</string>
+    <string name="current_account">Current account</string>
+    <string name="other_accounts">Other accounts</string>
     <string name="local_account_keys">Local Account Keys</string>
     <string name="reload_config">Reload Config</string>
     <string name="move_fee">Move Fee</string>
@@ -708,7 +706,6 @@
     <string name="connect_to_dropbox">Connect to Dropbox</string>
     <string name="connect_dropbox">Connect Dropbox</string>
     <string name="deposit_evm_tip">Please make sure your deposit is on FLOW EVM network, if your deposit via another network your assets may be lost.</string>
-    <string name="legal_message">"     <![CDATA[     By using Flow Wallet you agree to the <a href="https://wallet.flow.com/terms-of-service"><u>Terms of Service</u></a> and <a href="https://wallet.flow.com/privacy-policy"><u>Privacy Policy</u></a>     ]]>     "</string>
     <string name="get_started">Let\'s get started</string>
     <string name="on_flow">#onFlow</string>
     <string name="choose_swap_provider">Choose Swap Provider</string>
@@ -716,19 +713,39 @@
     <string name="scan">Scan</string>
     <string name="punch_swap" translatable="false">Punch Swap</string>
     <string name="punch_swap_url" translatable="false">swap.kittypunch.xyz</string>
+    <string name="search_tokens">Search tokens</string>
+    <string name="token_list">Token List</string>
+    <string name="surge_pricing_title">Are you really sure that you want to continue with surge pricing?</string>
+    <string name="surge_current_fee">Your transaction fee:</string>
+    <string name="surge_active">Surge price active</string>
+    <string name="surge_description">Due to high network activity, transaction fees are elevated, and Flow Wallet is temporarily not paying for your gas. Current network fees are 4× higher than usual.</string>
+    <string name="surge_hold_to_confirm">Hold to agree to surge pricing</string>
+    <string name="selected_account">Selected Account</string>
+    <string name="connecting_on">Connecting on %1$s</string>
+    <string name="connecting">Connecting...</string>
+    <string name="connecting_account">Connecting Account</string>
+    <string name="requesting_access">%1$s is requesting access to:</string>
+    <string name="show_in_account_list">Show in account list</string>
+    <string name="file_picker_title">Select File</string>
+    <string name="select_account">Select Account</string>
+    <string name="label_flow">FLOW</string>
+    <string name="label_eoa">EOA</string>
+    <string name="telegram_not_installed">Telegram app is not installed</string>
+    <string name="legal_message">"     <![CDATA[     By using Flow Wallet you agree to the <a href="https://wallet.flow.com/terms-of-service"><u>Terms of Service</u></a> and <a href="https://wallet.flow.com/privacy-policy"><u>Privacy Policy</u></a>     ]]>     "</string>
     <string name="trado_url" translatable="false">trado.one</string>
     <string name="trado" translatable="false">Trado</string>
     <string name="increment_finance" translatable="false">Increment Finance</string>
     <string name="increment_url" translatable="false">increment.fi</string>
-    <string name="json" translatable="false">JSON</string>
-    <string name="required_asterisk" translatable="false">" *"</string>
-    <string name="cadence_script_version" translatable="false">Cadence Script Version: %1$s</string>
-    <string name="search_tokens">Search tokens</string>
-    <string name="token_list">Token List</string>
+    <string name="results">Results</string>
+    <string name="search_nft_name">Search NFT</string>
+    <string name="loading_nfts">Loading NFTs...</string>
+    <string name="nft_list_loading_error">Error, please check your internet or refresh.</string>
+    <string name="refresh">Refresh</string>
+    <string name="no_relevant_nft">No relevant NFT found.</string>
     <string name="import_from_pdf">從 PDF 匯入</string>
     <string name="pdf_parse_error_message">密鑰庫 JSON 格式無效。請下載 Flow Wallet Extension 以正確匯出您的密鑰庫文件。</string>
     <string name="extension_download_url">https://chromewebstore.google.com/detail/flow-wallet/hpclkefagolihohboafpheddmmgdffjm?hl=en</string>
-    
+
     <!-- PDF Import Feature -->
     <string name="pdf_password_hint">輸入您的 PDF 密碼</string>
     <string name="pdf_password_protected_info">此 PDF 受密碼保護。請輸入密碼以提取私鑰。</string>
@@ -746,4 +763,52 @@
     <string name="pdf_password_required_desc">此 PDF 受密碼保護。請提供密碼。</string>
     <string name="unlock">解鎖</string>
     <string name="pdf_contains_private_key">此 PDF 包含私鑰。請使用私鑰匯入選項。</string>
+    <string name="contact_address">Contact Address</string>
+    <string name="amount">Amount</string>
+    <string name="contact">Contact</string>
+    <string name="function">Function</string>
+    <string name="parameters">Parameters</string>
+    <string name="call_data">Call Data</string>
+    <string name="blocked_info">"<![CDATA[This website is blocked as part of a community-maintained list of malicious websites, if you believe the website has been blocked in error, <u>please file an issue.</u>]]>"</string>
+    <string name="blocked_url">%1$s is blocked!</string>
+    <string name="ignore_warning">Ignore warning, show anyway</string>
+    <string name="connect_warning">Ignore warning, connect anyway</string>
+    <string name="blocked_tip">This app has been flagged as dangerous.</string>
+    <string name="switch_to">Switch to %1$s</string>
+    <string name="deeplink_login_failed">Failed to open, please create a wallet first.</string>
+    <string name="return_to_browser_to_continue">Please return to the browser to continue your session.</string>
+    <string name="manage_tokens">Manage Tokens</string>
+    <string name="filters">Filters</string>
+    <string name="hide_dust_token">Hide dust tokens</string>
+    <string name="display_verified_token">Only show verified tokens</string>
+    <string name="tokens">Tokens</string>
+    <string name="verified">Verified</string>
+    <string name="contract_address">Contract address</string>
+    <string name="no">No</string>
+    <string name="yes">Yes</string>
+    <string name="wallet_connect_no_proposal">Unable to establish connection. Please try again.</string>
+    <string name="wallet_connect_pairing_error">Connection failed. Please try again.</string>
+    <string name="wallet_connect_generic_error">An error occurred while connecting. Please try again.</string>
+    <string name="wallet_connect_proposal_expired">Connection request has expired. Please try again.</string>
+    <string name="wallet_connect_request_expired">Request has expired. Please try again.</string>
+    <string name="wallet_connect_activity_error">Unable to show connection prompt. Please try again.</string>
+    <string name="wallet_connect_proposal_error">Failed to process connection request. Please try again.</string>
+    <string name="wallet_connect_initialization_error">Error initializing Wallet Connect.</string>
+    <string name="wallet_connect_approval_error">Error approving Wallet Connect session.</string>
+    <string name="verified_tip">This is an unverified token, only interact with tokens you trust.</string>
+    <string name="hide_dust_token_tip">Tokens with less than 0.01$ USD balance</string>
+    <string name="transfer_success">Transaction Success</string>
+    <string name="transfer_failed">Transaction Failed</string>
+    <string name="nft_amount_items">%1$s Items</string>
+    <string name="pending_request_from">You have a pending request from %1$s</string>
+    <string name="my_own_address">My Own Address</string>
+    <string name="custom_address">Custom Address</string>
+    <string name="enter_custom_address">Enter custom address</string>
+    <string name="add_evm_account">Add an %1$s account on Flow</string>
+    <string name="active_account">Active account</string>
+    <string name="add_account">Add account</string>
+    <string name="confirm_to_copy_address">Confirm to copy address</string>
+    <string name="confirm_copy_address_tips">You have copied an EVM address on the Flow network, please make sure you only send assets on the Flow network to this address otherwise they will be lost.</string>
+    <string name="evm_on_flow_address">EVM on Flow address</string>
+    <string name="recover_profile">Recover profile</string>
 </resources>

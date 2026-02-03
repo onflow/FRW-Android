@@ -2,19 +2,11 @@ package com.flowfoundation.wallet.manager.walletconnect
 
 import androidx.annotation.WorkerThread
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
-import com.flowfoundation.wallet.manager.config.AppConfig
-import com.flowfoundation.wallet.manager.config.isGasFree
-import com.flowfoundation.wallet.manager.flowjvm.payerAccountKeyId
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
-import com.flowfoundation.wallet.manager.transaction.SurgePricingManager
-import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.manager.walletconnect.model.WalletConnectMethod
 import com.flowfoundation.wallet.network.BASE_HOST
-import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.webview.fcl.encodeAccountProof
-import org.onflow.flow.models.FlowAddress
 
 @WorkerThread
 suspend fun walletConnectAuthnServiceResponse(

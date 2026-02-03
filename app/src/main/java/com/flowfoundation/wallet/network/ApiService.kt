@@ -1,7 +1,5 @@
 package com.flowfoundation.wallet.network
 
-import com.flowfoundation.wallet.manager.account.model.EVMTokenBalanceResponse
-import com.flowfoundation.wallet.manager.coin.model.TokenPriceResponse
 import com.flowfoundation.wallet.network.model.*
 import okhttp3.ResponseBody
 import retrofit2.Response
@@ -10,11 +8,14 @@ import retrofit2.http.Path
 
 interface ApiService {
 
-    @POST("/v3/register")
+    @POST("/v4/register")
     suspend fun register(@Body param: RegisterRequest): RegisterResponse
 
     @POST("/v1/user/address")
     suspend fun createWallet(): CreateWalletResponse
+
+    @POST("/v2/user/address")
+    suspend fun createWalletV2(): CreateWalletV2Response
 
     @GET("/v1/user/check")
     suspend fun checkUsername(@Query("username") username: String): UsernameCheckResponse
@@ -232,5 +233,8 @@ interface ApiService {
 
     @POST("/api/v4/onramp/coinbase")
     suspend fun createCoinbaseOnRampSession(@Body params: CoinbaseOnRampRequest): CoinbaseOnRampResponse
+
+    @GET("/api/android/check")
+    suspend fun checkUserMnemonicStatus(): MnemonicCheckResponse
 
 }

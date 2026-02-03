@@ -66,6 +66,7 @@
     <string name="recovery">Recovery</string>
     <string name="phrase">Phrase</string>
     <string name="nft">NFTs</string>
+    <string name="nft_detail">NFT Detail</string>
     <string name="activity">Activity</string>
     <string name="restore_wallet">Restore Wallet</string>
     <string name="restore_wallet_tip">Restore your wallet with the 12 word recovery phrase that you have written down.</string>
@@ -124,6 +125,11 @@
     <string name="edit_avatar">Edit avatar</string>
     <string name="edit">Edit</string>
     <string name="settings_visible_desc">Other Flow Wallet users cannot search for your username .</string>
+    <string name="security_setting">Security Settings</string>
+    <string name="notification_setting">Notification Settings</string>
+    <string name="currency_setting">Currency Settings</string>
+    <string name="theme_setting">Theme Settings</string>
+    <string name="about_setting">About Settings</string>
     <string name="visible">Visible</string>
     <string name="invisible">Invisible</string>
     <string name="private_str">Private</string>
@@ -199,6 +205,7 @@
     <string name="developer_mode">Developer Mode</string>
     <string name="network">Network</string>
     <string name="selected">Selected</string>
+    <string name="selected_account">Selected Account</string>
     <string name="mainnet">Mainnet</string>
     <string name="testnet">Testnet</string>
     <string name="switch_network_failed">Switch network failed</string>
@@ -233,7 +240,10 @@
     <string name="made_by_outblock">Made by <a href="https://flow.com/">Flow</a></string>
     <string name="about_version">Version %1$s</string>
     <string name="connecting_to">Connecting to</string>
+    <string name="connecting_on">Connecting on %1$s</string>
     <string name="connecting">Connecting...</string>
+    <string name="connecting_account">Connecting Account</string>
+    <string name="requesting_access">%1$s is requesting access to:</string>
     <string name="transaction_to">Transaction Request from</string>
     <string name="message_to">Sign Message Request from</string>
     <string name="fcl_connect_permission_title">This App would like to</string>
@@ -246,8 +256,8 @@
     <string name="restore_with_recovery_phrase">Restore with Recovery Phrase</string>
     <string name="not_logged_in_toast">You are not logged in to the wallet</string>
     <string name="free_gas_fee">Free gas fee</string>
-    <string name="free_gas_fee_desc">Allow Flow Wallet to pay the gas fee for all my transactions
-        .</string>
+    <string name="free_gas_fee_desc">* Allow Flow Wallet to pay the gas fee for all my transactions.</string>
+    <string name="show_in_account_list">Show in account list</string>
     <string name="file_picker_title">Select File</string>
     <string name="transaction_fee">Transaction Fee</string>
     <string name="hold_to_confirm">Hold to Confirm</string>
@@ -308,6 +318,7 @@
     <string name="estimated_fees">Estimated Fees</string>
     <string name="select">Select</string>
     <string name="select_token">Select Token</string>
+    <string name="select_account">Select Account</string>
     <string name="swap_price">Swap price</string>
     <string name="hold_to_swap">Hold to swap</string>
     <string name="swap_failed">Swap failed</string>
@@ -357,6 +368,7 @@
     <string name="stake_failed">Stake failed</string>
     <string name="unstake_failed">Unstake failed</string>
     <string name="staking_list">Staking List</string>
+    <string name="transaction_list">Transaction List</string>
     <string name="stake_new_node">Stake New Node</string>
     <string name="staking_amount">Staking Amount</string>
     <string name="rewards">Rewards</string>
@@ -391,6 +403,7 @@
     <string name="request_to_unstake">Request to UnStake</string>
     <string name="will_be_processed_at_the_next_epoch">Will be processed at the next epoch</string>
     <string name="backup_desc">Backup your account now to protect your assets</string>
+    <string name="backup_setting">Backup Settings</string>
     <string name="not_now">Not Now</string>
     <string name="not_now_tip">Not now</string>
     <string name="link_account">Link Account</string>
@@ -405,8 +418,10 @@
     <string name="try_it_again">Try it again</string>
     <string name="generate_qr_code_error">Generating QR code failed. Please try again.</string>
     <string name="wallet_connect_error">Create wallet connect failed. Please try again.</string>
+    <string name="wallet_connect_session">WalletConnect Sessions</string>
     <string name="linked_account">Linked Accounts</string>
     <string name="devices">Devices</string>
+    <string name="device_setting">Device Settings</string>
     <string name="device_info">Device Info</string>
     <string name="default_child_account_name">Linked Account</string>
     <string name="default_evm_account_name">EVM Wallet</string>
@@ -555,6 +570,8 @@
     <string name="evm_on_flow">EVM on Flow</string>
     <string name="flow_evm">FlowEVM</string>
     <string name="label_evm">EVM</string>
+    <string name="label_flow">FLOW</string>
+    <string name="label_eoa">EOA</string>
     <string name="move">Move</string>
     <string name="current_vm">Current Network</string>
     <string name="cadence">Cadence</string>
@@ -633,6 +650,7 @@
     <string name="restore_failed">Restore Failed</string>
     <string name="restore_failed_desc">Please try again later.</string>
     <string name="debug_view">Debug View</string>
+    <string name="wrap_eoa_tx_with_cadence">Wrap EOA TX with Cadence</string>
     <string name="export_log">Export Log</string>
     <string name="view_recovery_phrase">View Recovery Phrase</string>
     <string name="clear">Clear</string>
@@ -675,8 +693,8 @@
     <string name="raw_key_restore_private_key_note">Import with raw hex key.</string>
     <string name="sign_type_message_from">Sign Type Message from</string>
     <string name="message">Message</string>
-    <string name="current_account">Current Account</string>
-    <string name="other_accounts">Other Accounts</string>
+    <string name="current_account">Current account</string>
+    <string name="other_accounts">Other accounts</string>
     <string name="local_account_keys">Local Account Keys</string>
     <string name="reload_config">Reload Config</string>
     <string name="move_fee">Move Fee</string>
@@ -785,7 +803,7 @@
     <string name="import_from_pdf">Import from PDF</string>
     <string name="pdf_parse_error_message">Invalid keystore JSON format. Please download the Flow Wallet Extension to export your keystore file correctly.</string>
     <string name="extension_download_url">https://chromewebstore.google.com/detail/flow-wallet/hpclkefagolihohboafpheddmmgdffjm?hl=en</string>
-    
+
     <!-- PDF Import Feature -->
     <string name="pdf_password_hint">Enter your PDF password</string>
     <string name="pdf_password_protected_info">This PDF is password protected. Please enter your password to extract the private key.</string>
@@ -803,4 +821,11 @@
     <string name="pdf_extract_failed">Failed to extract PDF: %1$s</string>
     <string name="pdf_keystore_extracted">Keystore extracted from PDF. Enter password and press Import.</string>
     <string name="pdf_imported_success">PDF imported successfully: %1$s</string>
+    <string name="add_evm_account">Add an %1$s account on Flow</string>
+    <string name="active_account">Active account</string>
+    <string name="add_account">Add account</string>
+    <string name="confirm_to_copy_address">Confirm to copy address</string>
+    <string name="confirm_copy_address_tips">You have copied an EVM address on the Flow network, please make sure you only send assets on the Flow network to this address otherwise they will be lost.</string>
+    <string name="evm_on_flow_address">EVM on Flow address</string>
+    <string name="recover_profile">Recover profile</string>
 </resources>

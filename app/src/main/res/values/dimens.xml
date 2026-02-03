@@ -8,7 +8,7 @@
     <dimen name="browser_input_vertical_padding">12dp</dimen>
     <dimen name="popup_vertical_margin">16dp</dimen>
     <dimen name="popup_horizontal_margin">4dp</dimen>
-    
+
     <!-- NFT Grid Spacing - Default for large screens -->
     <dimen name="nft_grid_horizontal_spacing">16dp</dimen>
     <dimen name="nft_grid_vertical_spacing">16dp</dimen>
@@ -16,4 +16,8 @@
     <dimen name="nft_grid_end_spacing">16dp</dimen>
     <dimen name="nft_grid_top_spacing">16dp</dimen>
     <dimen name="nft_grid_bottom_spacing">8dp</dimen>
+
+    <!-- SendButton dimensions -->
+    <dimen name="send_button_radius">12dp</dimen>
+    <dimen name="send_button_elevation">3dp</dimen>
 </resources>

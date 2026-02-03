@@ -6,7 +6,6 @@ import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
 import com.flowfoundation.wallet.manager.flowjvm.transaction.SignPayerResponse
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logv
 import com.flowfoundation.wallet.utils.uiScope
@@ -16,6 +15,7 @@ import com.flowfoundation.wallet.widgets.webview.fcl.model.FclAuthzResponse
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclSignMessageResponse
 import org.onflow.flow.models.FlowAddress
 import com.flowfoundation.wallet.manager.account.AccountManager
+import com.flowfoundation.wallet.manager.account.firstFlowWalletAddress
 import com.flowfoundation.wallet.utils.logd
 
 fun WebView?.postMessage(message: String) {
@@ -44,7 +44,7 @@ fun WebView?.postPreAuthzResponse() {
         // If that failed, try getting it from the AccountManager
         if (address.isBlank()) {
             val account = AccountManager.get()
-            address = account?.wallet?.walletAddress() ?: ""
+            address = account?.firstFlowWalletAddress() ?: ""
         }
 
         if (address.isBlank()) {
@@ -63,12 +63,12 @@ fun WebView?.postPreAuthzResponse() {
 fun WebView?.postAuthzPayloadSignResponse(fcl: FclAuthzResponse) {
     ioScope {
         // Use a more reliable method to get the wallet address
-        var address = WalletManager.wallet().walletAddress()
+        var address = WalletManager.getCurrentFlowWalletAddress()
 
         // If that failed, try getting it from the AccountManager
         if (address.isNullOrBlank()) {
             val account = AccountManager.get()
-            address = account?.wallet?.walletAddress()
+            address = account?.firstFlowWalletAddress()
         }
 
         // If still blank, try getting from selectedWalletAddress
@@ -76,7 +76,7 @@ fun WebView?.postAuthzPayloadSignResponse(fcl: FclAuthzResponse) {
             address = WalletManager.selectedWalletAddress()
         }
 
-        if (address.isNullOrBlank()) {
+        if (address.isBlank()) {
             logd("WebView", "No wallet address found for authz payload sign response")
             return@ioScope
         }
@@ -97,12 +97,12 @@ fun WebView?.postAuthzEnvelopeSignResponse(sign: SignPayerResponse.EnvelopeSigs)
 fun WebView?.postSignMessageResponse(fcl: FclSignMessageResponse) {
     ioScope {
         // Use a more reliable method to get the wallet address
-        var address = WalletManager.wallet().walletAddress()
+        var address = WalletManager.getCurrentFlowWalletAddress()
 
         // If that failed, try getting it from the AccountManager
         if (address.isNullOrBlank()) {
             val account = AccountManager.get()
-            address = account?.wallet?.walletAddress()
+            address = account?.firstFlowWalletAddress()
         }
 
         // If still blank, try getting from selectedWalletAddress
@@ -110,7 +110,7 @@ fun WebView?.postSignMessageResponse(fcl: FclSignMessageResponse) {
             address = WalletManager.selectedWalletAddress()
         }
 
-        if (address.isNullOrBlank()) {
+        if (address.isBlank()) {
             logd("WebView", "No wallet address found for sign message response")
             return@ioScope
         }

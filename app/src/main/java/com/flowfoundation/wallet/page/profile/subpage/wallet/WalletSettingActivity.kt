@@ -32,6 +32,8 @@ import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.visible
+import com.flowfoundation.wallet.manager.account.AccountVisibilityManager
+import com.flowfoundation.wallet.firebase.auth.firebaseUid
 
 class WalletSettingActivity : BaseActivity(), OnEmojiUpdate {
 
@@ -72,7 +74,14 @@ class WalletSettingActivity : BaseActivity(), OnEmojiUpdate {
                     securityOpen(SecurityPrivateKeyActivity.launchIntent(this@WalletSettingActivity))
                 }
             } else if (CryptoProviderManager.getCurrentCryptoProvider() is PrivateKeyStoreCryptoProvider) {
-                llRecoveryLayout.gone()
+                if (AccountManager.encryptedMnemonic().isNullOrBlank()) {
+                    llRecoveryLayout.gone()
+                } else {
+                    llRecoveryLayout.visible()
+                    recoveryPreference.setOnClickListener {
+                        securityOpen(SecurityRecoveryActivity.launchIntent(this@WalletSettingActivity))
+                    }
+                }
                 privatePreference.setOnClickListener {
                     securityOpen(SecurityPrivateKeyActivity.launchIntent(this@WalletSettingActivity))
                 }
@@ -87,8 +96,20 @@ class WalletSettingActivity : BaseActivity(), OnEmojiUpdate {
                 securityOpen(AccountKeyActivity.launchIntent(this@WalletSettingActivity))
             }
 
-            uiScope { freeGasPreference.setChecked(isFreeGasPreferenceEnable()) }
-            freeGasPreference.setOnCheckedChangeListener { uiScope { setFreeGasPreferenceEnable(it) } }
+            // Initialize account visibility preference
+            val userId = firebaseUid() ?: ""
+            val isAccountVisible = !AccountVisibilityManager.isAccountHidden(userId, walletAddress)
+            showInAccountListPreference.setChecked(isAccountVisible)
+            showInAccountListPreference.setOnCheckedChangeListener { checked ->
+                val currentUserId = firebaseUid() ?: ""
+                if (checked) {
+                    // User wants to show the account in the list (make it visible)
+                    AccountVisibilityManager.showAccount(currentUserId, walletAddress)
+                } else {
+                    // User wants to hide the account from the list
+                    AccountVisibilityManager.hideAccount(currentUserId, walletAddress)
+                }
+            }
 
             resetButton.setOnClickListener { WalletResetConfirmDialog.show(supportFragmentManager) }
 

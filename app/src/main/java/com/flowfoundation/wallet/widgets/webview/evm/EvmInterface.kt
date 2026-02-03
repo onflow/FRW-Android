@@ -7,11 +7,14 @@ import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.manager.app.MAINNET_CHAIN_ID
 import com.flowfoundation.wallet.manager.app.TESTNET_CHAIN_ID
 import com.flowfoundation.wallet.manager.app.networkStringByChainId
+import com.flowfoundation.wallet.manager.evm.DAppEVMConnectionManager
 import com.flowfoundation.wallet.manager.evm.DAppMethod
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
-import com.flowfoundation.wallet.manager.evm.sendEthereumTransaction
+import com.flowfoundation.wallet.manager.evm.sendCOATransaction
+import com.flowfoundation.wallet.manager.evm.sendEOATransaction
 import com.flowfoundation.wallet.manager.evm.signEthereumMessage
 import com.flowfoundation.wallet.manager.evm.signTypedData
+import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.page.browser.toFavIcon
 import com.flowfoundation.wallet.page.browser.widgets.LilicoWebView
 import com.flowfoundation.wallet.page.evm.EnableEVMDialog
@@ -80,8 +83,8 @@ class EvmInterface(
                             )
                         )
                         if (connect) {
-                            val address = EVMWalletManager.getEVMAddress()
-                            webView.setAddress(network, address.orEmpty(), id)
+                            val address = DAppEVMConnectionManager.getCurrentAccount()?.address.orEmpty()
+                            webView.setAddress(network, address, id)
                         }
                     } else {
                         EnableEVMDialog.show(activity.supportFragmentManager)
@@ -116,15 +119,19 @@ class EvmInterface(
             }
             DAppMethod.SIGN_MESSAGE -> {
                 val data = extractMessage(obj)
+                logd(TAG, "transaction obj::$obj")
+                val fromAddress = extractFromAddress(obj)
                 if (network == ETH_NETWORK)
                     uiScope {
-                        handleSignMessage(activity, id, data, network)
+                        handleSignMessage(activity, fromAddress, id, data, network)
                     }
             }
             DAppMethod.SIGN_PERSONAL_MESSAGE -> {
                 val data = extractMessage(obj)
+                logd(TAG, "transaction obj::$obj")
+                val fromAddress = extractFromAddress(obj)
                 uiScope {
-                    handleSignMessage(activity, id, data, network)
+                    handleSignMessage(activity, fromAddress, id, data, network)
                 }
             }
             DAppMethod.SIGN_TRANSACTION -> {
@@ -143,9 +150,10 @@ class EvmInterface(
                 logd(TAG, "signTypedMessage obj::$obj")
                 logd(TAG, "signTypedMessage data::$data")
                 logd(TAG, "signTypedMessage raw::$raw")
+                val fromAddress = extractFromAddress(obj)
 
                 uiScope {
-                    handleSignTypedMessage(activity, id, data, raw, network)
+                    handleSignTypedMessage(activity, id, fromAddress, data, raw, network)
                 }
             }
             DAppMethod.WATCH_ASSET -> {
@@ -161,9 +169,41 @@ class EvmInterface(
                     }
                 }
             }
+            DAppMethod.EC_RECOVER -> {
+                logd(TAG, "EC_RECOVER obj::$obj")
+                val param = obj.getJSONObject("object")
+                val message = param.optString("message")
+                val signature = param.optString("signature")
+
+                if (message != null && signature != null) {
+                    uiScope {
+                        handleECRecover(id, message, signature, network)
+                    }
+                } else {
+                    webView.sendError(network, "Invalid EC_RECOVER parameters", id)
+                }
+            }
             else -> {
                 logd("evm", "methodNotImplement:::$method")
             }
+        }
+    }
+
+    private suspend fun handleECRecover(id: Long, message: String, signature: String, network: String) {
+        logd(TAG, "=== EvmInterface handleECRecover ===")
+        logd(TAG, "Message: $message")
+        logd(TAG, "Signature: $signature")
+
+        try {
+            val signatureData = Numeric.hexStringToByteArray(signature)
+            val messageData = message.toByteArray()
+            val address = WalletManager.wallet()?.ethRecoverAddress(signatureData, messageData) ?: ""
+            logd(TAG, "Recovered address: $address")
+            webView.sendResult(network, address, id)
+        } catch (e: Exception) {
+            logd(TAG, "ERROR: Exception in handleECRecover: ${e.message}")
+            e.printStackTrace()
+            webView.sendError(network, "EC recovery failed: ${e.message}", id)
         }
     }
 
@@ -180,10 +220,17 @@ class EvmInterface(
             activity.supportFragmentManager,
             model
         )
+        val fromAddress = transaction.from ?: DAppEVMConnectionManager.getCurrentAccount()?.address
         EVMSendTransactionDialog.observe { isApprove ->
             if (isApprove) {
-                sendEthereumTransaction(transaction) { txHash ->
-                    webView.sendResult(network, txHash, id)
+                if (EVMWalletManager.isEVMWalletAddress(fromAddress ?: "")) {
+                    sendCOATransaction(transaction) { txHash ->
+                        webView.sendResult(network, txHash, id)
+                    }
+                } else {
+                    sendEOATransaction(transaction) { txHash ->
+                        webView.sendResult(network, txHash, id)
+                    }
                 }
             }
         }
@@ -212,7 +259,12 @@ class EvmInterface(
         return param.getString("raw")
     }
 
-    private fun handleSignMessage(activity: FragmentActivity, id: Long, data: ByteArray, network: String) {
+    private fun extractFromAddress(json: JSONObject): String {
+        val param = json.getJSONObject("object")
+        return param.getString("address")
+    }
+
+    private fun handleSignMessage(activity: FragmentActivity, fromAddress: String, id: Long, data: ByteArray, network: String) {
         val signMessage = String(data, Charsets.UTF_8)
         val model = FclDialogModel(
             signMessage = data.bytesToHex(),
@@ -228,14 +280,19 @@ class EvmInterface(
         EVMSignMessageDialog.observe { approve ->
             if (approve) {
                 uiScope {
-                    val signature = signEthereumMessage(signMessage)
+                    val signature = if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
+                        signEthereumMessage(signMessage)
+                    } else {
+                        val result = WalletManager.wallet()?.ethSignPersonalMessage(data)
+                        Numeric.toHexString(result)
+                    }
                     webView.sendResult(network, signature, id)
                 }
             }
         }
     }
 
-    private fun handleSignTypedMessage(activity: FragmentActivity, id: Long, data: ByteArray, raw: String, network: String) {
+    private fun handleSignTypedMessage(activity: FragmentActivity, id: Long, fromAddress: String, data: ByteArray, raw: String, network: String) {
         val model = FclDialogModel(
             signMessage = raw,
             url = webView.url,
@@ -250,7 +307,12 @@ class EvmInterface(
         EVMSignTypedDataDialog.observe { approve ->
             if (approve) {
                 uiScope {
-                    val signature = signTypedData(data)
+                    val signature = if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
+                        signTypedData(data)
+                    } else {
+                        val result = WalletManager.wallet()?.ethSignTypedData(raw)
+                        Numeric.toHexString(result)
+                    }
                     webView.sendResult(network, signature, id)
                 }
             }

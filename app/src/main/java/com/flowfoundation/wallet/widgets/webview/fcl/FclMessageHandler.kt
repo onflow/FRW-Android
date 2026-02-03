@@ -10,7 +10,6 @@ import com.flowfoundation.wallet.manager.flowjvm.transaction.FeePayerSignRequest
 import com.flowfoundation.wallet.manager.flowjvm.transaction.SignPayerResponse
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.network.functions.FUNCTION_SIGN_AS_PAYER
 import com.flowfoundation.wallet.network.functions.executeHttpFunction
 import com.flowfoundation.wallet.page.browser.widgets.LilicoWebView
@@ -39,6 +38,7 @@ import com.ionspin.kotlin.bignum.integer.toBigInteger
 import org.onflow.flow.infrastructure.Cadence
 import java.lang.reflect.Type
 import com.flowfoundation.wallet.manager.account.AccountManager
+import com.flowfoundation.wallet.manager.account.firstFlowWalletAddress
 import com.flowfoundation.wallet.manager.config.isGasFree
 import com.flowfoundation.wallet.manager.flowjvm.lastBlockAccountKeyId
 import com.flowfoundation.wallet.manager.transaction.SurgePricingManager
@@ -57,7 +57,7 @@ class FclMessageHandler(
 
     private fun wallet(): String {
         // Try getting from WalletManager first
-        val walletAddress = WalletManager.wallet().walletAddress().orEmpty()
+        val walletAddress = WalletManager.getCurrentFlowWalletAddress().orEmpty()
         if (walletAddress.isNotBlank()) {
             logd(TAG, "Got wallet address from WalletManager: '$walletAddress'")
             return walletAddress
@@ -65,7 +65,7 @@ class FclMessageHandler(
 
         // If empty, try from AccountManager
         val account = AccountManager.get()
-        val accountWalletAddress = account?.wallet?.walletAddress()
+        val accountWalletAddress = account?.firstFlowWalletAddress()
         if (!accountWalletAddress.isNullOrBlank()) {
             logd(TAG, "Got wallet address from AccountManager: '$accountWalletAddress'")
             return accountWalletAddress

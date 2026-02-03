@@ -11,6 +11,7 @@ import com.flowfoundation.wallet.utils.isDeveloperModeEnable
 import com.flowfoundation.wallet.utils.isTesting
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
+import org.onflow.flow.ChainId
 
 private var network = if (isDev() || isTesting()) NETWORK_TESTNET else NETWORK_MAINNET
 private var isDeveloperMode = isDev() || isTesting()
@@ -98,6 +99,13 @@ fun flowChainNetworkString(evmNetwork: String): String {
     return when (evmNetwork) {
         EVM_TESTNET -> NETWORK_NAME_TESTNET
         else -> NETWORK_NAME_MAINNET
+    }
+}
+
+fun ChainId.toNetworkString(): String {
+    return when (this) {
+        ChainId.Mainnet -> NETWORK_NAME_MAINNET
+        else -> NETWORK_NAME_TESTNET
     }
 }
 

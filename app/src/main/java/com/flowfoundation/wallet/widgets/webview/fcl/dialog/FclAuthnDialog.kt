@@ -42,14 +42,14 @@ class FclAuthnDialog : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         result ?: return
         val data = data ?: return
-        
+
         // Determine if this is an EVM dApp and use appropriate address
         val address = if (isEVMDapp(data.url)) {
             EVMWalletManager.getEVMAddress() ?: WalletManager.selectedWalletAddress()
         } else {
-            WalletManager.selectedWalletAddress()
+            WalletManager.getCurrentFlowWalletAddress()
         }
-        
+
         val emojiInfo = AccountEmojiManager.getEmojiByAddress(address)
         with(binding) {
             iconView.loadFavicon(data.logo ?: data.url?.toFavIcon())
@@ -116,7 +116,7 @@ class FclAuthnDialog : BottomSheetDialogFragment() {
     private fun isEVMDapp(url: String?): Boolean {
         val data = this.data
         logd("FCLAUTH", "Checking isEVMDapp for: $data")
-        
+
         // Simply check if this was flagged as EVM by session proposal analysis
         // The WalletConnectDelegate sets network="evm" for EVM requests
         val isEVM = data?.network == "evm"

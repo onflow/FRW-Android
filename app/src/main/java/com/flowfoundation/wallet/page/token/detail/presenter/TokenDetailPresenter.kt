@@ -22,6 +22,7 @@ import com.flowfoundation.wallet.page.profile.subpage.wallet.ChildAccountCollect
 import com.flowfoundation.wallet.page.receive.ReceiveActivity
 import com.flowfoundation.wallet.reactnative.ReactNativeActivity
 import com.flowfoundation.wallet.manager.app.isTestnet
+import com.flowfoundation.wallet.reactnative.bridge.RNBridge
 import com.flowfoundation.wallet.reactnative.bridge.toRNBridgeTokenModel
 import com.flowfoundation.wallet.page.staking.openStakingPage
 import com.flowfoundation.wallet.page.token.detail.model.TokenDetailModel
@@ -63,7 +64,10 @@ class TokenDetailPresenter(
             ivVerified.setVisible(token.isVerified)
             ivVerifiedSecondary.setVisible(token.isVerified)
             clVerifiedTip.setVisible(token.isVerified.not())
-            btnReceive.setOnClickListener { ReceiveActivity.launch(activity) }
+            btnReceive.setOnClickListener {
+                // Launch React Native Receive screen
+                ReactNativeActivity.launch(activity, RNBridge.ScreenType.RECEIVE)
+            }
             btnSwap.setOnClickListener {
                 val url = if (WalletManager.isEVMAccountSelected()) {
                     "https://swap.flow.com/aggregator?chain=flow&inputCurrency=${token.tokenAddress()}&outputCurrency=NATIVE"

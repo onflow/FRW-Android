@@ -12,7 +12,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -58,7 +58,7 @@ fun FadeAnimationBackground(
                 rows = numberOfRows,
                 columns = itemPerRow,
                 itemSize = heightPerItem,
-                color = if (colorInt == -1) MaterialTheme.colors.primary else {
+                color = if (colorInt == -1) MaterialTheme.colorScheme.primary else {
                     Color(colorInt)
                 },
                 rotationDegrees = 10f

@@ -40,6 +40,7 @@ import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.wallet.Wallet
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
+import com.flowfoundation.wallet.wallet.DERIVATION_PATH
 import wallet.core.jni.HDWallet
 
 class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
@@ -59,8 +60,7 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
                 val seedPhraseKey = SeedPhraseKey(
                     mnemonicString = newMnemonic,
                     passphrase = "",
-                    derivationPath = "m/44'/539'/0'/0/0",
-                    keyPair = null,
+                    derivationPath = DERIVATION_PATH,
                     storage = FileSystemStorage(baseDir)
                 )
                 val provider = HDWalletCryptoProvider(seedPhraseKey)
@@ -120,10 +120,10 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
             createBackupCallbackLiveData.postValue(false)
             return
         }
-        
+
         val selectedAddress = WalletManager.selectedWalletAddress()
         logd("BackupSeedPhraseVM", "WalletManager.selectedWalletAddress(): '$selectedAddress'")
-        
+
         val account = AccountManager.get()
         logd("BackupSeedPhraseVM", "AccountManager.get(): $account")
 
@@ -148,7 +148,7 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
                                 } else {
                                     currentProviderPubKeyRaw
                                 }
-                                
+
                                 var foundMatch = false
                                 onChainAccount.keys?.forEach { key ->
                                     val onChainPubKeyRaw = key.publicKey.removePrefix("0x").lowercase()
@@ -157,12 +157,12 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
                                     } else {
                                         onChainPubKeyRaw
                                     }
-                                    
+
                                     val isDirectMatch = onChainPubKeyRaw == currentProviderPubKeyRaw
                                     val isStrippedMatch = onChainPubKeyRaw == currentProviderPubKeyStripped
                                     val isProviderStrippedMatch = onChainPubKeyStripped == currentProviderPubKeyRaw
                                     val isBothStrippedMatch = onChainPubKeyStripped == currentProviderPubKeyStripped
-                                    
+
                                     if (isDirectMatch || isStrippedMatch || isProviderStrippedMatch || isBothStrippedMatch) {
                                         foundMatch = true
                                     } else {
@@ -171,7 +171,7 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
                                         logd("BackupSeedPhraseVM", "On-chain key (stripped): $onChainPubKeyStripped")
                                     }
                                 }
-                                
+
                                 if (!foundMatch) {
                                     logd("BackupSeedPhraseVM", "CRITICAL: No matching on-chain key found for current crypto provider!")
                                     logd("BackupSeedPhraseVM", "This explains the invalid signature error - the current provider key is not on the account")
@@ -186,7 +186,7 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
                         val txId = CadenceScript.CADENCE_ADD_PUBLIC_KEY.transactionByMainWallet {
                             val newPubKeyWithPrefix = backupProvider.getPublicKey() // e.g., "0x04..."
                             val newPubKeyHexRaw = newPubKeyWithPrefix.removePrefix("0x")
-                            
+
                             // Flow's Cadence addKey script expects the publicKey string argument to be the
                             // 64-byte hex representation (128 chars) WITHOUT the "04" uncompressed prefix.
                             val newPubKeyForCadence = if (newPubKeyHexRaw.startsWith("04") && newPubKeyHexRaw.length == 130) {
@@ -204,7 +204,7 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
                         if (txId.isNullOrBlank()) {
                             // Handle case where transaction ID is null or empty
                             logd("BackupSeedPhraseVM", "Transaction ID is null or blank!")
-                            ErrorReporter.reportWithMixpanel(BackupError.ADD_PUBLIC_KEY_FAILED, 
+                            ErrorReporter.reportWithMixpanel(BackupError.ADD_PUBLIC_KEY_FAILED,
                                 RuntimeException("Failed to get transaction ID"))
                             createBackupCallbackLiveData.postValue(false)
                             return@withTimeout
@@ -235,7 +235,7 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
                 logd("BackupSeedPhraseVM", "Transaction timed out after 45 seconds")
                 currentTxId = null
                 createBackupCallbackLiveData.postValue(false)
-                ErrorReporter.reportWithMixpanel(BackupError.ADD_PUBLIC_KEY_FAILED, 
+                ErrorReporter.reportWithMixpanel(BackupError.ADD_PUBLIC_KEY_FAILED,
                     RuntimeException("Backup process timed out after 45 seconds"))
                 toast(R.string.backup_failed)
             }
@@ -248,7 +248,7 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
             createBackupCallbackLiveData.postValue(false)
             return
         }
-        
+
         ioScope {
             try {
                 withTimeout(30000) { // 30 second timeout for network requests
@@ -273,7 +273,7 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
                         val isSuccess = resp.status == 200
                         if (!isSuccess) {
                             // Log detailed error information for debugging
-                            ErrorReporter.reportWithMixpanel(BackupError.SYNC_ACCOUNT_INFO_FAILED, 
+                            ErrorReporter.reportWithMixpanel(BackupError.SYNC_ACCOUNT_INFO_FAILED,
                                 RuntimeException("Sync failed with status: ${resp.status}"))
                         }
                         createBackupCallbackLiveData.postValue(isSuccess)
@@ -284,7 +284,7 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
                 }
             } catch (e: TimeoutCancellationException) {
                 // Handle timeout for network sync
-                ErrorReporter.reportWithMixpanel(BackupError.SYNC_ACCOUNT_INFO_FAILED, 
+                ErrorReporter.reportWithMixpanel(BackupError.SYNC_ACCOUNT_INFO_FAILED,
                     RuntimeException("Account sync timed out after 30 seconds"))
                 createBackupCallbackLiveData.postValue(false)
             }
@@ -304,7 +304,7 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
                     // Handle failed transactions to prevent infinite loading
                     currentTxId = null
                     createBackupCallbackLiveData.postValue(false)
-                    ErrorReporter.reportWithMixpanel(BackupError.ADD_PUBLIC_KEY_FAILED, 
+                    ErrorReporter.reportWithMixpanel(BackupError.ADD_PUBLIC_KEY_FAILED,
                         RuntimeException("Transaction failed: ${state.errorMsg}"))
                 }
             }

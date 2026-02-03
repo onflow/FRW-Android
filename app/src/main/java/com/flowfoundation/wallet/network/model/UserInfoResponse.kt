@@ -4,6 +4,7 @@ import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
 
 data class UserInfoResponse(
     @SerializedName("data")
@@ -27,6 +28,7 @@ data class UserInfoData(
     var avatar: String,
     @SerializedName("address")
     var address: String? = null,
+    @SerialName("private")  // Needed: property name "isPrivate" differs from JSON key "private"
     @SerializedName("private")
     var isPrivate: Int,
     @SerializedName("created")

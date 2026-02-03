@@ -10,7 +10,8 @@ import android.view.View
 import android.widget.FrameLayout
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.app.isTestnet
-import com.flowfoundation.wallet.page.walletcreate.WalletCreateActivity
+import com.flowfoundation.wallet.reactnative.ReactNativeActivity
+import com.flowfoundation.wallet.reactnative.bridge.RNBridge
 import com.flowfoundation.wallet.wallet.Wallet
 import com.flowfoundation.wallet.widgets.DialogType
 import com.flowfoundation.wallet.widgets.SwitchNetworkDialog
@@ -51,7 +52,12 @@ private class AccountNotFoundDialogView(
             if (isTestnet()) {
                 SwitchNetworkDialog(context, DialogType.CREATE).show()
             } else {
-                WalletCreateActivity.launch(context)
+                // Launch React Native onboarding instead of native wallet creation
+                ReactNativeActivity.launchWithRoute(
+                    context,
+                    RNBridge.ScreenType.ONBOARDING,
+                    RNBridge.InitialRoute.PROFILE_TYPE_SELECTION
+                )
             }
         }
         cancelButton.setOnClickListener { onCancel() }

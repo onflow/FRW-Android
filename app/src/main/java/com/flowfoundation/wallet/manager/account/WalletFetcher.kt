@@ -40,7 +40,7 @@ object WalletFetcher {
             var timer: Timer? = null
             var retryCount = 0
             val maxRetries = 5
-            
+
             // Helper function to trigger manual address creation
             fun triggerManualAddressIfNeeded() {
                 if (firstAttempt) {
@@ -57,10 +57,10 @@ object WalletFetcher {
                     firstAttempt = false
                 }
             }
-            
+
             while (!dataReceived && retryCount < maxRetries) {
                 delay(if (retryCount == 0) 1000 else 5000) // First attempt after 1s, then 5s
-                
+
                 // Check network connectivity before attempting
                 val context = Env.getApp()
                 if (!NetworkUtils.isNetworkAvailable(context)) {
@@ -72,10 +72,10 @@ object WalletFetcher {
                     }
                     continue
                 }
-                
+
                 val networkType = NetworkUtils.getNetworkTypeInfo(context)
                 logd(TAG, "Network available: $networkType")
-                
+
                 // Test key indexer connectivity
                 val isMainnet = chainNetWorkString() == "mainnet"
                 if (!NetworkUtils.testKeyIndexerConnectivity(isMainnet)) {
@@ -87,31 +87,31 @@ object WalletFetcher {
                     }
                     continue
                 }
-                
+
                 runCatching {
                     // Get current user's public key from crypto provider
                     val currentAccount = AccountManager.get()
-                    val cryptoProvider = currentAccount?.let { 
+                    val cryptoProvider = currentAccount?.let {
                         CryptoProviderManager.generateAccountCryptoProvider(it)
                     }
-                    
+
                     if (cryptoProvider == null) {
                         logd(TAG, "No crypto provider available, cannot fetch wallet using key indexer")
                         return@runCatching
                     }
-                    
+
                     val publicKey = cryptoProvider.getPublicKey()
                     val chainId = when (chainNetWorkString()) {
                         "mainnet" -> ChainId.Mainnet
                         "testnet" -> ChainId.Testnet
                         else -> ChainId.Mainnet
                     }
-                    
+
                     logd(TAG, "Fetching wallet using key indexer for public key: $publicKey (attempt ${retryCount + 1})")
-                    
+
                     // Use key indexer to find accounts
                     val keyIndexerResponse = Network.findAccount(publicKey, chainId)
-                    
+
                     if (keyIndexerResponse.accounts.isNotEmpty()) {
                         // Convert key indexer response to WalletListData format for compatibility
                         val account = keyIndexerResponse.accounts.first()
@@ -125,15 +125,15 @@ object WalletFetcher {
                         )
                         val firebaseUserId = firebaseUid()
                             ?: throw IllegalStateException("Firebase user ID is null - cannot create wallet data")
-                        
+
                         val walletListData = WalletListData(
                             id = firebaseUserId,
                             username = currentAccount.userInfo.username,
                             wallets = listOf(walletData)
                         )
-                        
-                        AccountManager.updateWalletInfo(walletListData)
-                        EVMWalletManager.updateEVMAddress()
+
+//                        AccountManager.updateWalletInfo(walletListData)
+//                        EVMWalletManager.updateEVMAddress()
                         delay(300)
                         dispatchListeners(walletListData)
                         dataReceived = true
@@ -142,7 +142,7 @@ object WalletFetcher {
                         logd(TAG, "Successfully fetched wallet data from key indexer")
                     } else {
                         logd(TAG, "Key indexer returned empty accounts, trying API fallback")
-                        
+
                         // Fallback: Try to get wallet data from API if key indexer doesn't have it yet
                         try {
                             val walletListData = apiService.getWalletList().data
@@ -153,11 +153,11 @@ object WalletFetcher {
                                         blockchain.address.isNotBlank()
                                     } == true
                                 }
-                                
+
                                 if (hasAddresses) {
                                     logd(TAG, "Successfully got wallet data from API fallback")
-                                    AccountManager.updateWalletInfo(walletListData)
-                                    EVMWalletManager.updateEVMAddress()
+//                                    AccountManager.updateWalletInfo(walletListData)
+//                                    EVMWalletManager.updateEVMAddress()
                                     delay(300)
                                     dispatchListeners(walletListData)
                                     dataReceived = true
@@ -188,16 +188,16 @@ object WalletFetcher {
                         exception.message?.contains("UnknownHostException", ignoreCase = true) == true -> true
                         else -> false
                     }
-                    
+
                     if (isNetworkError) {
                         logd(TAG, "Network error on attempt $retryCount/$maxRetries: ${exception.message}")
-                        
+
                         // Add specific handling for DNS resolution issues
                         if (exception.message?.contains("UnresolvedAddressException", ignoreCase = true) == true) {
                             logd(TAG, "DNS resolution failed. Please check network connectivity and DNS settings.")
                             logd(TAG, "Attempting to connect to key indexer: ${if (chainNetWorkString() == "mainnet") "production.key-indexer.flow.com" else "staging.key-indexer.flow.com"}")
                         }
-                        
+
                         if (retryCount >= maxRetries) {
                             logd(TAG, "Max network retries exceeded. Key indexer may be unreachable.")
                             logd(TAG, "Falling back to manual address creation. User may need to verify network connectivity.")
@@ -221,12 +221,12 @@ object WalletFetcher {
 
     private fun dispatchListeners(wallet: WalletListData) {
         logd(TAG, "dispatchListeners:$wallet")
-        
+
         if (!ProcessLifecycleOwner.get().lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
             logd(TAG, "App is in background, deferring wallet update to prevent ANR")
             return
         }
-        
+
         uiScope {
             listeners.removeAll { it.get() == null }
             listeners.forEach { it.get()?.onWalletDataUpdate(wallet) }

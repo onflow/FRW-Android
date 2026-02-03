@@ -38,12 +38,13 @@ data class KeystoreAddress(
     @SerializedName("hashAlgo")
     val hashAlgo: Int,
     @SerializedName("signAlgo")
-    val signAlgo: Int
+    val signAlgo: Int,
+    @SerializedName("encryptedMnemonic")
+    val encryptedMnemonic: String? = null
 )
 
 enum class KeyStoreOption(val layoutId: Int) {
     INPUT_KEYSTORE_INFO(R.id.fragment_private_key_store_info),
     INPUT_PRIVATE_KEY_INFO(R.id.fragment_private_key_info),
-    INPUT_SEED_PHRASE_INFO(R.id.fragment_seed_phrase_info),
-    CREATE_USERNAME(R.id.fragment_private_key_store_username)
+    INPUT_SEED_PHRASE_INFO(R.id.fragment_seed_phrase_info)
 }

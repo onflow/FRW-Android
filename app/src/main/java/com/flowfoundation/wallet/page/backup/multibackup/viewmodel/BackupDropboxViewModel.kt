@@ -40,6 +40,7 @@ import com.flow.wallet.wallet.KeyWallet
 import com.flow.wallet.wallet.WalletFactory
 import com.flowfoundation.wallet.utils.Env.getStorage
 import com.flowfoundation.wallet.utils.logd
+import com.flowfoundation.wallet.wallet.DERIVATION_PATH
 import org.onflow.flow.ChainId
 import org.onflow.flow.infrastructure.Cadence.Companion.uint8
 
@@ -97,8 +98,7 @@ class BackupDropboxViewModel : ViewModel(), OnTransactionStateChange {
         val seedPhraseKey = SeedPhraseKey(
             mnemonicString = HDWallet(160, "").mnemonic(),
             passphrase = "",
-            derivationPath = "m/44'/539'/0'/0/0",
-            keyPair = null,
+            derivationPath = DERIVATION_PATH,
             storage = FileSystemStorage(baseDir)
         )
         createBackupCryptoProvider(seedPhraseKey)
@@ -121,7 +121,7 @@ class BackupDropboxViewModel : ViewModel(), OnTransactionStateChange {
                     val txId = CadenceScript.CADENCE_ADD_PUBLIC_KEY.transactionByMainWallet {
                         val pubKeyWithPrefix = it.getPublicKey() // e.g., "04..."
                         val pubKeyHexRaw = pubKeyWithPrefix.removePrefix("0x")
-                        
+
                         // Flow's Cadence addKey script expects the publicKey string argument to be the
                         // 64-byte hex representation (128 chars) WITHOUT the "04" uncompressed prefix.
                         val pubKeyForCadence = if (pubKeyHexRaw.startsWith("04") && pubKeyHexRaw.length == 130) {
@@ -129,7 +129,7 @@ class BackupDropboxViewModel : ViewModel(), OnTransactionStateChange {
                         } else {
                             pubKeyHexRaw
                         }
-                        
+
                         arg { string(pubKeyForCadence) }
                         arg { uint8(it.getSignatureAlgorithm().cadenceIndex.toUByte()) }
                         arg { uint8(it.getHashAlgorithm().cadenceIndex.toUByte()) }
@@ -174,12 +174,12 @@ class BackupDropboxViewModel : ViewModel(), OnTransactionStateChange {
                     val publicKey = it.getPublicKey()
                     logd("BackupDropbox", "Public key for sync: $publicKey")
                     logd("BackupDropbox", "Public key length: ${publicKey.length}")
-                    
+
                     // Ensure the public key is in the correct format for the API (64 bytes, no 04 prefix)
                     val normalizedPublicKey = publicKey.removePrefix("0x").removePrefix("04")
                     logd("BackupDropbox", "Normalized public key for sync: $normalizedPublicKey")
                     logd("BackupDropbox", "Normalized public key length: ${normalizedPublicKey.length}")
-                    
+
                     val resp = service.syncAccount(
                         AccountSyncRequest(
                             AccountKey(

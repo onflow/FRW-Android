@@ -55,6 +55,10 @@
             layout="@layout/layout_profile_group_2"/>
 
         <include
+            android:id="@+id/group_gas"
+            layout="@layout/layout_profile_group_gas"/>
+
+        <include
             android:id="@+id/group3"
             layout="@layout/layout_profile_group_3"/>
 

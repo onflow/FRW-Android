@@ -155,12 +155,11 @@
         app:layout_constraintTop_toBottomOf="@id/group2">
 
         <com.flowfoundation.wallet.page.profile.widget.ProfilePreferenceSwitch
-            android:id="@+id/free_gas_preference"
+            android:id="@+id/show_in_account_list_preference"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:iconEnable="false"
-            app:subtitleId="@string/free_gas_fee_desc"
-            app:titleId="@string/free_gas_fee"/>
+            app:titleId="@string/show_in_account_list"/>
     </com.google.android.material.card.MaterialCardView>
 
     <com.google.android.material.card.MaterialCardView

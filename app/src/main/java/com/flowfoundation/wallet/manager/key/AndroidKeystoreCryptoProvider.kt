@@ -65,10 +65,7 @@ class AndroidKeystoreCryptoProvider(
             override var address: String = ""
             override var keyIndex: Int = 0
 
-            override suspend fun sign(
-                transaction: Transaction?,
-                bytes: ByteArray
-            ): ByteArray {
+            override suspend fun sign(bytes: ByteArray, transaction: Transaction?): ByteArray {
                 val signature = Signature.getInstance("SHA256withECDSA") //to-do: needs to be dynamic
                 signature.initSign(privateKey)
                 signature.update(bytes)
@@ -97,10 +94,6 @@ class AndroidKeystoreCryptoProvider(
                     }
                 }
 
-            }
-
-            override suspend fun sign(bytes: ByteArray): ByteArray {
-                return sign(null, bytes)
             }
 
         }

@@ -12,7 +12,6 @@ import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.viewModelIOScope
-import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.network.retrofitApi
 
 private const val LIMIT = 30
@@ -42,6 +41,7 @@ class TransactionRecordViewModel : ViewModel(), OnTransactionStateChange {
 
     private fun loadTransfer() {
         logd("TransactionRecordViewModel", "Starting loadTransfer(), checking wallet status")
+
         // Get the selected wallet address first
         val walletAddress = WalletManager.selectedWalletAddress()
         logd("TransactionRecordViewModel", "Selected wallet address: '$walletAddress'")
@@ -68,7 +68,7 @@ class TransactionRecordViewModel : ViewModel(), OnTransactionStateChange {
         logd("TransactionRecordViewModel", "WalletManager.selectedWalletAddress(): '${WalletManager.selectedWalletAddress()}'")
         logd("TransactionRecordViewModel", "WalletManager.isEVMAccountSelected(): ${WalletManager.isEVMAccountSelected()}")
         logd("TransactionRecordViewModel", "WalletManager.isChildAccountSelected(): ${WalletManager.isChildAccountSelected()}")
-        logd("TransactionRecordViewModel", "WalletManager.wallet().walletAddress(): '${WalletManager.wallet().walletAddress()}'")
+        logd("TransactionRecordViewModel", "WalletManager.getFlowWalletAddress(): '${WalletManager.getCurrentFlowWalletAddress()}'")
 
         // Check if this is a child account
         if (WalletManager.isChildAccountSelected()) {

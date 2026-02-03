@@ -11,11 +11,9 @@ import androidx.transition.Transition
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.databinding.ActivityRestoreKeyStoreBinding
-import com.flowfoundation.wallet.page.restore.keystore.fragment.KeyStoreNoAccountDialog
 import com.flowfoundation.wallet.page.restore.keystore.fragment.KeyStoreSelectAccountDialog
 import com.flowfoundation.wallet.page.restore.keystore.fragment.PrivateKeyInfoFragment
 import com.flowfoundation.wallet.page.restore.keystore.fragment.PrivateKeyStoreInfoFragment
-import com.flowfoundation.wallet.page.restore.keystore.fragment.PrivateKeyStoreUsernameFragment
 import com.flowfoundation.wallet.page.restore.keystore.fragment.SeedPhraseInfoFragment
 import com.flowfoundation.wallet.page.restore.keystore.model.KeyStoreOption
 import com.flowfoundation.wallet.page.restore.keystore.viewmodel.KeyStoreRestoreViewModel
@@ -62,7 +60,8 @@ class KeyStoreRestoreActivity : BaseActivity() {
                     }
                 } else {
                     uiScope {
-                        KeyStoreNoAccountDialog().show(supportFragmentManager, "")
+                        // If no existing accounts found, directly create a new one with random username
+                        restoreViewModel.createNewAccountFromKeystore()
                     }
                 }
             }
@@ -117,7 +116,7 @@ class KeyStoreRestoreActivity : BaseActivity() {
                 }
             }
             KeyStoreOption.INPUT_SEED_PHRASE_INFO -> SeedPhraseInfoFragment()
-            KeyStoreOption.CREATE_USERNAME -> PrivateKeyStoreUsernameFragment()
+            else -> return
         }
         fragment.enterTransition = transition
         supportFragmentManager.beginTransaction()
@@ -142,12 +141,16 @@ class KeyStoreRestoreActivity : BaseActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> {
-                finish()
+                handleBackNavigation()
             }
 
             else -> super.onOptionsItemSelected(item)
         }
         return true
+    }
+
+    private fun handleBackNavigation() {
+        finish()
     }
 
     private fun setupToolbar() {

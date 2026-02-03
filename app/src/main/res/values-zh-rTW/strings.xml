@@ -233,7 +233,7 @@
     <string name="restore_with_recovery_phrase">用恢復短語恢復</string>
     <string name="not_logged_in_toast">你尚未登入錢包</string>
     <string name="free_gas_fee">免費 gas 費用</string>
-    <string name="free_gas_fee_desc">允許 Flow 錢包支付所有交易的 gas 費用。</string>
+    <string name="free_gas_fee_desc">* 允許 Flow 錢包支付所有交易的 gas 費用。</string>
     <string name="file_picker_title">選擇文件</string>
     <string name="transaction_fee">交易手續費</string>
     <string name="hold_to_confirm">按住確認</string>
@@ -332,7 +332,6 @@
     <string name="staking_not_enabled">質押在 %1$s 網路上維護中，請稍後再試。</string>
     <string name="stake_failed">質押失敗</string>
     <string name="unstake_failed">解質押失敗</string>
-    <string name="staking_list">質押列表</string>
     <string name="stake_new_node">質押新節點</string>
     <string name="staking_amount">質押金額</string>
     <string name="rewards">獎勵</string>
@@ -511,7 +510,6 @@
     <string name="backup_info">備份資訊</string>
     <string name="key_location">密鑰位置</string>
     <string name="delete_backup">刪除備份</string>
-    <string name="bug_report">錯誤報告</string>
     <string name="wallet_already_logged_in">此錢包已經登錄</string>
     <string name="google_drive">Google 雲端硬碟</string>
     <string name="add_other_device">添加其他設備</string>
@@ -679,7 +677,7 @@
     <string name="storage_limit_error_tips">您的賬戶中必須至少有 %1$s 才能覆蓋您的存儲使用量。</string>
     <string name="deposit">存款</string>
     <string name="buy_flow">Buy FLOW</string>
-    <string name="legal_message">"     <![CDATA[     通过使用流钱包，您同意 <a href="https://wallet.flow.com/terms-of-service"><u>服务条款</u></a> 和 <a href="https://wallet.flow.com/privacy-policy"><u>隐私政策</u></a>     ]]>     "</string>
+    <string name="legal_message">"     <![CDATA[     通過使用 Flow Wallet，您同意<a href="https://wallet.flow.com/terms-of-service"><u>服務條款</u></a>和<a href="https://wallet.flow.com/privacy-policy"><u>隱私政策</u></a>     ]]>     "</string>
     <string name="back">返回</string>
     <string name="exit_backup_warning_dialog_title">您确定不想进行备份吗？</string>
     <string name="exit_backup_warning_dialog">如果您丢失您的设备或删除您的钱包，您的资金将永远丢失。</string>
@@ -694,7 +692,7 @@
     <string name="import_from_pdf">從 PDF 匯入</string>
     <string name="pdf_parse_error_message">密鑰庫 JSON 格式無效。請下載 Flow Wallet Extension 以正確匯出您的密鑰庫文件。</string>
     <string name="extension_download_url">https://chromewebstore.google.com/detail/flow-wallet/hpclkefagolihohboafpheddmmgdffjm?hl=en</string>
-    
+
     <!-- PDF Import Feature -->
     <string name="pdf_password_hint">輸入您的 PDF 密碼</string>
     <string name="pdf_password_protected_info">此 PDF 受密碼保護。請輸入密碼以提取私鑰。</string>
@@ -712,4 +710,90 @@
     <string name="pdf_password_required_desc">此 PDF 受密碼保護。請提供密碼。</string>
     <string name="unlock">解鎖</string>
     <string name="pdf_contains_private_key">此 PDF 包含私鑰。請使用私鑰匯入選項。</string>
+    <string name="surge_pricing_title">您真的確定要繼續進行激增定價嗎？</string>
+    <string name="surge_current_fee">您的交易費用：</string>
+    <string name="surge_active">激增價格激活</string>
+    <string name="surge_description">由於網絡活動頻繁，交易費用較高，Flow Wallet 暫時不為您支付 gas 費用。當前網絡費用比平時高 4 倍。</string>
+    <string name="surge_hold_to_confirm">長按以同意激增定價</string>
+    <string name="selected_account">選擇的賬戶</string>
+    <string name="connecting_on">正在連接到 %1$s</string>
+    <string name="connecting">正在連接...</string>
+    <string name="connecting_account">正在連接賬戶</string>
+    <string name="requesting_access">%1$s 正在請求訪問：</string>
+    <string name="show_in_account_list">在賬戶列表中顯示</string>
+    <string name="select_account">選擇賬戶</string>
+    <string name="label_flow">FLOW</string>
+    <string name="label_eoa">EOA</string>
+    <string name="telegram_not_installed">Telegram 應用程式未安裝</string>
+    <string name="on_flow">#onFlow</string>
+    <string name="choose_swap_provider">選擇交換提供商</string>
+    <string name="punch_swap" translatable="false">Punch Swap</string>
+    <string name="punch_swap_url" translatable="false">swap.kittypunch.xyz</string>
+    <string name="trado_url" translatable="false">trado.one</string>
+    <string name="trado" translatable="false">Trado</string>
+    <string name="increment_finance" translatable="false">Increment Finance</string>
+    <string name="increment_url" translatable="false">increment.fi</string>
+    <string name="results">結果</string>
+    <string name="search_nft_name">搜尋 NFT</string>
+    <string name="loading_nfts">載入 NFTs...</string>
+    <string name="nft_list_loading_error">錯誤，請檢查您的網路或重新整理。</string>
+    <string name="refresh">重新整理</string>
+    <string name="no_relevant_nft">未找到相關的 NFT。</string>
+    <string name="json" translatable="false">JSON</string>
+    <string name="required_asterisk" translatable="false">" *"</string>
+    <string name="cadence_script_version" translatable="false">Cadence Script Version: %1$s</string>
+    <string name="blocked_info">"<![CDATA[此網站被阻止，作為社區維護的惡意網站列表的一部分，如果您認為該網站被錯誤阻止，<u>請提交問題。</u>]]>"</string>
+    <string name="blocked_url">%1$s 被阻止！</string>
+    <string name="ignore_warning">忽略警告，仍然顯示</string>
+    <string name="connect_warning">忽略警告，仍然連接</string>
+    <string name="blocked_tip">此應用程式被標記為危險。</string>
+    <string name="switch_to">切換到 %1$s</string>
+    <string name="deeplink_login_failed">開啟失敗，請先建立錢包。</string>
+    <string name="return_to_browser_to_continue">請返回瀏覽器繼續您的工作階段。</string>
+    <string name="manage_tokens">管理代幣</string>
+    <string name="filters">篩選器</string>
+    <string name="hide_dust_token">隱藏塵埃代幣</string>
+    <string name="display_verified_token">僅顯示已驗證代幣</string>
+    <string name="tokens">代幣</string>
+    <string name="verified">已驗證</string>
+    <string name="contract_address">合約地址</string>
+    <string name="no">否</string>
+    <string name="yes">是</string>
+    <string name="wallet_connect_no_proposal">無法建立連接。請重試。</string>
+    <string name="wallet_connect_pairing_error">連接失敗。請重試。</string>
+    <string name="wallet_connect_generic_error">連接時發生錯誤。請重試。</string>
+    <string name="wallet_connect_proposal_expired">連接請求已過期。請重試。</string>
+    <string name="wallet_connect_request_expired">請求已過期。請重試。</string>
+    <string name="wallet_connect_activity_error">無法顯示連接提示。請重試。</string>
+    <string name="wallet_connect_proposal_error">處理連接請求失敗。請重試。</string>
+    <string name="wallet_connect_initialization_error">初始化 Wallet Connect 時出錯。</string>
+    <string name="wallet_connect_approval_error">批准 Wallet Connect 工作階段時出錯。</string>
+    <string name="verified_tip">這是未經驗證的代幣，請僅與您信任的代幣進行互動。</string>
+    <string name="hide_dust_token_tip">餘額少於 0.01 美元的代幣</string>
+    <string name="transfer_success">交易成功</string>
+    <string name="transfer_failed">交易失敗</string>
+    <string name="nft_amount_items">%1$s 個項目</string>
+    <string name="pending_request_from">您有來自 %1$s 的待處理請求</string>
+    <string name="my_own_address">我自己的地址</string>
+    <string name="custom_address">自定義地址</string>
+    <string name="enter_custom_address">輸入自定義地址</string>
+    <string name="add_evm_account">在 Flow 上新增 %1$s 賬戶</string>
+    <string name="active_account">活躍賬戶</string>
+    <string name="add_account">新增賬戶</string>
+    <string name="confirm_to_copy_address">確認複製地址</string>
+    <string name="confirm_copy_address_tips">您已複製了 Flow 網絡上的 EVM 地址，請確保僅將 Flow 網絡上的資產發送到此地址，否則將遺失。</string>
+    <string name="evm_on_flow_address">Flow 上的 EVM 地址</string>
+    <string name="staking_list">質押列表</string>
+    <string name="transaction_list">交易列表</string>
+    <string name="nft_detail">NFT 詳情</string>
+    <string name="backup_setting">備份設定</string>
+    <string name="wallet_connect_session">WalletConnect 工作階段</string>
+    <string name="security_setting">安全設定</string>
+    <string name="currency_setting">貨幣設定</string>
+    <string name="theme_setting">主題設定</string>
+    <string name="notification_setting">通知設定</string>
+    <string name="device_setting">裝置設定</string>
+    <string name="about_setting">關於設定</string>
+    <string name="bug_report">錯誤回報</string>
+    <string name="recover_profile">恢復個人檔案</string>
 </resources>

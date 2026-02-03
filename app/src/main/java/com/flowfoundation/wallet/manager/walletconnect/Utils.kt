@@ -3,10 +3,9 @@ package com.flowfoundation.wallet.manager.walletconnect
 import androidx.appcompat.app.AppCompatActivity
 import com.flowfoundation.wallet.manager.app.EVM_MAINNET
 import com.flowfoundation.wallet.manager.app.EVM_TESTNET
-import com.flowfoundation.wallet.manager.app.flowChainNetworkString
-import com.flowfoundation.wallet.manager.evm.EVMWalletManager
+import com.flowfoundation.wallet.manager.evm.DAppEVMConnectionManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.manager.wallet.walletAddress
+
 import com.flowfoundation.wallet.manager.walletconnect.model.WCRequest
 import com.flowfoundation.wallet.manager.walletconnect.model.WalletConnectMethod
 import com.flowfoundation.wallet.utils.extensions.openInSystemBrowser
@@ -55,7 +54,7 @@ private fun pair(
     }
     val accounts = if (caip2Namespace.lowercase() == ETHEREUM_NETWORK) {
         chains.mapNotNull {
-            val evmAddress = EVMWalletManager.getEVMAddress(flowChainNetworkString(it)).orEmpty()
+            val evmAddress = DAppEVMConnectionManager.getCurrentAccount()?.address.orEmpty()
             if (evmAddress.isNotEmpty()) {
                 "$it:${evmAddress}"
             } else {
@@ -63,7 +62,7 @@ private fun pair(
             }
         }.toList()
     } else {
-        chains.map { "$it:${WalletManager.wallet().walletAddress().orEmpty()}" }.toList()
+        chains.map { "$it:${WalletManager.getCurrentFlowWalletAddress().orEmpty()}" }.toList()
     }
     val methods = if (caip2Namespace.lowercase() == ETHEREUM_NETWORK) {
         WalletConnectMethod.getSupportedEVMMethod()

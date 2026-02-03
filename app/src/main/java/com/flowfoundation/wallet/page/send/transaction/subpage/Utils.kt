@@ -8,7 +8,6 @@ import com.flowfoundation.wallet.manager.config.NftCollectionConfig
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.network.model.AddressBookContact
 import com.flowfoundation.wallet.network.model.AddressBookDomain
 import com.flowfoundation.wallet.network.model.Nft
@@ -37,7 +36,7 @@ fun DialogSendConfirmBinding.bindUserInfo(fromAddress: String, contact: AddressB
         val childAccount = WalletManager.childAccount(toAddress)
         toAvatarView.setAvatarInfo(iconUrl = childAccount?.icon)
         namePrefixView.gone()
-    } else if (toAddress == WalletManager.wallet().walletAddress() || EVMWalletManager.isEVMWalletAddress(toAddress)) {
+    } else if (toAddress == WalletManager.getCurrentFlowWalletAddress() || EVMWalletManager.isEVMWalletAddress(toAddress)) {
         val emojiInfo = AccountEmojiManager.getEmojiByAddress(toAddress)
         toAvatarView.setAvatarInfo(emojiInfo = emojiInfo)
         namePrefixView.gone()

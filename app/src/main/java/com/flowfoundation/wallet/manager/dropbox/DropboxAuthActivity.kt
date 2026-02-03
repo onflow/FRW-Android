@@ -20,6 +20,7 @@ import com.flowfoundation.wallet.utils.logw
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import com.flow.wallet.keys.SeedPhraseKey
 import com.flow.wallet.storage.FileSystemStorage
+import com.flowfoundation.wallet.wallet.DERIVATION_PATH
 import java.io.File
 
 class DropboxAuthActivity : AppCompatActivity() {
@@ -98,8 +99,7 @@ class DropboxAuthActivity : AppCompatActivity() {
                         val seedPhraseKey = SeedPhraseKey(
                             mnemonicString = mnemonic ?: "",
                             passphrase = "",
-                            derivationPath = "m/44'/539'/0'/0/0",
-                            keyPair = null,
+                            derivationPath = DERIVATION_PATH,
                             storage = storage
                         )
                         uploadDropboxBackup(dbxClient, BackupCryptoProvider(seedPhraseKey))
@@ -111,8 +111,7 @@ class DropboxAuthActivity : AppCompatActivity() {
                         val seedPhraseKey = SeedPhraseKey(
                             mnemonicString = mnemonic ?: "",
                             passphrase = "",
-                            derivationPath = "m/44'/539'/0'/0/0",
-                            keyPair = null,
+                            derivationPath = DERIVATION_PATH,
                             storage = storage
                         )
                         checkDropboxBackup(dbxClient, BackupCryptoProvider(seedPhraseKey))

@@ -2,9 +2,11 @@ package com.flowfoundation.wallet
 
 import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.model.AccountKey
+import com.flowfoundation.wallet.network.model.FlowAccountInfo
 import com.flowfoundation.wallet.network.model.RegisterRequest
 import com.flowfoundation.wallet.network.retrofit
 import org.onflow.flow.models.bytesToHex
@@ -18,6 +20,7 @@ import wallet.core.jni.HDWallet
 import com.flow.wallet.keys.PrivateKey
 import com.flow.wallet.storage.FileSystemStorage
 import com.flowfoundation.wallet.utils.Env
+import org.onflow.flow.models.HashingAlgorithm
 import org.onflow.flow.models.SigningAlgorithm
 import java.io.File
 
@@ -33,10 +36,22 @@ class TestApi {
 
             val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
             val service = retrofit().create(ApiService::class.java)
+
+            // Get Firebase JWT for signing (v4 requires signature verification)
+            val firebaseJwt = getFirebaseJwt()
+
+            // Sign the Firebase JWT (for test, using a placeholder signature)
+            // In real usage, this should be signed with the private key
+            val testSignature = "test_signature_placeholder"
+
+            val flowAccountInfo = FlowAccountInfo(
+                accountKey = AccountKey(publicKey = publicKey),
+                signature = testSignature
+            )
             val user = service.register(
                 RegisterRequest(
+                    flowAccountInfo = flowAccountInfo,
                     username = "ttt",
-                    accountKey = AccountKey(publicKey = publicKey),
                     deviceInfo = deviceInfoRequest
                 )
             )
@@ -58,12 +73,25 @@ class TestApi {
             val privateKey = PrivateKey.create(storage)
             val publicKeyBytes = privateKey.publicKey(SigningAlgorithm.ECDSA_P256)
             val publicKey = publicKeyBytes?.bytesToHex()?.removePrefix("04") ?: ""
+
+            // Get Firebase JWT for signing (v4 requires signature verification)
+            val firebaseJwt = getFirebaseJwt()
+
+            // Sign the Firebase JWT with the private key
+            val jwtBytes = firebaseJwt.toByteArray(Charsets.UTF_8)
+            val signatureBytes = privateKey.sign(jwtBytes, SigningAlgorithm.ECDSA_P256, HashingAlgorithm.SHA2_256)
+            val hexSignature = signatureBytes?.joinToString("") { "%02x".format(it) } ?: ""
+
+            val flowAccountInfo = FlowAccountInfo(
+                accountKey = AccountKey(publicKey = publicKey),
+                signature = hexSignature
+            )
             
             val service = retrofit().create(ApiService::class.java)
             val user = service.register(
                 RegisterRequest(
+                    flowAccountInfo = flowAccountInfo,
                     username = "ttt",
-                    accountKey = AccountKey(publicKey = publicKey),
                     deviceInfo = deviceInfoRequest
                 )
             )

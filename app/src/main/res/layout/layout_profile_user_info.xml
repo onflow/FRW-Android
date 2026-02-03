@@ -29,7 +29,7 @@
         android:fontFamily="@font/inter_semi_bold"
         android:textColor="@color/text"
         android:textSize="16sp"
-        app:layout_constraintBottom_toTopOf="@id/userid_view"
+        app:layout_constraintBottom_toBottomOf="@id/avatar_view"
         app:layout_constraintStart_toEndOf="@id/avatar_view"
         app:layout_constraintTop_toTopOf="@id/avatar_view"
         app:layout_constraintVertical_chainStyle="packed"
@@ -37,21 +37,6 @@
         android:drawablePadding="8dp"
         app:drawableEndCompat="@drawable/ic_baseline_arrow_down_18"
         app:drawableTint="@color/accent_gray"/>
-
-    <TextView
-        android:id="@+id/userid_view"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="14dp"
-        android:layout_marginTop="8dp"
-        android:fontFamily="@font/inter_medium"
-        android:textColor="@color/text"
-        android:textSize="16sp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@id/avatar_view"
-        app:layout_constraintStart_toEndOf="@id/avatar_view"
-        app:layout_constraintTop_toBottomOf="@id/nickname_view"
-        tools:text="\@zyanzzz"/>
 
     <androidx.constraintlayout.utils.widget.ImageFilterButton
         android:id="@+id/edit_button"

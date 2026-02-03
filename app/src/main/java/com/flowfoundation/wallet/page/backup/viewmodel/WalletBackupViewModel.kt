@@ -10,7 +10,6 @@ import com.flowfoundation.wallet.manager.transaction.OnTransactionStateChange
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.page.backup.BackupListManager
@@ -75,7 +74,7 @@ class WalletBackupViewModel : ViewModel(), OnTransactionStateChange {
                 }
 
                 val account = FlowAddress(
-                    WalletManager.wallet().walletAddress().orEmpty()
+                    WalletManager.getCurrentFlowWalletAddress().orEmpty()
                 ).lastBlockAccount()
                 val currentKey = CryptoProviderManager.getCurrentCryptoProvider()?.getPublicKey()
                 val keys = account.keys ?: emptyList()
@@ -155,7 +154,7 @@ class WalletBackupViewModel : ViewModel(), OnTransactionStateChange {
                 } ?: emptyList()
 
                 val account = FlowAddress(
-                    WalletManager.wallet().walletAddress().orEmpty()
+                    WalletManager.getCurrentFlowWalletAddress().orEmpty()
                 ).lastBlockAccount()
                 val keys = account.keys ?: emptyList()
                 val deviceList = mutableListOf<DeviceKeyModel>()

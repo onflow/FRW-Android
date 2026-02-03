@@ -23,4 +23,5 @@ class WalletUtilsTest {
         assertEquals("123", "0x0x123".removeAddressPrefix())
         assertEquals("123", "Fx123".removeAddressPrefix())
     }
+
 }

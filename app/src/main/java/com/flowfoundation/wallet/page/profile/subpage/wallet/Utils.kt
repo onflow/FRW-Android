@@ -5,7 +5,6 @@ import com.flowfoundation.wallet.cache.storageInfoCache
 import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.executeCadence
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import kotlinx.serialization.Serializable
@@ -14,7 +13,7 @@ import org.onflow.flow.infrastructure.Cadence
 
 fun queryStorageInfo() {
     ioScope {
-        val address = WalletManager.wallet().walletAddress()
+        val address = WalletManager.getCurrentFlowWalletAddress()
         if (address.isNullOrEmpty()) {
             return@ioScope
         }

@@ -20,7 +20,6 @@ import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.page.nft.move.SelectAccountDialog
 import com.flowfoundation.wallet.page.swap.dialog.select.SelectTokenDialog
@@ -58,7 +57,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
     private var isFlowCoin = false
     private var moveFromAddress: String = WalletManager.selectedWalletAddress()
     private var moveToAddress: String = if (EVMWalletManager.isEVMWalletAddress(moveFromAddress)) {
-        WalletManager.wallet().walletAddress().orEmpty()
+        WalletManager.getCurrentFlowWalletAddress().orEmpty()
     } else {
         EVMWalletManager.getEVMAddress().orEmpty()
     }
@@ -132,10 +131,8 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
     }
 
     private fun getEligibleAccounts(): List<String> {
-        val flowAddress = WalletManager.wallet().walletAddress().orEmpty()
-        val childAccounts = WalletManager.childAccountList(flowAddress)
-            ?.get()
-            ?.map { it.address } ?: emptyList()
+        val flowAddress = WalletManager.getCurrentFlowWalletAddress().orEmpty()
+        val childAccounts = WalletManager.childAccountList(flowAddress).map { it.address }
         val evmAddress = EVMWalletManager.getEVMAddress().orEmpty()
         return listOf(flowAddress) + childAccounts + listOf(evmAddress)
     }
@@ -155,7 +152,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
     private fun setupViews() {
         // Initialize addresses based on whether EVM is selected
         moveToAddress = if (EVMWalletManager.isEVMWalletAddress(moveFromAddress)) {
-            WalletManager.wallet().walletAddress().orEmpty()
+            WalletManager.getCurrentFlowWalletAddress().orEmpty()
         } else {
             EVMWalletManager.getEVMAddress().orEmpty()
         }
@@ -213,7 +210,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                         moveFromAddress = selected
                         // Update to address based on new from address
                         moveToAddress = if (EVMWalletManager.isEVMWalletAddress(selected)) {
-                            WalletManager.wallet().walletAddress().orEmpty()
+                            WalletManager.getCurrentFlowWalletAddress().orEmpty()
                         } else {
                             EVMWalletManager.getEVMAddress().orEmpty()
                         }

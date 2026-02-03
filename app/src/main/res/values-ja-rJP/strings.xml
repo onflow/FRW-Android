@@ -236,9 +236,7 @@
     <string name="restore_with_recovery_phrase">リカバリーフレーズで復元</string>
     <string name="not_logged_in_toast">ウォレットにログインしていません</string>
     <string name="free_gas_fee">ガソリン代無料</string>
-    <string name="free_gas_fee_desc">Flow Walletが私のすべての取引のガス料金を支払うことを許可する
-。</string>
-    <string name="file_picker_title">ファイルを選択</string>
+    <string name="free_gas_fee_desc">* Flow Walletが私のすべての取引のガス料金を支払うことを許可する。</string>
     <string name="transaction_fee">トランザクション料金</string>
     <string name="hold_to_confirm">ホールドして確認</string>
     <string name="hold_to_sign">長押しで署名</string>
@@ -697,7 +695,6 @@ Secure Enclave は、デバイスのハードウェア レベルのセキュリ�
     <string name="connect_to_dropbox">Dropboxに接続</string>
     <string name="connect_dropbox">Dropboxと接続</string>
     <string name="deposit_evm_tip">別のネットワーク経由で入金した資産が失われる可能性がある場合は、入金額がFLOW EVMネットワークにあることを確認してください。</string>
-    <string name="legal_message">"     <![CDATA[     Flow Walletを使用することで、 <a href="https://wallet.flow.com/terms-of-service"><u>利用規約</u></a> <a href="https://wallet.flow.com/privacy-policy"><u>プライバシーポリシー</u></a>     に同意したことになります。    ]]>     "</string>
     <string name="get_started">始めましょう</string>
     <string name="on_flow">#onFlow</string>
     <string name="choose_swap_provider">スワッププロバイダを選択</string>
@@ -725,7 +722,7 @@ Secure Enclave は、デバイスのハードウェア レベルのセキュリ�
     <string name="import_from_pdf">PDFからインポート</string>
     <string name="pdf_parse_error_message">キーストアJSONフォーマットが無効です。Flow Wallet Extensionをダウンロードして、キーストアファイルを正しくエクスポートしてください。</string>
     <string name="extension_download_url">https://chromewebstore.google.com/detail/flow-wallet/hpclkefagolihohboafpheddmmgdffjm?hl=en</string>
-    
+
     <!-- PDF Import Feature -->
     <string name="pdf_password_hint">PDFパスワードを入力</string>
     <string name="pdf_password_protected_info">このPDFはパスワードで保護されています。秘密鍵を抽出するにはパスワードを入力してください。</string>
@@ -743,4 +740,64 @@ Secure Enclave は、デバイスのハードウェア レベルのセキュリ�
     <string name="pdf_password_required_desc">このPDFはパスワードで保護されています。パスワードを入力してください。</string>
     <string name="unlock">ロック解除</string>
     <string name="pdf_contains_private_key">このPDFには秘密鍵が含まれています。秘密鍵インポートオプションを使用してください。</string>
+    <string name="surge_pricing_title">サージ価格で続行することを本当に確信していますか？</string>
+    <string name="surge_current_fee">あなたの取引手数料：</string>
+    <string name="surge_active">サージ価格アクティブ</string>
+    <string name="surge_description">高いネットワーク活動により、取引手数料が上昇しており、Flow Walletは一時的にあなたのガス代を支払っていません。現在のネットワーク手数料は通常の4倍高くなっています。</string>
+    <string name="surge_hold_to_confirm">サージ価格に同意するためにホールドしてください</string>
+    <string name="selected_account">選択されたアカウント</string>
+    <string name="connecting_on">%1$sに接続中</string>
+    <string name="connecting_account">アカウントを接続中</string>
+    <string name="requesting_access">%1$sがアクセスを要求しています：</string>
+    <string name="show_in_account_list">アカウントリストに表示</string>
+    <string name="file_picker_title">ファイルを選択</string>
+    <string name="select_account">アカウントを選択</string>
+    <string name="label_flow">FLOW</string>
+    <string name="label_eoa">EOA</string>
+    <string name="telegram_not_installed">Telegramアプリがインストールされていません</string>
+    <string name="legal_message">"     <![CDATA[     Flow Walletを使用することで、<a href="https://wallet.flow.com/terms-of-service"><u>利用規約</u></a>と<a href="https://wallet.flow.com/privacy-policy"><u>プライバシーポリシー</u></a>に同意したことになります     ]]>     "</string>
+    <string name="punch_swap" translatable="false">Punch Swap</string>
+    <string name="punch_swap_url" translatable="false">swap.kittypunch.xyz</string>
+    <string name="trado_url" translatable="false">trado.one</string>
+    <string name="trado" translatable="false">Trado</string>
+    <string name="increment_finance" translatable="false">Increment Finance</string>
+    <string name="increment_url" translatable="false">increment.fi</string>
+    <string name="json" translatable="false">JSON</string>
+    <string name="required_asterisk" translatable="false">" *"</string>
+    <string name="cadence_script_version" translatable="false">Cadence Script Version: %1$s</string>
+    <string name="return_to_browser_to_continue">セッションを続行するためにブラウザに戻ってください。</string>
+    <string name="manage_tokens">トークン管理</string>
+    <string name="filters">フィルター</string>
+    <string name="hide_dust_token">ダストトークンを非表示</string>
+    <string name="display_verified_token">認証済みトークンのみ表示</string>
+    <string name="tokens">トークン</string>
+    <string name="verified">認証済み</string>
+    <string name="contract_address">コントラクトアドレス</string>
+    <string name="no">いいえ</string>
+    <string name="yes">はい</string>
+    <string name="wallet_connect_no_proposal">接続を確立できません。もう一度お試しください。</string>
+    <string name="wallet_connect_pairing_error">接続に失敗しました。もう一度お試しください。</string>
+    <string name="wallet_connect_generic_error">接続中にエラーが発生しました。もう一度お試しください。</string>
+    <string name="wallet_connect_proposal_expired">接続要求の有効期限が切れました。もう一度お試しください。</string>
+    <string name="wallet_connect_request_expired">要求の有効期限が切れました。もう一度お試しください。</string>
+    <string name="wallet_connect_activity_error">接続プロンプトを表示できません。もう一度お試しください。</string>
+    <string name="wallet_connect_proposal_error">接続要求の処理に失敗しました。もう一度お試しください。</string>
+    <string name="wallet_connect_initialization_error">Wallet Connectの初期化エラー。</string>
+    <string name="wallet_connect_approval_error">Wallet Connectセッションの承認エラー。</string>
+    <string name="verified_tip">これは未認証のトークンです。信頼できるトークンとのみやり取りしてください。</string>
+    <string name="hide_dust_token_tip">0.01米ドル未満の残高のトークン</string>
+    <string name="transfer_success">取引成功</string>
+    <string name="transfer_failed">取引失敗</string>
+    <string name="nft_amount_items">%1$sアイテム</string>
+    <string name="pending_request_from">%1$sからの保留中のリクエストがあります</string>
+    <string name="my_own_address">自分のアドレス</string>
+    <string name="custom_address">カスタムアドレス</string>
+    <string name="enter_custom_address">カスタムアドレスを入力</string>
+    <string name="add_evm_account">FlowにEVMアカウントを追加</string>
+    <string name="active_account">アクティブアカウント</string>
+    <string name="add_account">アカウントを追加</string>
+    <string name="confirm_to_copy_address">アドレスをコピーすることを確認</string>
+    <string name="confirm_copy_address_tips">FlowネットワークのEVMアドレスをコピーしました。このアドレスにはFlowネットワークのアセットのみを送信してください。そうでなければ失われます。</string>
+    <string name="evm_on_flow_address">Flow上のEVMアドレス</string>
+    <string name="recover_profile">プロファイルを復元</string>
 </resources>

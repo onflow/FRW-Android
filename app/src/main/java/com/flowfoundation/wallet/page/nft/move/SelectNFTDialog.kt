@@ -19,7 +19,6 @@ import com.flowfoundation.wallet.manager.account.AccountInfoManager
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.page.nft.move.model.CollectionInfo
 import com.flowfoundation.wallet.page.nft.move.widget.SelectNFTListAdapter
 import com.flowfoundation.wallet.page.nft.nftlist.nftWalletAddress
@@ -259,17 +258,15 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
 
 
     private val initialFromAddress = WalletManager.selectedWalletAddress()
-    private var moveToAddress: String = WalletManager.wallet().walletAddress().orEmpty()
+    private var moveToAddress: String = WalletManager.getCurrentFlowWalletAddress().orEmpty()
 
 
     private fun configureFromAccount() {
         with(binding) {
-            val walletAddress = WalletManager.wallet().walletAddress() ?: return@with
+            val walletAddress = WalletManager.getCurrentFlowWalletAddress() ?: return@with
             val allAccounts = mutableSetOf<String>().apply {
                 add(walletAddress)
-                WalletManager.childAccountList(walletAddress)
-                    ?.get()
-                    ?.forEach { add(it.address) }
+                WalletManager.childAccountList(walletAddress).forEach { add(it.address) }
                 add(initialFromAddress)
                 // Include the EVM address if available.
                 val evmAddress = EVMWalletManager.getEVMAddress().orEmpty()
@@ -317,7 +314,7 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
         with(binding) {
             // Build eligible list of To accounts based on current wallet state.
             val eligibleList = mutableListOf<String>()
-            val walletAddress = WalletManager.wallet().walletAddress() ?: return@with
+            val walletAddress = WalletManager.getCurrentFlowWalletAddress() ?: return@with
 
             // Only add the parent's address if it's not the current From.
             if (walletAddress != moveFromAddress) {
@@ -325,7 +322,7 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
             }
 
             // Add child accounts, excluding the current From.
-            WalletManager.childAccountList(walletAddress)?.get()?.forEach { child ->
+            WalletManager.childAccountList(walletAddress).forEach { child ->
                 if (child.address != moveFromAddress) {
                     eligibleList.add(child.address)
                 }

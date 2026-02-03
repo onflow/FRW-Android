@@ -8,7 +8,6 @@ import com.flowfoundation.wallet.manager.flowjvm.transactionByMainWallet
 import com.flowfoundation.wallet.manager.transaction.TransactionStateWatcher
 import com.flowfoundation.wallet.manager.transaction.isExecuteFinished
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.error.StakingError
@@ -136,7 +135,7 @@ object StakingManager {
     }
 
     private suspend fun queryStakingInfo(): StakingInfo? {
-        val address = WalletManager.wallet().walletAddress() ?: return null
+        val address = WalletManager.getCurrentFlowWalletAddress() ?: return null
 
         logv(TAG, "queryStakingInfo ")
         return runCatching {
@@ -189,7 +188,7 @@ suspend fun createStakingDelegatorId(provider: StakingProvider, amount: BigDecim
                 TransactionStateWatcher(txId!!).watch { result ->
                     if (result.isExecuteFinished()) {
                         MixpanelManager.delegationCreated(
-                            WalletManager.wallet().walletAddress().orEmpty(),
+                            WalletManager.getCurrentFlowWalletAddress().orEmpty(),
                             provider.id,
                             amount.toString()
                         )
