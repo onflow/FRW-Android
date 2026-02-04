@@ -23,6 +23,18 @@ suspend fun walletConnectAuthnServiceResponse(
     nonce: String?,
     appIdentifier: String?,
 ): String {
+    val services = mutableListOf(
+        authn(address.toAddress(), keyId),
+        authz(address.toAddress(), keyId),
+        userSign(address.toAddress(), keyId),
+        preAuthz(address.toAddress(), keyId)
+    )
+
+    val proof = accountProof(address, keyId, nonce, appIdentifier)
+    if (proof.isNotBlank()) {
+        services.add(proof)
+    }
+
     return """
 {
   "f_type": "PollingResponse",
@@ -32,16 +44,7 @@ suspend fun walletConnectAuthnServiceResponse(
     "f_vsn": "1.0.0",
     "paddr": null,
     "services": [
-      ${
-        """
-            ${authn(address.toAddress(), keyId)},
-            ${authz(address.toAddress(), keyId)},
-            ${userSign(address.toAddress(), keyId)},
-            ${preAuthz(address.toAddress(), keyId)},
-            ${signMessage() + if (nonce.isNullOrBlank() || appIdentifier.isNullOrBlank()) "" else ","}
-            ${accountProof(address, keyId, nonce, appIdentifier)}
-        """.trimIndent()
-      }
+      ${services.joinToString(",")}
     ],
     "addr": "${address.toAddress()}",
     "address": "${address.toAddress()}",
@@ -158,19 +161,6 @@ private suspend fun accountProof(address: String, keyId: Int, nonce: String?, ap
             }
           ]
         }
-    }
-""".trimIndent()
-}
-
-private fun signMessage(): String {
-    return """
-    {
-        "f_type": "Service",
-        "f_vsn": "1.0.0",
-        "type": "user-signature",
-        "uid": "https://frw-link.lilico.app/wc",
-        "endpoint": "${WalletConnectMethod.USER_SIGNATURE.value}",
-        "method": "WC/RPC"
     }
 """.trimIndent()
 }

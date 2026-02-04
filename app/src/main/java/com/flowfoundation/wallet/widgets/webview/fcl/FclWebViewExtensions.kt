@@ -39,10 +39,10 @@ fun WebView?.postAuthnViewReadyResponse(fcl: FclAuthnResponse, address: String) 
 fun WebView?.postPreAuthzResponse() {
     ioScope {
         // Use a more reliable method to get the wallet address
-        var address = WalletManager.selectedWalletAddress()
+        var address = WalletManager.wallet().walletAddress()
 
         // If that failed, try getting it from the AccountManager
-        if (address.isBlank()) {
+        if (address.isNullOrBlank()) {
             val account = AccountManager.get()
             address = account?.wallet?.walletAddress() ?: ""
         }
@@ -76,7 +76,7 @@ fun WebView?.postAuthzPayloadSignResponse(fcl: FclAuthzResponse) {
             address = WalletManager.selectedWalletAddress()
         }
 
-        if (address.isNullOrBlank()) {
+        if (address.isBlank()) {
             logd("WebView", "No wallet address found for authz payload sign response")
             return@ioScope
         }
@@ -110,7 +110,7 @@ fun WebView?.postSignMessageResponse(fcl: FclSignMessageResponse) {
             address = WalletManager.selectedWalletAddress()
         }
 
-        if (address.isNullOrBlank()) {
+        if (address.isBlank()) {
             logd("WebView", "No wallet address found for sign message response")
             return@ioScope
         }
