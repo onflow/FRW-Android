@@ -99,6 +99,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
     val keystoreFormatErrorLiveData = MutableLiveData<Boolean>()
 
     fun changeOption(option: KeyStoreOption) {
+        loadingLiveData.postValue(false)
         optionChangeLiveData.postValue(option)
     }
 
@@ -604,6 +605,9 @@ class KeyStoreRestoreViewModel : ViewModel() {
                     val randomUsername = RandomUsernameGenerator.generateRandomUsername()
                     logd("KeyStoreRestoreViewModel", "Generated random username: $randomUsername")
                     importWithUsername(randomUsername)
+                } else {
+                    loadingLiveData.postValue(false)
+                    toast(msgRes = R.string.restore_failed)
                 }
             } catch (e: Exception) {
                 (e as? HttpException)?.let {

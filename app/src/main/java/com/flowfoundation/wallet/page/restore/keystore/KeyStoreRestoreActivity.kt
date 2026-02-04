@@ -69,12 +69,10 @@ class KeyStoreRestoreActivity : BaseActivity() {
                 onOptionChange(it)
             }
             loadingLiveData.observe(this@KeyStoreRestoreActivity) { show ->
-                uiScope {
-                    if (show) {
-                        loadingDialog.show()
-                    } else {
-                        loadingDialog.dismiss()
-                    }
+                if (show) {
+                    loadingDialog.show()
+                } else {
+                    loadingDialog.dismiss()
                 }
             }
             changeOption(
@@ -91,6 +89,7 @@ class KeyStoreRestoreActivity : BaseActivity() {
 
     @SuppressLint("CommitTransaction")
     private fun onOptionChange(option: KeyStoreOption) {
+        loadingDialog.dismiss()
         val transition = createTransition(currentOption, option)
         val fragment = when (option) {
             KeyStoreOption.INPUT_KEYSTORE_INFO -> {
