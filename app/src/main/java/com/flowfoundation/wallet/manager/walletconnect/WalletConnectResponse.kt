@@ -24,10 +24,10 @@ suspend fun walletConnectAuthnServiceResponse(
     appIdentifier: String?,
 ): String {
     val services = mutableListOf(
+        preAuthz(address.toAddress(), keyId),
         authn(address.toAddress(), keyId),
         authz(address.toAddress(), keyId),
-        userSign(address.toAddress(), keyId),
-        preAuthz(address.toAddress(), keyId)
+        userSign(address.toAddress(), keyId)
     )
 
     val proof = accountProof(address, keyId, nonce, appIdentifier)
@@ -59,6 +59,7 @@ private fun authn(address: String, keyId: Int): String {
     return """
 {
     "f_type": "Service",
+    "method": "WC/RPC",
     "uid": "https://frw-link.lilico.app/wc",
     "provider": {
         "f_type": "ServiceProvider",
@@ -75,7 +76,8 @@ private fun authn(address: String, keyId: Int): String {
     "f_vsn": "1.0.0",
     "endpoint": "flow_authn",
     "type": "authn",
-    "identity": { "address": "$address", "keyId": $keyId }
+    "identity": { "address": "$address", "keyId": $keyId },
+    "network": "${chainNetWorkString()}"
 }
     """.trimIndent()
 }
@@ -89,7 +91,8 @@ private fun authz(address: String, keyId: Int): String {
     "f_vsn": "1.0.0",
     "endpoint": "flow_authz",
     "type": "authz",
-    "identity": { "address": "$address", "keyId": $keyId }
+    "identity": { "address": "$address", "keyId": $keyId },
+    "network": "${chainNetWorkString()}"
 }
     """.trimIndent()
 }
@@ -103,7 +106,8 @@ private fun userSign(address: String, keyId: Int): String {
     "f_vsn": "1.0.0",
     "endpoint": "flow_user_sign",
     "type": "user-signature",
-    "identity": { "address": "$address", "keyId": $keyId }
+    "identity": { "address": "$address", "keyId": $keyId },
+    "network": "${chainNetWorkString()}"
 }
     """.trimIndent()
 }
@@ -123,7 +127,8 @@ private fun preAuthz(address: String, keyId: Int): String {
         "keyId": $keyId,
         "network": "${chainNetWorkString()}"
     },
-    "data": {}
+    "data": {},
+    "network": "${chainNetWorkString()}"
 }
     """.trimIndent()
 }
