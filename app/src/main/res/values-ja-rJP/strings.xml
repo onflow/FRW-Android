@@ -65,6 +65,8 @@
     <string name="multiple_accounts_found">複数のアカウントが見つかりました。</string>
     <string name="enter_password">パスワード入力</string>
     <string name="continue_str">続ける</string>
+    <string name="dapp_prompt_title">注意して進む</string>
+    <string name="dapp_prompt_body">Flow Walletではなく、第三者によってここに送信されました。続行するとDappが開きます。</string>
     <string name="restore_with_google_drive">Googleドライブで復元</string>
     <string name="wrong_password">パスワード間違い</string>
     <string name="word_not_found">単語が見つかりません。</string>
@@ -722,6 +724,24 @@ Secure Enclave は、デバイスのハードウェア レベルのセキュリ�
     <string name="import_from_pdf">PDFからインポート</string>
     <string name="pdf_parse_error_message">キーストアJSONフォーマットが無効です。Flow Wallet Extensionをダウンロードして、キーストアファイルを正しくエクスポートしてください。</string>
     <string name="extension_download_url">https://chromewebstore.google.com/detail/flow-wallet/hpclkefagolihohboafpheddmmgdffjm?hl=en</string>
+
+    <!-- PDF Import Feature -->
+    <string name="pdf_password_hint">PDFパスワードを入力</string>
+    <string name="pdf_password_protected_info">このPDFはパスワードで保護されています。秘密鍵を抽出するにはパスワードを入力してください。</string>
+    <string name="extract_private_key_from_pdf">PDFから秘密鍵を抽出</string>
+    <string name="pdf_file_not_found">PDFファイルが見つかりません</string>
+    <string name="pdf_extract_json_failed">PDFからJSONの抽出に失敗しました</string>
+    <string name="pdf_private_key_extracted">PDFから秘密鍵を抽出しました。確認してインポートを押してください。</string>
+    <string name="pdf_contains_keystore">このPDFにはキーストアが含まれています。キーストアインポートオプションを使用してください。</string>
+    <string name="pdf_unknown_format">PDFのJSONフォーマットが不明です。private_keyまたはキーストアフォーマットが必要です。</string>
+    <string name="pdf_password_incorrect">パスワードが正しくありません。パスワードを確認して再試行してください。</string>
+    <string name="pdf_extract_failed">PDF抽出に失敗: %1$s</string>
+    <string name="pdf_keystore_extracted">PDFからキーストアを抽出しました。パスワードを入力してインポートを押してください。</string>
+    <string name="pdf_imported_success">PDFのインポートに成功: %1$s</string>
+    <string name="pdf_password_required_title">パスワードが必要です</string>
+    <string name="pdf_password_required_desc">このPDFはパスワードで保護されています。パスワードを入力してください。</string>
+    <string name="unlock">ロック解除</string>
+    <string name="pdf_contains_private_key">このPDFには秘密鍵が含まれています。秘密鍵インポートオプションを使用してください。</string>
     <string name="surge_pricing_title">サージ価格で続行することを本当に確信していますか？</string>
     <string name="surge_current_fee">あなたの取引手数料：</string>
     <string name="surge_active">サージ価格アクティブ</string>

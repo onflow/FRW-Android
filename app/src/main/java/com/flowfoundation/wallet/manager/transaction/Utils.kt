@@ -11,12 +11,7 @@ fun TransactionResult.isProcessing(): Boolean {
 }
 
 fun TransactionResult.isExecuteFinished(): Boolean {
-    return when (status) {
-        TransactionStatus.FINALIZED -> execution == TransactionExecution.success && errorMessage.isBlank()
-        TransactionStatus.SEALED -> execution == TransactionExecution.success && errorMessage.isBlank()
-        TransactionStatus.EXECUTED -> execution == TransactionExecution.success && errorMessage.isBlank()
-        else -> false
-    }
+    return !status!!.ordinal.isProcessing() && errorMessage.isBlank()
 }
 
 fun TransactionResult.isFailed(): Boolean {
@@ -24,11 +19,11 @@ fun TransactionResult.isFailed(): Boolean {
         return false
     }
     // Transaction is failed if:
-    // 1. It has an error message, OR  
+    // 1. It has an error message, OR
     // 2. It's finalized/sealed/executed but execution is explicitly "failure", OR
     // 3. Transaction is expired
-    return errorMessage.isNotBlank() || 
-           (status in listOf(TransactionStatus.FINALIZED, TransactionStatus.SEALED, TransactionStatus.EXECUTED) && 
+    return errorMessage.isNotBlank() ||
+           (status in listOf(TransactionStatus.FINALIZED, TransactionStatus.SEALED, TransactionStatus.EXECUTED) &&
             execution == TransactionExecution.failure) ||
            status == TransactionStatus.EXPIRED
 }

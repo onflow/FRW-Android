@@ -66,6 +66,8 @@
     <string name="multiple_accounts_found">Multiple Accounts found.</string>
     <string name="enter_password">Enter Password</string>
     <string name="continue_str">Continue</string>
+    <string name="dapp_prompt_title">Proceed with caution</string>
+    <string name="dapp_prompt_body">You were sent here by a third party, not Flow Wallet. You will open Dapp if you continue.</string>
     <string name="restore_with_google_drive">Restore with Google Drive</string>
     <string name="wrong_password">wrong password</string>
     <string name="word_not_found">Oops, word not found.</string>
@@ -727,6 +729,24 @@
     <string name="import_from_pdf">从 PDF 导入</string>
     <string name="pdf_parse_error_message">密钥库 JSON 格式无效。请下载 Flow Wallet Extension 以正确导出您的密钥库文件。</string>
     <string name="extension_download_url">https://chromewebstore.google.com/detail/flow-wallet/hpclkefagolihohboafpheddmmgdffjm?hl=en</string>
+
+    <!-- PDF Import Feature -->
+    <string name="pdf_password_hint">输入您的 PDF 密码</string>
+    <string name="pdf_password_protected_info">此 PDF 受密码保护。请输入密码以提取私钥。</string>
+    <string name="extract_private_key_from_pdf">从 PDF 提取私钥</string>
+    <string name="pdf_file_not_found">未找到 PDF 文件</string>
+    <string name="pdf_extract_json_failed">无法从 PDF 提取 JSON</string>
+    <string name="pdf_private_key_extracted">已从 PDF 提取私钥。请查看并按导入继续。</string>
+    <string name="pdf_contains_keystore">此 PDF 包含密钥库。请使用密钥库导入选项。</string>
+    <string name="pdf_unknown_format">PDF 中的 JSON 格式未知。需要 private_key 或密钥库格式。</string>
+    <string name="pdf_password_incorrect">密码错误。请检查您的密码并重试。</string>
+    <string name="pdf_extract_failed">PDF 提取失败: %1$s</string>
+    <string name="pdf_keystore_extracted">已从 PDF 提取密钥库。输入密码并按导入。</string>
+    <string name="pdf_imported_success">PDF 导入成功: %1$s</string>
+    <string name="pdf_password_required_title">需要密码</string>
+    <string name="pdf_password_required_desc">此 PDF 受密码保护。请提供密码。</string>
+    <string name="unlock">解锁</string>
+    <string name="pdf_contains_private_key">此 PDF 包含私钥。请使用私钥导入选项。</string>
     <string name="surge_pricing_title">Are you really sure that you want to continue with surge pricing?</string>
     <string name="surge_current_fee">Your transaction fee:</string>
     <string name="surge_active">Surge price active</string>

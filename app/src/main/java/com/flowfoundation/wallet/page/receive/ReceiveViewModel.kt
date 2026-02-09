@@ -22,7 +22,6 @@ class ReceiveViewModel : ViewModel() {
             } else {
                 WalletManager.getCurrentFlowWalletAddress().orEmpty() to ""
             }
-            WalletManager.wallet() ?: return@viewModelIOScope
             walletLiveData.postValue(ReceiveData(walletName = name, address = address))
 
             val drawable = address.toAddress().toQRDrawable()

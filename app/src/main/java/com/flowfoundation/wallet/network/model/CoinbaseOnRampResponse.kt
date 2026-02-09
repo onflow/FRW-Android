@@ -10,6 +10,7 @@ data class CoinbaseOnRampResponse(
 )
 
 data class CoinbaseOnRampInfo(
+    @SerializedName("session")
     val session: CoinbaseOnRampSession?
 )
 

@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.manager.wallet
 
+import com.flow.wallet.keys.PrivateKey
 import com.flow.wallet.wallet.Wallet
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.app.NETWORK_NAME_MAINNET
@@ -17,6 +18,12 @@ import com.flowfoundation.wallet.utils.updateSelectedWalletAddress
 import com.flowfoundation.wallet.wallet.toAddress
 import kotlinx.coroutines.runBlocking
 import java.util.concurrent.atomic.AtomicReference
+import com.flowfoundation.wallet.manager.config.AppConfig
+import com.flowfoundation.wallet.manager.rotation.BloctoDetectorService
+import com.flowfoundation.wallet.reactnative.ReactNativeActivity
+import com.flowfoundation.wallet.reactnative.bridge.RNBridge
+import com.flowfoundation.wallet.utils.Env.getStorage
+import com.flowfoundation.wallet.utils.uiScope
 
 object WalletManager {
     private val TAG = WalletManager::class.java.simpleName
@@ -27,6 +34,8 @@ object WalletManager {
     private val initializationLock = Object()
 
     private var _isEoaDisabled = false
+    private var lastRotationCheckTime = 0L
+    private const val ROTATION_CHECK_COOLDOWN = 2000L
 
     fun isEoaDisabled() = _isEoaDisabled
     fun setEoaDisabled(disabled: Boolean) { _isEoaDisabled = disabled }
@@ -97,7 +106,7 @@ object WalletManager {
         val currentNetwork = chainNetWorkString()
 
         // Get the account for the current network
-        currentWallet?.let { wallet ->
+        currentWallet?.let { _ ->
             val walletNodes = AccountManager.walletNodes()
             val currentNetworkFlowWallet = walletNodes
                 ?.filterIsInstance<FlowWallet>()
@@ -289,6 +298,69 @@ object WalletManager {
         }
 
         return chainNetWorkString()
+    }
+
+    fun checkKeyRotation(activity: android.app.Activity) {
+        if (AppConfig.checkBloctoKeyRotation().not()) {
+            return
+        }
+        val address = getCurrentFlowWalletAddress()
+        logd(TAG, "checkKeyRotation() called with address: $address")
+
+        if (address.isNullOrBlank()) {
+            logd(TAG, "checkKeyRotation() - address is blank, returning")
+            return
+        }
+
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastRotationCheckTime < ROTATION_CHECK_COOLDOWN) {
+            logd(TAG, "checkKeyRotation() - skipped due to cooldown")
+            return
+        }
+        lastRotationCheckTime = currentTime
+
+        if (isChildAccount(address) || EVMWalletManager.isEVMWalletAddress(address)) {
+            logd(TAG, "checkKeyRotation() - address is child account or EVM address, returning")
+            return
+        }
+
+        ioScope {
+            logd(TAG, "checkKeyRotation() - detecting Blocto key...")
+            val result = BloctoDetectorService.detectBloctoKey(address)
+            logd(TAG, "checkKeyRotation() - detection result: $result")
+            if (result.needRevoke) {
+                logd(TAG, "checkKeyRotation() - need revoke, launching BACKUP_TIP")
+                uiScope {
+                    ReactNativeActivity.launch(activity, RNBridge.ScreenType.BACKUP_TIP)
+                }
+            }
+        }
+    }
+
+    fun checkKeystoreMigration(activity: android.app.Activity) {
+        val account = AccountManager.get() ?: return
+        val prefix = account.prefix ?: return
+
+        ioScope {
+            val newKeyId = "prefix_key_$prefix"
+            val storage = getStorage()
+
+            // Check if key exists in new storage (File-based)
+            val hasNewKey = try {
+                PrivateKey.get(newKeyId, prefix, storage)
+                true
+            } catch (_: Exception) {
+                false
+            }
+
+            // If user is using file-based key (prefix_key_), they need migration
+            if (hasNewKey) {
+                logd(TAG, "Keystore migration needed for prefix: $prefix")
+                uiScope {
+                    ReactNativeActivity.launch(activity, RNBridge.ScreenType.KEYSTORE_MIGRATION)
+                }
+            }
+        }
     }
 
     fun selectedWalletAddress(): String {

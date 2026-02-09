@@ -9,6 +9,9 @@ import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.safeRunSuspend
 import com.flowfoundation.wallet.utils.uiScope
+import com.nftco.flow.sdk.FlowId
+import com.nftco.flow.sdk.hexToBytes
+import org.onflow.flow.FlowApi
 import org.onflow.flow.infrastructure.parseErrorCode
 import org.onflow.flow.models.TransactionExecution
 import org.onflow.flow.models.TransactionResult
@@ -23,16 +26,18 @@ class TransactionStateWatcher(
     suspend fun watch(callback: (state: TransactionResult) -> Unit) {
         safeRunSuspend {
             try {
+                logd(TAG, "start wait for seal transaction")
                 val result = FlowCadenceApi.waitForSeal(transactionId)
+                logd(TAG, "stop wait for seal with result:${result.status}")
                 callback.invoke(result)
-                
+
                 // Report the final result
                 MixpanelManager.transactionResult(
                     transactionId,
                     result.isSuccess(),
                     result.errorMessage
                 )
-                
+
                 // Handle storage errors
                 if (result.errorMessage.isNotBlank()) {
                     val errorCode = parseErrorCode(result.errorMessage)
@@ -49,7 +54,7 @@ class TransactionStateWatcher(
                 }
             } catch (e: Exception) {
                 logd(TAG, "Transaction $transactionId failed or timed out: ${e.message}")
-                
+
                 // Create a failed result and notify callback
                 val failedResult = TransactionResult(
                     blockId = "",
@@ -62,7 +67,7 @@ class TransactionStateWatcher(
                     links = null
                 )
                 callback.invoke(failedResult)
-                
+
                 // Report the failure
                 MixpanelManager.transactionResult(transactionId, false, e.message)
                 ErrorReporter.reportTransactionError(transactionId, -1)
@@ -71,11 +76,7 @@ class TransactionStateWatcher(
     }
 
     private fun TransactionResult.isSuccess(): Boolean {
-        return when (status) {
-            TransactionStatus.SEALED -> execution == TransactionExecution.success && errorMessage.isBlank()
-            TransactionStatus.EXECUTED -> execution == TransactionExecution.success && errorMessage.isBlank()
-            else -> false
-        }
+        return status != null && status!!.ordinal >= TransactionStatus.FINALIZED.ordinal && errorMessage.isBlank()
     }
 
 }

@@ -65,6 +65,8 @@
     <string name="multiple_accounts_found">Plusieurs comptes trouvés.</string>
     <string name="enter_password">Saisir le mot de passe</string>
     <string name="continue_str">Continuer</string>
+    <string name="dapp_prompt_title">Procéder avec prudence</string>
+    <string name="dapp_prompt_body">Vous avez été envoyé ici par un tiers, pas par Flow Wallet. Vous ouvrirez une Dapp si vous continuez.</string>
     <string name="restore_with_google_drive">Restauration avec Google Drive</string>
     <string name="wrong_password">mot de passe erroné</string>
     <string name="word_not_found">Oups, mot non trouvé.</string>
@@ -719,6 +721,24 @@
     <string name="import_from_pdf">Importer depuis PDF</string>
     <string name="pdf_parse_error_message">Format JSON du keystore invalide. Veuillez télécharger l\'extension Flow Wallet pour exporter correctement votre fichier keystore.</string>
     <string name="extension_download_url">https://chromewebstore.google.com/detail/flow-wallet/hpclkefagolihohboafpheddmmgdffjm?hl=en</string>
+
+    <!-- PDF Import Feature -->
+    <string name="pdf_password_hint">Entrez votre mot de passe PDF</string>
+    <string name="pdf_password_protected_info">Ce PDF est protégé par mot de passe. Veuillez entrer votre mot de passe pour extraire la clé privée.</string>
+    <string name="extract_private_key_from_pdf">Extraire la clé privée du PDF</string>
+    <string name="pdf_file_not_found">Fichier PDF introuvable</string>
+    <string name="pdf_extract_json_failed">Échec de l\'extraction du JSON depuis le PDF</string>
+    <string name="pdf_private_key_extracted">Clé privée extraite du PDF. Vérifiez et appuyez sur Importer pour continuer.</string>
+    <string name="pdf_contains_keystore">Ce PDF contient un keystore. Veuillez utiliser l\'option d\'importation Keystore.</string>
+    <string name="pdf_unknown_format">Format JSON inconnu dans le PDF. Format private_key ou keystore attendu.</string>
+    <string name="pdf_password_incorrect">Mot de passe incorrect. Veuillez vérifier votre mot de passe et réessayer.</string>
+    <string name="pdf_extract_failed">Échec de l\'extraction du PDF: %1$s</string>
+    <string name="pdf_keystore_extracted">Keystore extrait du PDF. Entrez le mot de passe et appuyez sur Importer.</string>
+    <string name="pdf_imported_success">PDF importé avec succès: %1$s</string>
+    <string name="pdf_password_required_title">Mot de passe requis</string>
+    <string name="pdf_password_required_desc">Ce PDF est protégé par mot de passe. Veuillez fournir un mot de passe.</string>
+    <string name="unlock">Déverrouiller</string>
+    <string name="pdf_contains_private_key">Ce PDF contient une clé privée. Utilisez l\'option d\'importation de clé privée.</string>
     <string name="surge_pricing_title">Êtes-vous vraiment sûr de vouloir continuer avec la tarification de pointe?</string>
     <string name="surge_current_fee">Frais de votre transaction:</string>
     <string name="surge_active">Tarification de pointe active</string>

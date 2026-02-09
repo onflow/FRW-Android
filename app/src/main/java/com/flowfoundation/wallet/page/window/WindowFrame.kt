@@ -26,39 +26,48 @@ class WindowFrame {
 
         @SuppressLint("StaticFieldLeak")
         private var windowFrame: View? = null
+        
+        private var isAttaching = false
 
         fun attach(activity: Activity) {
+            if (isAttaching) return
+
             if (FloatWindow.isShowing(WINDOW_TAG)) {
                 return
             }
-
-            FloatWindow.builder().apply {
-                setConfig(
-                    FloatWindowConfig(
-                        gravity = Gravity.TOP or Gravity.START,
-                        contentView = windowInstance(activity),
-                        tag = WINDOW_TAG,
-                        isTouchEnable = true,
-                        disableAnimation = true,
-                        hardKeyEventEnable = true,
-                        immersionStatusBar = true,
-                        width = ScreenUtils.getScreenWidth(),
-                        height = ScreenUtils.getScreenHeight(),
-                        widthMatchParent = true,
-                        heightMatchParent = true,
-                        isFullScreen = true,
-                        ignorePage = listOf(
-                            FilePickerActivity::class,
-                            GoogleDriveAuthActivity::class,
-                            BiometricActivity::class,
-                            SecurityPinActivity::class,
+            
+            isAttaching = true
+            try {
+                FloatWindow.builder().apply {
+                    setConfig(
+                        FloatWindowConfig(
+                            gravity = Gravity.TOP or Gravity.START,
+                            contentView = windowInstance(activity),
+                            tag = WINDOW_TAG,
+                            isTouchEnable = true,
+                            disableAnimation = true,
+                            hardKeyEventEnable = true,
+                            immersionStatusBar = true,
+                            width = ScreenUtils.getScreenWidth(),
+                            height = ScreenUtils.getScreenHeight(),
+                            widthMatchParent = true,
+                            heightMatchParent = true,
+                            isFullScreen = true,
+                            ignorePage = listOf(
+                                FilePickerActivity::class,
+                                GoogleDriveAuthActivity::class,
+                                BiometricActivity::class,
+                                SecurityPinActivity::class,
+                            )
                         )
                     )
-                )
-                show(activity)
-            }
+                    show(activity)
+                }
 
-            attachBubble()
+                attachBubble()
+            } finally {
+                isAttaching = false
+            }
         }
 
         fun release() {

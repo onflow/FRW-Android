@@ -65,6 +65,8 @@
     <string name="multiple_accounts_found">Multiple Accounts found.</string>
     <string name="enter_password">Enter Password</string>
     <string name="continue_str">Continue</string>
+    <string name="dapp_prompt_title">Proceed with caution</string>
+    <string name="dapp_prompt_body">You were sent here by a third party, not Flow Wallet. You will open Dapp if you continue.</string>
     <string name="restore_with_google_drive">Restore with Google Drive</string>
     <string name="wrong_password">wrong password</string>
     <string name="word_not_found">Oops, word not found.</string>
@@ -723,6 +725,24 @@
     <string name="import_from_pdf">PDF से आयात करें</string>
     <string name="pdf_parse_error_message">अमान्य कीस्टोर JSON प्रारूप। कृपया अपनी कीस्टोर फ़ाइल को सही ढंग से निर्यात करने के लिए Flow Wallet Extension डाउनलोड करें।</string>
     <string name="extension_download_url">https://chromewebstore.google.com/detail/flow-wallet/hpclkefagolihohboafpheddmmgdffjm?hl=en</string>
+
+    <!-- PDF Import Feature -->
+    <string name="pdf_password_hint">अपना PDF पासवर्ड दर्ज करें</string>
+    <string name="pdf_password_protected_info">यह PDF पासवर्ड से सुरक्षित है। निजी कुंजी निकालने के लिए अपना पासवर्ड दर्ज करें।</string>
+    <string name="extract_private_key_from_pdf">PDF से निजी कुंजी निकालें</string>
+    <string name="pdf_file_not_found">PDF फ़ाइल नहीं मिली</string>
+    <string name="pdf_extract_json_failed">PDF से JSON निकालने में विफल</string>
+    <string name="pdf_private_key_extracted">PDF से निजी कुंजी निकाली गई। समीक्षा करें और जारी रखने के लिए आयात दबाएं।</string>
+    <string name="pdf_contains_keystore">इस PDF में कीस्टोर है। कृपया कीस्टोर आयात विकल्प का उपयोग करें।</string>
+    <string name="pdf_unknown_format">PDF में अज्ञात JSON प्रारूप। private_key या कीस्टोर प्रारूप अपेक्षित।</string>
+    <string name="pdf_password_incorrect">पासवर्ड गलत है। कृपया अपना पासवर्ड जांचें और पुनः प्रयास करें।</string>
+    <string name="pdf_extract_failed">PDF निष्कर्षण विफल: %1$s</string>
+    <string name="pdf_keystore_extracted">PDF से कीस्टोर निकाला गया। पासवर्ड दर्ज करें और आयात दबाएं।</string>
+    <string name="pdf_imported_success">PDF सफलतापूर्वक आयातित: %1$s</string>
+    <string name="pdf_password_required_title">पासवर्ड आवश्यक</string>
+    <string name="pdf_password_required_desc">यह PDF पासवर्ड सुरक्षित है। कृपया पासवर्ड प्रदान करें।</string>
+    <string name="unlock">अनलॉक करें</string>
+    <string name="pdf_contains_private_key">इस PDF में एक प्राइवेट की है। प्राइवेट की इंपोर्ट विकल्प का उपयोग करें।</string>
     <string name="surge_pricing_title">Are you really sure that you want to continue with surge pricing?</string>
     <string name="surge_current_fee">Your transaction fee:</string>
     <string name="surge_active">Surge price active</string>

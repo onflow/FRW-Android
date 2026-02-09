@@ -71,15 +71,12 @@ import com.reown.sign.client.Sign
 import com.reown.sign.client.SignClient
 import kotlinx.coroutines.delay
 import okio.ByteString.Companion.decodeBase64
-import org.onflow.flow.infrastructure.Cadence
 import org.onflow.flow.models.FlowAddress
 import org.web3j.crypto.StructuredDataEncoder
 import java.lang.reflect.Type
 import java.util.zip.GZIPInputStream
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
-import org.onflow.flow.models.Transaction
-import com.ionspin.kotlin.bignum.integer.toBigInteger
 import org.web3j.utils.Numeric
 
 private const val TAG = "WalletConnectRequestDispatcher"
@@ -630,37 +627,6 @@ private suspend fun WCRequest.respondUserSign() {
 private suspend fun WCRequest.respondSignPayer() {
     val json = gson().fromJson<List<Signable>>(params, object : TypeToken<List<Signable>>() {}.type)
     val signable = json.firstOrNull() ?: return
-    val voucher = signable.voucher ?: return
-
-    // Validate required fields
-    val cadence = voucher.cadence ?: return
-    val refBlock = voucher.refBlock ?: return
-    val computeLimit = voucher.computeLimit ?: return
-    val payer = voucher.payer ?: return
-    val proposalKey = voucher.proposalKey
-    val proposerAddress = proposalKey.address ?: return
-    val proposerKeyId = proposalKey.keyId ?: return
-    val proposerSequenceNum = proposalKey.sequenceNum ?: return
-
-    // Clean addresses for Flow-KMM (remove "0x" prefix)
-    val cleanPayer = payer.removePrefix("0x")
-    val cleanProposerAddress = proposerAddress.removePrefix("0x")
-    val cleanAuthorizers = voucher.authorizers?.map { it.removePrefix("0x") } ?: emptyList()
-
-    val transaction = Transaction(
-        script = cadence,
-        arguments = voucher.arguments?.map { Cadence.string(it.toString()) } ?: emptyList(),
-        referenceBlockId = refBlock,
-        gasLimit = computeLimit.toBigInteger(),
-        payer = cleanPayer,
-        proposalKey = org.onflow.flow.models.ProposalKey(
-            address = cleanProposerAddress,
-            keyIndex = proposerKeyId,
-            sequenceNumber = proposerSequenceNum.toBigInteger()
-        ),
-        authorizers = cleanAuthorizers
-    )
-
     val message = signable.message ?: return
     val server = executeHttpFunction(
         FUNCTION_SIGN_AS_PAYER, FeePayerSignRequest(
@@ -775,7 +741,7 @@ fun String.toSignables(gson: Gson): Signable? {
         val typeToken = object : TypeToken<List<Signable>>() {}.type
         val result: List<Signable> = gson.fromJson(this, typeToken)
         result.firstOrNull()
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         try {
             val stringListType = object : TypeToken<List<String>>() {}.type
             val arguments: List<String> = gson.fromJson(this, stringListType)
@@ -783,7 +749,7 @@ fun String.toSignables(gson: Gson): Signable? {
                 val jsonString = ungzip(this)
                 gson.fromJson(jsonString, Signable::class.java)
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             null
         }
     }

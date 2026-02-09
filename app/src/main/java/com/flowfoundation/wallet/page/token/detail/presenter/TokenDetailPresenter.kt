@@ -70,10 +70,10 @@ class TokenDetailPresenter(
             }
             btnSwap.setOnClickListener {
                 val url = if (WalletManager.isEVMAccountSelected()) {
-                    "https://swap.flow.com/"
+                    "https://swap.flow.com/aggregator?chain=flow&inputCurrency=${token.tokenAddress()}&outputCurrency=NATIVE"
                 } else {
                     "https://${if (isTestnet()) "demo" else "app"}" +
-                      ".increment.fi/swap"
+                      ".increment.fi/swap?in=${token.tokenIdentifier()}&out="
                 }
                 openBrowser(activity, url)
             }

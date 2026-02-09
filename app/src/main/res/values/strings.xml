@@ -74,6 +74,8 @@
     <string name="multiple_accounts_found">Multiple Accounts found.</string>
     <string name="enter_password">Enter Password</string>
     <string name="continue_str">Continue</string>
+    <string name="dapp_prompt_title">Proceed with caution</string>
+    <string name="dapp_prompt_body">You were sent here by a third party, not Flow Wallet. You will open Dapp if you continue.</string>
     <string name="restore_with_google_drive">Restore with Google Drive</string>
     <string name="wrong_password">wrong password</string>
     <string name="word_not_found">Oops, word not found.</string>
@@ -803,6 +805,24 @@
     <string name="import_from_pdf">Import from PDF</string>
     <string name="pdf_parse_error_message">Invalid keystore JSON format. Please download the Flow Wallet Extension to export your keystore file correctly.</string>
     <string name="extension_download_url">https://chromewebstore.google.com/detail/flow-wallet/hpclkefagolihohboafpheddmmgdffjm?hl=en</string>
+
+    <!-- PDF Import Feature -->
+    <string name="pdf_password_hint">Enter your PDF password</string>
+    <string name="pdf_password_protected_info">This PDF is password protected. Please enter your password to extract the private key.</string>
+    <string name="pdf_password_required_title">Password Required</string>
+    <string name="pdf_password_required_desc">This PDF is password protected. Please provide a password.</string>
+    <string name="unlock">Unlock</string>
+    <string name="pdf_contains_private_key">This PDF contains a private key. Use the Private Key import option.</string>
+    <string name="extract_private_key_from_pdf">Extract Private Key from PDF</string>
+    <string name="pdf_file_not_found">PDF file not found</string>
+    <string name="pdf_extract_json_failed">Failed to extract JSON from PDF</string>
+    <string name="pdf_private_key_extracted">Private key extracted from PDF. Review and press Import to continue.</string>
+    <string name="pdf_contains_keystore">This PDF contains a keystore. Please use the Keystore import option.</string>
+    <string name="pdf_unknown_format">Unknown JSON format in PDF. Expected private_key or keystore format.</string>
+    <string name="pdf_password_incorrect">Password is incorrect. Please check your password and try again.</string>
+    <string name="pdf_extract_failed">Failed to extract PDF: %1$s</string>
+    <string name="pdf_keystore_extracted">Keystore extracted from PDF. Enter password and press Import.</string>
+    <string name="pdf_imported_success">PDF imported successfully: %1$s</string>
     <string name="add_evm_account">Add an %1$s account on Flow</string>
     <string name="active_account">Active account</string>
     <string name="add_account">Add account</string>

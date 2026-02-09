@@ -65,6 +65,8 @@
     <string name="multiple_accounts_found">Mehrere Konten gefunden.</string>
     <string name="enter_password">Passwort eingeben</string>
     <string name="continue_str">Weiter</string>
+    <string name="dapp_prompt_title">Mit Vorsicht fortfahren</string>
+    <string name="dapp_prompt_body">Sie wurden von einer dritten Partei hierher geschickt, nicht von Flow Wallet. Wenn Sie fortfahren, öffnen Sie eine Dapp.</string>
     <string name="restore_with_google_drive">Wiederherstellung mit Google Drive</string>
     <string name="wrong_password">falsches Passwort</string>
     <string name="word_not_found">Hoppla, Wort nicht gefunden.</string>
@@ -782,4 +784,22 @@
     <string name="confirm_copy_address_tips">Sie haben eine EVM-Adresse im Flow-Netzwerk kopiert. Bitte stellen Sie sicher, dass Sie nur Assets im Flow-Netzwerk an diese Adresse senden, andernfalls gehen sie verloren.</string>
     <string name="evm_on_flow_address">EVM auf Flow-Adresse</string>
     <string name="recover_profile">Profil wiederherstellen</string>
+
+    <!-- PDF Import Feature - TODO: Translate -->
+    <string name="pdf_password_hint">Geben Sie Ihr PDF-Passwort ein</string>
+    <string name="pdf_password_protected_info">Diese PDF ist passwortgeschützt. Bitte geben Sie Ihr Passwort ein, um den privaten Schlüssel zu extrahieren.</string>
+    <string name="extract_private_key_from_pdf">Privaten Schlüssel aus PDF extrahieren</string>
+    <string name="pdf_file_not_found">PDF-Datei nicht gefunden</string>
+    <string name="pdf_extract_json_failed">JSON konnte nicht aus PDF extrahiert werden</string>
+    <string name="pdf_private_key_extracted">Privater Schlüssel aus PDF extrahiert. Überprüfen und Import drücken.</string>
+    <string name="pdf_contains_keystore">Diese PDF enthält einen Keystore. Bitte verwenden Sie die Keystore-Import-Option.</string>
+    <string name="pdf_unknown_format">Unbekanntes JSON-Format in PDF. Erwartet private_key oder Keystore-Format.</string>
+    <string name="pdf_password_incorrect">Passwort ist falsch. Bitte überprüfen Sie Ihr Passwort und versuchen Sie es erneut.</string>
+    <string name="pdf_extract_failed">PDF-Extraktion fehlgeschlagen: %1$s</string>
+    <string name="pdf_keystore_extracted">Keystore aus PDF extrahiert. Passwort eingeben und Import drücken.</string>
+    <string name="pdf_imported_success">PDF erfolgreich importiert: %1$s</string>
+    <string name="pdf_password_required_title">Passwort erforderlich</string>
+    <string name="pdf_password_required_desc">Diese PDF ist passwortgeschützt. Bitte geben Sie ein Passwort ein.</string>
+    <string name="unlock">Entsperren</string>
+    <string name="pdf_contains_private_key">Diese PDF enthält einen privaten Schlüssel. Verwenden Sie die Option zum Importieren des privaten Schlüssels.</string>
 </resources>

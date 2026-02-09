@@ -81,8 +81,8 @@ object EVMWalletManager {
         } else {
             val checksumAddress = toChecksumEVMAddress(evmAddress)
             if (!isValidEVMAddress(checksumAddress)) {
-              logd(TAG, "Detected corrupted EVM address: $checksumAddress")
-              return null
+                logd(TAG, "Detected corrupted EVM address: $checksumAddress")
+                return null
             }
             checksumAddress
         }

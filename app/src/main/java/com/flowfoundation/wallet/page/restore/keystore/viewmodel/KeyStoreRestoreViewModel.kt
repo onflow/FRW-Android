@@ -92,7 +92,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
     val addressListLiveData = MutableLiveData<List<KeystoreAddress>>()
     val optionChangeLiveData = MutableLiveData<KeyStoreOption>()
     val loadingLiveData = MutableLiveData<Boolean>()
-    
+
     /**
      * LiveData for keystore format errors - when true, shows the red error message with Extension download link
      * For invalid JSON or invalid keystore format only
@@ -100,6 +100,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
     val keystoreFormatErrorLiveData = MutableLiveData<Boolean>()
 
     fun changeOption(option: KeyStoreOption) {
+        loadingLiveData.postValue(false)
         optionChangeLiveData.postValue(option)
     }
 
@@ -118,19 +119,19 @@ class KeyStoreRestoreViewModel : ViewModel() {
             val hasVersion = jsonObj.has("version") && jsonObj.getInt("version") == 3
             val hasId = jsonObj.has("id")
             val hasCrypto = jsonObj.has("crypto") || jsonObj.has("Crypto") // Some keystores use capital C
-            
+
             if (!hasCrypto) {
                 logd("KeyStoreRestoreViewModel", "Keystore validation failed: missing 'crypto' field")
                 return false
             }
-            
+
             val crypto = if (jsonObj.has("crypto")) jsonObj.getJSONObject("crypto") else jsonObj.getJSONObject("Crypto")
             val hasCiphertext = crypto.has("ciphertext")
             val hasCipherparams = crypto.has("cipherparams")
             val hasKdf = crypto.has("kdf")
             val hasKdfparams = crypto.has("kdfparams")
             val hasMac = crypto.has("mac")
-            
+
             val isValid = hasVersion && hasId && hasCiphertext && hasCipherparams && hasKdf && hasKdfparams && hasMac
             if (!isValid) {
                 logd("KeyStoreRestoreViewModel", "Keystore validation failed: version=$hasVersion, id=$hasId, ciphertext=$hasCiphertext, cipherparams=$hasCipherparams, kdf=$hasKdf, kdfparams=$hasKdfparams, mac=$hasMac")
@@ -156,10 +157,10 @@ class KeyStoreRestoreViewModel : ViewModel() {
     fun importKeyStore(json: String, password: String, address: String) {
         loadingLiveData.postValue(true)
         restoreType = RestoreType.KEYSTORE
-        
+
         logd("KeyStoreRestoreViewModel", "Starting keystore import")
         logd("KeyStoreRestoreViewModel", "JSON length: ${json.length}, first 200 chars: ${json.take(200)}")
-        
+
         // Pre-validate keystore format before passing to Trust Wallet Core
         if (!isValidKeystoreFormat(json)) {
             logd("KeyStoreRestoreViewModel", "Pre-validation failed: invalid keystore format")
@@ -167,12 +168,12 @@ class KeyStoreRestoreViewModel : ViewModel() {
             // Show the red error message with Extension download link
             keystoreFormatErrorLiveData.postValue(true)
             ErrorReporter.reportWithMixpanel(
-                BackupError.KEYSTORE_RESTORE_FAILED, 
+                BackupError.KEYSTORE_RESTORE_FAILED,
                 IllegalArgumentException("Invalid keystore JSON format - missing required fields")
             )
             return
         }
-        
+
         ioScope {
             try {
                 val storage = getStorage()
@@ -261,7 +262,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
     private fun handleKeystoreError(errorType: KeystoreImportError, details: String) {
         logd("KeyStoreRestoreViewModel", "Keystore error: $errorType - $details")
         loadingLiveData.postValue(false)
-        
+
         when (errorType) {
             KeystoreImportError.INVALID_JSON, KeystoreImportError.INVALID_KEYSTORE -> {
                 // For invalid JSON or keystore format, show the red error message with Extension download link
@@ -276,9 +277,9 @@ class KeyStoreRestoreViewModel : ViewModel() {
                 toast(msgRes = R.string.restore_failed)
             }
         }
-        
+
         ErrorReporter.reportWithMixpanel(
-            BackupError.KEYSTORE_RESTORE_FAILED, 
+            BackupError.KEYSTORE_RESTORE_FAILED,
             IllegalArgumentException("$errorType: $details")
         )
     }
@@ -605,6 +606,9 @@ class KeyStoreRestoreViewModel : ViewModel() {
                     val randomUsername = RandomUsernameGenerator.generateRandomUsername()
                     logd("KeyStoreRestoreViewModel", "Generated random username: $randomUsername")
                     importWithUsername(randomUsername)
+                } else {
+                    loadingLiveData.postValue(false)
+                    toast(msgRes = R.string.restore_failed)
                 }
             } catch (e: Exception) {
                 (e as? HttpException)?.let {
@@ -1252,7 +1256,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
                     val keyBytes = privateKeyHex.removePrefix("0x").hexToBytes()
                     importPrivateKey(keyBytes, KeyFormat.RAW)
                 }
-                
+
                 // Get secp256k1 public key for EVM address derivation
                 val evmPublicKeyBytes = key.publicKey(SigningAlgorithm.ECDSA_secp256k1)
                 if (evmPublicKeyBytes != null) {
@@ -1265,13 +1269,13 @@ class KeyStoreRestoreViewModel : ViewModel() {
                     val addressHash = Hash.keccak256(publicKeyForHash)
                     val evmAddress = "0x" + addressHash.copyOfRange(12, 32).joinToString("") { "%02x".format(it) }
                     logd("KeyStoreRestoreViewModel", "Derived EVM address: $evmAddress")
-                    
+
                     // Sign Firebase JWT for EVM with secp256k1 key
                     val dataToSign = DomainTag.User.bytes + firebaseJwt.toByteArray(Charsets.UTF_8)
                     val evmSignatureBytes = key.sign(dataToSign, SigningAlgorithm.ECDSA_secp256k1, HashingAlgorithm.SHA2_256)
                     val evmSignature = evmSignatureBytes.joinToString("") { "%02x".format(it) }
                     logd("KeyStoreRestoreViewModel", "Generated EVM signature, length: ${evmSignature.length}")
-                    
+
                     EvmAccountInfo(
                         eoaAddress = evmAddress,
                         signature = evmSignature

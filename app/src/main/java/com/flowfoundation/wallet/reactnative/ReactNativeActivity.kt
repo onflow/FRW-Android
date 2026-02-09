@@ -13,6 +13,14 @@ import com.flowfoundation.wallet.reactnative.bridge.createWalletAccountFromAddre
 import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.utils.logd
 import com.google.gson.Gson
+import com.google.gson.annotations.SerializedName
+
+private val RNBridge.ScreenType.value: String
+    get() = try {
+        RNBridge.ScreenType::class.java.getField(this.name).getAnnotation(SerializedName::class.java)?.value ?: this.toString()
+    } catch (_: Exception) {
+        this.toString()
+    }
 
 class ReactNativeActivity : ReactActivity() {
 
@@ -29,7 +37,7 @@ class ReactNativeActivity : ReactActivity() {
             mainComponentName,
             false, // fabricEnabled
         ) {
-            override fun getLaunchOptions(): Bundle? {
+            override fun getLaunchOptions(): Bundle {
                 val launchOptions = Bundle()
 
                 intent?.let { intent ->
@@ -41,12 +49,15 @@ class ReactNativeActivity : ReactActivity() {
 
                     address?.let {
                         launchOptions.putString("address", it)
+                        logd(TAG, "Added address to launch options: $it")
                     }
                     network?.let {
                         launchOptions.putString("network", it)
+                        logd(TAG, "Added network to launch options: $it")
                     }
                     initialRoute?.let {
                         launchOptions.putString("initialRoute", it)
+                        logd(TAG, "Added initialRoute to launch options: $it")
                     }
 
                     // Create initialProps object if we have screen or sendToConfig
@@ -55,21 +66,38 @@ class ReactNativeActivity : ReactActivity() {
 
                         screen?.let {
                             initialPropsBundle.putString("screen", it)
+                            logd(TAG, "Added screen to initialProps: $it")
                         }
                         sendToConfigJson?.let { jsonString ->
+                            logd(TAG, "Processing sendToConfig JSON: $jsonString")
                             initialPropsBundle.putString("sendToConfig", jsonString)
                         }
 
                         launchOptions.putBundle("initialProps", initialPropsBundle)
+                        logd(TAG, "Added initialProps bundle with ${initialPropsBundle.size()} " +
+                          "properties")
                     }
                 }
+
+                logd(TAG, "Launch options created with ${launchOptions.size()} properties")
                 return launchOptions
             }
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        logd(TAG, "onCreate called")
         super.onCreate(savedInstanceState)
+
+        // Log the intent extras for debugging
+        intent?.let {
+            logd(TAG, "Intent extras:")
+            logd(TAG, "  address: ${it.getStringExtra("address")}")
+            logd(TAG, "  network: ${it.getStringExtra("network")}")
+            logd(TAG, "  initialRoute: ${it.getStringExtra("initialRoute")}")
+            logd(TAG, "  screen: ${it.getStringExtra("screen")}")
+            logd(TAG, "  sendToConfig: ${it.getStringExtra("sendToConfig")}")
+        }
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -87,18 +115,6 @@ class ReactNativeActivity : ReactActivity() {
 
     companion object {
         private const val TAG = "ReactNativeActivity"
-
-        /**
-         * Get the screen name string from ScreenType enum
-         */
-        private fun getScreenName(screenType: RNBridge.ScreenType): String {
-            return when (screenType) {
-                RNBridge.ScreenType.SEND_ASSET -> "send-asset"
-                RNBridge.ScreenType.TOKEN_DETAIL -> "token-detail"
-                RNBridge.ScreenType.ONBOARDING -> "onboarding"
-                RNBridge.ScreenType.RECEIVE -> "receive"
-            }
-        }
 
         /**
          * Determine the route name based on screen type and sendToConfig
@@ -119,6 +135,8 @@ class ReactNativeActivity : ReactActivity() {
                         }
                     } ?: RNBridge.InitialRoute.SELECT_TOKENS.routeName
                 }
+                RNBridge.ScreenType.BACKUP_TIP -> "KeyRotationTip"
+                RNBridge.ScreenType.KEYSTORE_MIGRATION -> "KeystoreMigrationTip"
                 RNBridge.ScreenType.TOKEN_DETAIL -> RNBridge.InitialRoute.HOME.routeName
                 RNBridge.ScreenType.ONBOARDING -> RNBridge.InitialRoute.GET_STARTED.routeName
                 RNBridge.ScreenType.RECEIVE -> "Receive"
@@ -141,7 +159,7 @@ class ReactNativeActivity : ReactActivity() {
                 intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
             }
 
-            intent.putExtra("screen", getScreenName(screenType))
+            intent.putExtra("screen", screenType.value)
             intent.putExtra("initialRoute", initialRoute.routeName)
             context.startActivity(intent)
         }
@@ -166,6 +184,11 @@ class ReactNativeActivity : ReactActivity() {
          * Launch the React Native Demo Activity with parameters
          */
         fun launch(context: Context, screenType: RNBridge.ScreenType?, address: String?, network: String?) {
+            logd(TAG, "Launching ReactNativeActivity with params:")
+            logd(TAG, "  screenType: $screenType")
+            logd(TAG, "  address: $address")
+            logd(TAG, "  network: $network")
+
             val intent = Intent(context, ReactNativeActivity::class.java)
 
             // Add flags to ensure only one instance of ReactNativeActivity exists
@@ -180,11 +203,11 @@ class ReactNativeActivity : ReactActivity() {
             network?.let {
                 intent.putExtra("network", it)
             }
-            screenType?.let { type ->
-                // Use screenName property from enum and determine route based on screen type
-                val routeName = getRouteName(type, null)
+            screenType?.let {
+                // Convert screen enum to string and determine route based on screen type
+                val routeName = getRouteName(it, null)
 
-                intent.putExtra("screen", getScreenName(type))
+                intent.putExtra("screen", it.value)
                 intent.putExtra("initialRoute", routeName)
             }
             context.startActivity(intent)
@@ -194,6 +217,11 @@ class ReactNativeActivity : ReactActivity() {
          * Launch with InitialProps containing screen and SendToConfig
          */
         fun launchWithConfig(context: Context, screenType: RNBridge.ScreenType, sendToConfig: RNBridge.SendToConfig?, address: String?, network: String?) {
+            logd(TAG, "Launching ReactNativeActivity with config:")
+            logd(TAG, "  screenType: $screenType")
+            logd(TAG, "  address: $address")
+            logd(TAG, "  network: $network")
+
             val intent = Intent(context, ReactNativeActivity::class.java)
 
             // Add flags to ensure only one instance of ReactNativeActivity exists
@@ -212,13 +240,14 @@ class ReactNativeActivity : ReactActivity() {
             // Use screenName property from enum and determine route based on screen type and config
             val routeName = getRouteName(screenType, sendToConfig)
 
-            intent.putExtra("screen", getScreenName(screenType))
+            intent.putExtra("screen", screenType.value)
             intent.putExtra("initialRoute", routeName)
 
             // Serialize SendToConfig to JSON
             sendToConfig?.let {
                 val sendToConfigJson = Gson().toJson(it)
                 intent.putExtra("sendToConfig", sendToConfigJson)
+                logd(TAG, "sendToConfig JSON: $sendToConfigJson")
             }
 
             context.startActivity(intent)

@@ -65,6 +65,8 @@
     <string name="multiple_accounts_found">发现多个账户。</string>
     <string name="enter_password">输入密码</string>
     <string name="continue_str">继续</string>
+    <string name="dapp_prompt_title">谨慎操作</string>
+    <string name="dapp_prompt_body">您是由第三方而非 Flow Wallet 引导至此。继续操作将打开 Dapp。</string>
     <string name="restore_with_google_drive">用Google Drive恢复</string>
     <string name="wrong_password">密码错误</string>
     <string name="word_not_found">哎呀，词找不到了。</string>
@@ -721,6 +723,24 @@
     <string name="import_from_pdf">从 PDF 导入</string>
     <string name="pdf_parse_error_message">密钥库 JSON 格式无效。请下载 Flow Wallet Extension 以正确导出您的密钥库文件。</string>
     <string name="extension_download_url">https://chromewebstore.google.com/detail/flow-wallet/hpclkefagolihohboafpheddmmgdffjm?hl=en</string>
+
+    <!-- PDF Import Feature -->
+    <string name="pdf_password_hint">输入您的 PDF 密码</string>
+    <string name="pdf_password_protected_info">此 PDF 受密码保护。请输入密码以提取私钥。</string>
+    <string name="extract_private_key_from_pdf">从 PDF 提取私钥</string>
+    <string name="pdf_file_not_found">未找到 PDF 文件</string>
+    <string name="pdf_extract_json_failed">无法从 PDF 提取 JSON</string>
+    <string name="pdf_private_key_extracted">已从 PDF 提取私钥。请查看并按导入继续。</string>
+    <string name="pdf_contains_keystore">此 PDF 包含密钥库。请使用密钥库导入选项。</string>
+    <string name="pdf_unknown_format">PDF 中的 JSON 格式未知。需要 private_key 或密钥库格式。</string>
+    <string name="pdf_password_incorrect">密码错误。请检查您的密码并重试。</string>
+    <string name="pdf_extract_failed">PDF 提取失败: %1$s</string>
+    <string name="pdf_keystore_extracted">已从 PDF 提取密钥库。输入密码并按导入。</string>
+    <string name="pdf_imported_success">PDF 导入成功: %1$s</string>
+    <string name="pdf_password_required_title">需要密码</string>
+    <string name="pdf_password_required_desc">此 PDF 受密码保护。请提供密码。</string>
+    <string name="unlock">解锁</string>
+    <string name="pdf_contains_private_key">此 PDF 包含私钥。请使用私钥导入选项。</string>
     <string name="surge_pricing_title">您真的确定要继续进行激增定价吗？</string>
     <string name="surge_current_fee">您的交易费用：</string>
     <string name="surge_active">激增价格激活</string>

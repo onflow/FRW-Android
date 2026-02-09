@@ -35,6 +35,7 @@ import com.flowfoundation.wallet.utils.isRegistered
 import com.flowfoundation.wallet.utils.uiScope
 import com.instabug.bug.BugReporting
 import com.instabug.library.Instabug
+import com.flowfoundation.wallet.manager.wallet.WalletManager
 
 class MainActivity : BaseActivity() {
 
@@ -94,6 +95,8 @@ class MainActivity : BaseActivity() {
         }
         configurationInstabugBugReport()
         LocalBroadcastManager.getInstance(this).registerReceiver(restoreMnemonicReceiver, IntentFilter("ACTION_RESTORE_MNEMONIC"))
+        WalletManager.checkKeyRotation(this)
+        WalletManager.checkKeystoreMigration(this)
     }
 
     private fun configurationInstabugBugReport() {
@@ -197,3 +200,4 @@ class MainActivity : BaseActivity() {
         fun getInstance() = INSTANCE
     }
 }
+

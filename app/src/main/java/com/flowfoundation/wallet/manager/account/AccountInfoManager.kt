@@ -36,7 +36,7 @@ object AccountInfoManager {
 
                 _accountResultFlow.value = result
 
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 _accountResultFlow.value = null
             }
             WalletNotificationManager.onWalletUpdate()

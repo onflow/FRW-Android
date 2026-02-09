@@ -69,12 +69,10 @@ class KeyStoreRestoreActivity : BaseActivity() {
                 onOptionChange(it)
             }
             loadingLiveData.observe(this@KeyStoreRestoreActivity) { show ->
-                uiScope {
-                    if (show) {
-                        loadingDialog.show()
-                    } else {
-                        loadingDialog.dismiss()
-                    }
+                if (show) {
+                    loadingDialog.show()
+                } else {
+                    loadingDialog.dismiss()
                 }
             }
             changeOption(
@@ -91,10 +89,31 @@ class KeyStoreRestoreActivity : BaseActivity() {
 
     @SuppressLint("CommitTransaction")
     private fun onOptionChange(option: KeyStoreOption) {
+        loadingDialog.dismiss()
         val transition = createTransition(currentOption, option)
         val fragment = when (option) {
-            KeyStoreOption.INPUT_KEYSTORE_INFO -> PrivateKeyStoreInfoFragment()
-            KeyStoreOption.INPUT_PRIVATE_KEY_INFO -> PrivateKeyInfoFragment()
+            KeyStoreOption.INPUT_KEYSTORE_INFO -> {
+                val keystoreJson = intent.getStringExtra(EXTRA_KEYSTORE_JSON)
+                PrivateKeyStoreInfoFragment().apply {
+                    if (keystoreJson != null) {
+                        arguments = Bundle().apply {
+                            putString("keystore_json", keystoreJson)
+                        }
+                    }
+                }
+            }
+            KeyStoreOption.INPUT_PRIVATE_KEY_INFO -> {
+                val pdfUri = intent.getStringExtra(EXTRA_PDF_URI)
+                val privateKey = intent.getStringExtra(EXTRA_PRIVATE_KEY)
+                val address = intent.getStringExtra(EXTRA_ADDRESS)
+                PrivateKeyInfoFragment().apply {
+                    arguments = Bundle().apply {
+                        pdfUri?.let { putString("pdf_uri", it) }
+                        privateKey?.let { putString("private_key", it) }
+                        address?.let { putString("address", it) }
+                    }
+                }
+            }
             KeyStoreOption.INPUT_SEED_PHRASE_INFO -> SeedPhraseInfoFragment()
             else -> return
         }
@@ -142,14 +161,31 @@ class KeyStoreRestoreActivity : BaseActivity() {
     companion object {
         private const val EXTRA_RESTORE_PRIVATE_KEY = "extra_restore_private_key"
         private const val EXTRA_RESTORE_SEED_PHRASE = "extra_restore_seed_phrase"
+        const val EXTRA_PDF_URI = "extra_pdf_uri"
+        const val EXTRA_KEYSTORE_JSON = "extra_keystore_json"
+        const val EXTRA_PRIVATE_KEY = "extra_private_key"
+        const val EXTRA_ADDRESS = "extra_address"
 
-        fun launchKeyStore(context: Context) {
-            context.startActivity(Intent(context, KeyStoreRestoreActivity::class.java))
+        fun launchKeyStore(context: Context, keystoreJson: String? = null) {
+            context.startActivity(Intent(context, KeyStoreRestoreActivity::class.java).apply {
+                keystoreJson?.let { putExtra(EXTRA_KEYSTORE_JSON, it) }
+            })
         }
 
-        fun launchPrivateKey(context: Context) {
+        fun launchPrivateKey(context: Context, pdfUri: String? = null) {
             context.startActivity(Intent(context, KeyStoreRestoreActivity::class.java).apply {
                 putExtra(EXTRA_RESTORE_PRIVATE_KEY, true)
+                if (pdfUri != null) {
+                    putExtra(EXTRA_PDF_URI, pdfUri)
+                }
+            })
+        }
+
+        fun launchPrivateKeyWithData(context: Context, privateKey: String, address: String? = null) {
+            context.startActivity(Intent(context, KeyStoreRestoreActivity::class.java).apply {
+                putExtra(EXTRA_RESTORE_PRIVATE_KEY, true)
+                putExtra(EXTRA_PRIVATE_KEY, privateKey)
+                address?.let { putExtra(EXTRA_ADDRESS, it) }
             })
         }
 
