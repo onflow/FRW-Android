@@ -10,10 +10,10 @@ internal class FloatWindowPageObserver : Application.ActivityLifecycleCallbacks 
     }
 
     override fun onActivityStarted(activity: Activity) {
-        FloatWindow.onPageChange(activity)
     }
 
     override fun onActivityResumed(activity: Activity) {
+        FloatWindow.onPageChange(activity)
     }
 
     override fun onActivityPaused(activity: Activity) {

@@ -33,62 +33,6 @@ import com.flowfoundation.wallet.wallet.DERIVATION_PATH
 import com.flowfoundation.wallet.wallet.Wallet
 import org.onflow.flow.models.toHexString
 
-/**
- * A CryptoProvider that handles multi-restore accounts by combining multiple backup providers
- * to meet the signature weight threshold requirements
- */
-class MultiRestoreCryptoProvider(
-    private val providers: List<BackupCryptoProvider>,
-    private val primaryProvider: BackupCryptoProvider
-) : CryptoProvider {
-
-    private val TAG = "MultiRestoreCryptoProvider"
-
-    init {
-        logd(TAG, "Initialized with ${providers.size} backup providers")
-        providers.forEachIndexed { index, provider ->
-            logd(TAG, "Provider $index: weight=${provider.getKeyWeight()}, algo=${provider.getSignatureAlgorithm()}")
-        }
-    }
-
-    override fun getPublicKey(): String {
-        return primaryProvider.getPublicKey()
-    }
-
-    override suspend fun getUserSignature(jwt: String): String {
-        return primaryProvider.getUserSignature(jwt)
-    }
-
-    override suspend fun signData(data: ByteArray): String {
-        return primaryProvider.signData(data)
-    }
-
-    override fun getSigner(hashingAlgorithm: HashingAlgorithm): org.onflow.flow.models.Signer {
-        return primaryProvider.getSigner(hashingAlgorithm)
-    }
-
-    override fun getHashAlgorithm(): HashingAlgorithm {
-        return primaryProvider.getHashAlgorithm()
-    }
-
-    override fun getSignatureAlgorithm(): SigningAlgorithm {
-        return primaryProvider.getSignatureAlgorithm()
-    }
-
-    override fun getKeyWeight(): Int {
-        // Return the total weight of all providers
-        return providers.sumOf { it.getKeyWeight() }
-    }
-
-    /**
-     * Get all backup providers for multi-signature transactions
-     */
-    fun getAllProviders(): List<BackupCryptoProvider> {
-        return providers
-    }
-
-}
-
 object CryptoProviderManager {
 
     private var cryptoProvider: CryptoProvider? = null
@@ -167,7 +111,7 @@ object CryptoProviderManager {
             }
             // Handle mnemonic-only accounts (cleaner architecture - no prefix, just mnemonic)
             // Check this BEFORE prefix to properly handle new RN seed phrase accounts
-            else if (account.prefix.isNullOrBlank() && !account.wallet?.id.isNullOrBlank() && 
+            else if (account.prefix.isNullOrBlank() && !account.wallet?.id.isNullOrBlank() &&
                      AccountWalletManager.hasHDWalletKeystore(account.wallet?.id ?: "")) {
                 logd(TAG, "  Branch: Mnemonic-only account (cleaner architecture)")
                 val userId = account.wallet?.id ?: ""
@@ -184,293 +128,15 @@ object CryptoProviderManager {
             else if (!account.prefix.isNullOrBlank()) {
                 logd(TAG, "  Branch: Prefix-based account")
 
-                // Check if this is a multi-restore account
-                val isMultiRestoreAccount = try {
-                    val pref = readWalletPassword()
-                    val passwordMap: HashMap<String, String> = if (pref.isBlank()) {
-                        HashMap<String, String>()
-                    } else {
-                        Gson().fromJson<HashMap<String, String>>(pref, object : TypeToken<HashMap<String, String>>() {}.type)
-                    }
-                    val multiRestoreCount = passwordMap["multi_restore_count"]?.toIntOrNull() ?: 0
-                    val multiRestoreAddress = passwordMap["multi_restore_address"] ?: ""
-                    val flowWalletAddress = account.firstFlowWalletAddress() ?: ""
-
-                    logd(TAG, "  Multi-restore check: count=$multiRestoreCount, address=$multiRestoreAddress, account=$flowWalletAddress")
-
-                    // Only use multi-signature if we don't have a working device key with sufficient weight
-                    if (multiRestoreCount > 0 && multiRestoreAddress == flowWalletAddress) {
-                        logd(TAG, "  Multi-restore account detected, checking device key availability...")
-
-                        // Check timing to help diagnose key indexer latency
-                        val restoreCompletedTime = passwordMap["multi_restore_completed_time"]?.toLongOrNull()
-                        if (restoreCompletedTime != null) {
-                            val timeSinceRestore = (System.currentTimeMillis() - restoreCompletedTime) / 1000
-                            logd(TAG, "  Time since restore completed: ${timeSinceRestore}s ago")
-                            if (timeSinceRestore < 60) {
-                                logd(TAG, "  ⏱️ Recent restore detected (<60s) - key indexer may still be processing")
-                            }
-                        } else {
-                            logd(TAG, "  No restore completion time recorded")
-                        }
-
-                        // Check if we have a device key that works and has sufficient weight
-                        val keyId = "prefix_key_${account.prefix}"
-                        val hasDeviceKey = try {
-                            val deviceKey = KeyCompatibilityManager.getPrivateKeyWithFallback(account.prefix!!, storage)
-                            deviceKey?.let { key ->
-                                key.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString()
-                                    ?: key.publicKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString()
-                            }
-
-                            logd(TAG, " Device key check")
-
-                            // Test both signing algorithms for the device key
-                            val deviceKeyECDSA_P256 = deviceKey?.let { key ->
-                                try {
-                                    val pubKey = key.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString()
-                                    logd(TAG, "    Device key ECDSA_P256 public key: $pubKey")
-                                    pubKey
-                                } catch (e: Exception) {
-                                    logd(TAG, "    Device key ECDSA_P256 failed: ${e.message}")
-                                    null
-                                }
-                            }
-
-                            val deviceKeyECDSA_secp256k1 = deviceKey?.let { key ->
-                                try {
-                                    val pubKey = key.publicKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString()
-                                    logd(TAG, "    Device key ECDSA_secp256k1 public key: $pubKey")
-                                    pubKey
-                                } catch (e: Exception) {
-                                    logd(TAG, "    Device key ECDSA_secp256k1 failed: ${e.message}")
-                                    null
-                                }
-                            }
-
-                            logd(TAG, "    Fetching on-chain account for address: $flowWalletAddress")
-
-                            val onChainAccount = runBlocking {
-                                FlowCadenceApi.getAccount(flowWalletAddress)
-                            }
-                            val onChainKeys = onChainAccount.keys?.toList() ?: emptyList()
-
-                            logd(TAG, "    On-chain account has ${onChainKeys.size} total keys:")
-
-                            // Show recent keys (last 10) with more detail
-                            val recentKeys = onChainKeys.takeLast(10)
-                            recentKeys.forEachIndexed { index, key ->
-                                val actualIndex = onChainKeys.size - recentKeys.size + index
-                                logd(TAG, "      [$actualIndex] Key $actualIndex: weight=${key.weight}, revoked=${key.revoked}, pubKey=${key.publicKey.take(20)}...")
-                            }
-
-                            // Test device key matching with detailed format analysis
-                            var deviceKeyFound = false
-                            var bestMatch = ""
-                            var bestMatchInfo = ""
-
-                            listOfNotNull(
-                                deviceKeyECDSA_P256,
-                                deviceKeyECDSA_secp256k1
-                            ).forEach { devicePublicKey ->
-                                val signingAlgo = if (devicePublicKey == deviceKeyECDSA_P256) "ECDSA_P256" else "ECDSA_secp256k1"
-
-                                // Show different format variations
-                                val deviceRaw = devicePublicKey.removePrefix("0x").lowercase()
-                                if (deviceRaw.startsWith("04") && deviceRaw.length == 130) deviceRaw.substring(2) else deviceRaw
-                                if (!deviceRaw.startsWith("04") && deviceRaw.length == 128) "04$deviceRaw" else deviceRaw
-
-                                onChainKeys.forEachIndexed { index, onChainKey ->
-                                    if (!onChainKey.revoked && onChainKey.weight.toIntOrNull()?.let { it >= 1000 } == true) {
-                                        val onChainRaw = onChainKey.publicKey.removePrefix("0x").lowercase()
-                                        if (onChainRaw.startsWith("04") && onChainRaw.length == 130) onChainRaw.substring(2) else onChainRaw
-                                        if (!onChainRaw.startsWith("04") && onChainRaw.length == 128) "04$onChainRaw" else onChainRaw
-
-                                        val isMatch = isKeyMatchRobust(devicePublicKey, onChainKey.publicKey)
-
-                                        if (isMatch) {
-                                            deviceKeyFound = true
-                                            bestMatch = onChainKey.publicKey
-                                            bestMatchInfo = "Key $index ($signingAlgo, weight=${onChainKey.weight})"
-                                        } else {
-                                            // Check similarity
-                                            val similarity = calculateSimilarity(onChainRaw, deviceRaw)
-                                            if (similarity > 0.8) {
-                                                logd(TAG, "            ⚠️ High similarity: ${(similarity * 100).toInt()}% - possible format issue")
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (deviceKeyFound) {
-                                true
-                            } else {
-                                // Show what we're looking for vs what's available
-                                if (deviceKeyECDSA_P256 != null) {
-                                    logd(TAG, "      Looking for ECDSA_P256: ${deviceKeyECDSA_P256.take(40)}...")
-                                }
-                                if (deviceKeyECDSA_secp256k1 != null) {
-                                    logd(TAG, "      Looking for ECDSA_secp256k1: ${deviceKeyECDSA_secp256k1.take(40)}...")
-                                }
-
-                                logd(TAG, "Available high-weight keys on-chain:")
-                                onChainKeys.forEachIndexed { index, key ->
-                                    if (!key.revoked && key.weight.toIntOrNull()?.let { it >= 1000 } == true) {
-                                        logd(TAG, "        Key $index: ${key.publicKey.take(40)}... (weight=${key.weight})")
-                                    }
-                                }
-                                false
-                            }
-                        } catch (e: Exception) {
-                            false
-                        }
-
-                        if (hasDeviceKey) {
-                            false // Don't use multi-restore, use device key
-                        } else {
-                            true // Use multi-restore
-                        }
-                    } else {
-                        false
-                    }
-                } catch (e: Exception) {
-                    logd(TAG, "  Multi-restore check failed: ${e.message}")
-                    false
-                }
-
-                if (isMultiRestoreAccount) {
-                    logd(TAG, "  MULTI-RESTORE ACCOUNT DETECTED: Creating multi-signature crypto provider")
-
-                    // Load mnemonics from stored multi-restore data
-                    val pref = readWalletPassword()
-                    val passwordMap: HashMap<String, String> = Gson().fromJson<HashMap<String, String>>(pref, object : TypeToken<HashMap<String, String>>() {}.type)
-
-                    val mnemonics = mutableListOf<String>()
-                    val multiRestoreCount = passwordMap["multi_restore_count"]?.toIntOrNull() ?: 0
-                    for (i in 0 until multiRestoreCount) {
-                        passwordMap["multi_restore_$i"]?.let { mnemonic -> mnemonics.add(mnemonic) }
-                    }
-
-                    logd(TAG, "  Multi-restore: Found ${mnemonics.size} stored mnemonics")
-
-                    if (mnemonics.isNotEmpty()) {
-                        val flowWalletAddress = account.firstFlowWalletAddress() ?: ""
-                        if (flowWalletAddress.isNotEmpty()) {
-                            try {
-                                val onChainAccount = runBlocking { FlowCadenceApi.getAccount(flowWalletAddress) }
-                                logd(TAG, "  Multi-restore: Fetched on-chain account with ${onChainAccount.keys?.size} keys")
-
-                                // Create providers from all mnemonics and detect their algorithms
-                                val providers = mnemonics.mapNotNull { mnemonic ->
-                                    try {
-                                        val seedPhraseKey = createSeedPhraseKeyWithKeyPair(mnemonic, storage)
-
-                                        // Detect algorithms by matching against on-chain keys
-                                        val detectedAlgorithms = detectAlgorithmsForProvider(seedPhraseKey, onChainAccount.keys?.toList() ?: emptyList())
-
-                                        val words = mnemonic.split(" ")
-                                        val provider = if (words.size == 15) {
-                                            BackupCryptoProvider(seedPhraseKey, null, detectedAlgorithms.signingAlgorithm, detectedAlgorithms.hashingAlgorithm)
-                                        } else {
-                                            HDWalletCryptoProvider(seedPhraseKey, detectedAlgorithms.signingAlgorithm, detectedAlgorithms.hashingAlgorithm)
-                                        }
-
-                                        // Verify this provider has a matching key on-chain
-                                        val providerPublicKey = provider.getPublicKey()
-                                        val matchingKey = onChainAccount.keys?.find { accountKey ->
-                                            isKeyMatchRobust(providerPublicKey, accountKey.publicKey) && !accountKey.revoked
-                                        }
-
-                                        if (matchingKey != null) {
-                                            logd(TAG, "  Multi-restore: Provider matches on-chain key index ${matchingKey.index} with weight ${matchingKey.weight}")
-                                            provider as BackupCryptoProvider // Cast HDWalletCryptoProvider to BackupCryptoProvider if needed
-                                        } else {
-                                            logd(TAG, "  Multi-restore: Provider for mnemonic does not match any on-chain key, skipping")
-                                            null
-                                        }
-                                    } catch (e: Exception) {
-                                        logd(TAG, "  Multi-restore: Error creating provider for mnemonic: ${e.message}")
-                                        null
-                                    }
-                                }
-
-                                if (providers.isNotEmpty()) {
-                                    val totalWeight = providers.sumOf { it.getKeyWeight() }
-                                    logd(TAG, "  Multi-restore: Created ${providers.size} providers with total weight $totalWeight")
-
-                                    return MultiRestoreCryptoProvider(providers, providers.first())
-                                } else {
-                                    logd(TAG, "  Multi-restore: No valid providers created, falling back to standard prefix handling")
-                                }
-                            } catch (e: Exception) {
-                                logd(TAG, "  Multi-restore: Error processing multi-restore account: ${e.message}, using standard prefix handling")
-                            }
-                          } else {
-                              logd(TAG, "  Multi-restore: No account address, using standard prefix handling")
-                          }
-                    } else {
-                        logd(TAG, "  Multi-restore: No mnemonics found, falling back to standard prefix handling")
-                    }
-                }
-
                 // Standard prefix-based account handling (for non-multi-restore accounts)
                 logd(TAG, "  Standard prefix-based account handling")
-                val keyId = "prefix_key_${account.prefix}"
 
                 // Try to get the private key, handling hardware-backed keys
                 val privateKey = try {
                     KeyCompatibilityManager.getPrivateKeyWithFallback(account.prefix!!, storage)
                 } catch (e: HardwareBackedKeyException) {
                     loge(TAG, "Hardware-backed key detected")
-
-                    // Determine the correct algorithms by checking on-chain keys
-                    var determinedSigningAlgorithm = SigningAlgorithm.ECDSA_P256
-                    var determinedHashingAlgorithm: HashingAlgorithm? = null
-
-                    try {
-                        val accountAddress = account.firstFlowWalletAddress() ?: ""
-                        if (accountAddress.isNotEmpty()) {
-                            val onChainAccount = runBlocking { FlowCadenceApi.getAccount(accountAddress) }
-                            val onChainKeys = onChainAccount.keys?.toList() ?: emptyList()
-
-                            // Create temporary AndroidKeystoreCryptoProvider to get public key for matching
-                            val tempProvider = AndroidKeystoreCryptoProvider(e.alias!!, SigningAlgorithm.ECDSA_P256)
-                            val keystorePublicKey = tempProvider.getPublicKey()
-
-                            // Find matching on-chain key to determine algorithms
-                            val matchedKey = onChainKeys.find { onChainKey ->
-                                isKeyMatchRobust("0x$keystorePublicKey", onChainKey.publicKey) && !onChainKey.revoked
-                            }
-
-                            if (matchedKey != null) {
-                                determinedSigningAlgorithm = matchedKey.signingAlgorithm
-                                determinedHashingAlgorithm = matchedKey.hashingAlgorithm
-                                logd(TAG, "  Hardware-backed key matched on-chain: signing=$determinedSigningAlgorithm, hashing=$determinedHashingAlgorithm")
-                            } else {
-                                // Try secp256k1 if P256 didn't match
-                                val tempProviderSecp = AndroidKeystoreCryptoProvider(e.alias, SigningAlgorithm.ECDSA_secp256k1)
-                                val keystorePublicKeySecp = tempProviderSecp.getPublicKey()
-
-                                val matchedKeySecp = onChainKeys.find { onChainKey ->
-                                    isKeyMatchRobust("0x$keystorePublicKeySecp", onChainKey.publicKey) && !onChainKey.revoked
-                                }
-
-                                if (matchedKeySecp != null) {
-                                    determinedSigningAlgorithm = matchedKeySecp.signingAlgorithm
-                                    determinedHashingAlgorithm = matchedKeySecp.hashingAlgorithm
-                                    logd(TAG, "  Hardware-backed key matched on-chain with secp256k1: signing=$determinedSigningAlgorithm, hashing=$determinedHashingAlgorithm")
-                                } else {
-                                    logd(TAG, "  Hardware-backed key: Could not find matching on-chain key, using defaults")
-                                }
-                            }
-                        }
-                    } catch (ex: Exception) {
-                        loge(TAG, "  Hardware-backed key: Error determining algorithms: ${ex.message}, using defaults")
-                    }
-
-                    // Return AndroidKeystoreCryptoProvider directly
-                    return AndroidKeystoreCryptoProvider(e.alias!!, determinedSigningAlgorithm, determinedHashingAlgorithm)
+                    return AndroidKeystoreCryptoProvider(e.prefix!!)
                 }
 
                 if (privateKey == null) {
@@ -575,7 +241,7 @@ object CryptoProviderManager {
 
             // Handle mnemonic-only accounts (cleaner architecture - no prefix, just mnemonic)
             // Check this BEFORE prefix to properly handle new RN seed phrase accounts
-            else if (account.prefix.isNullOrBlank() && !account.wallet?.id.isNullOrBlank() && 
+            else if (account.prefix.isNullOrBlank() && !account.wallet?.id.isNullOrBlank() &&
                      AccountWalletManager.hasHDWalletKeystore(account.wallet?.id ?: "")) {
                 logd("CryptoProviderManager", "Switch account: Mnemonic-only account (cleaner architecture)")
                 val userId = account.wallet?.id ?: ""
@@ -592,60 +258,13 @@ object CryptoProviderManager {
             // Handle prefix-based accounts (legacy or hardware-backed)
             else if (account.prefix.isNullOrBlank().not()) {
                 // Load the stored private key using the prefix-based ID with backward compatibility
-                val keyId = "prefix_key_${account.prefix}"
                 val privateKey = try {
                     KeyCompatibilityManager.getPrivateKeyWithFallback(account.prefix!!, storage)
                 } catch (e: HardwareBackedKeyException) {
                     loge("CryptoProviderManager", "Hardware-backed key detected for switch account")
                     loge("CryptoProviderManager", "Creating AndroidKeystoreCryptoProvider for hardware-backed key")
-
-                    // Determine the correct algorithms by checking on-chain keys
-                    var determinedSigningAlgorithm = SigningAlgorithm.ECDSA_P256
-                    var determinedHashingAlgorithm: HashingAlgorithm? = null
-
-                    try {
-                        val accountAddress = account.firstFlowWalletAddress()
-                        if (accountAddress != null) {
-                            val onChainAccount = runBlocking { FlowCadenceApi.getAccount(accountAddress) }
-                            val onChainKeys = onChainAccount.keys?.toList() ?: emptyList()
-
-                            // Create temporary AndroidKeystoreCryptoProvider to get public key for matching
-                            val tempProvider = AndroidKeystoreCryptoProvider(e.alias!!, SigningAlgorithm.ECDSA_P256)
-                            val keystorePublicKey = tempProvider.getPublicKey()
-
-                            // Find matching on-chain key to determine algorithms
-                            val matchedKey = onChainKeys.find { onChainKey ->
-                                isKeyMatchRobust("0x$keystorePublicKey", onChainKey.publicKey) && !onChainKey.revoked
-                            }
-
-                            if (matchedKey != null) {
-                                determinedSigningAlgorithm = matchedKey.signingAlgorithm
-                                determinedHashingAlgorithm = matchedKey.hashingAlgorithm
-                                logd("CryptoProviderManager", "Switch account hardware-backed key matched on-chain: signing=$determinedSigningAlgorithm, hashing=$determinedHashingAlgorithm")
-                            } else {
-                                // Try secp256k1 if P256 didn't match
-                                val tempProviderSecp = AndroidKeystoreCryptoProvider(e.alias, SigningAlgorithm.ECDSA_secp256k1)
-                                val keystorePublicKeySecp = tempProviderSecp.getPublicKey()
-
-                                val matchedKeySecp = onChainKeys.find { onChainKey ->
-                                    isKeyMatchRobust("0x$keystorePublicKeySecp", onChainKey.publicKey) && !onChainKey.revoked
-                                }
-
-                                if (matchedKeySecp != null) {
-                                    determinedSigningAlgorithm = matchedKeySecp.signingAlgorithm
-                                    determinedHashingAlgorithm = matchedKeySecp.hashingAlgorithm
-                                    logd("CryptoProviderManager", "Switch account hardware-backed key matched on-chain with secp256k1: signing=$determinedSigningAlgorithm, hashing=$determinedHashingAlgorithm")
-                                } else {
-                                    logd("CryptoProviderManager", "Switch account hardware-backed key: Could not find matching on-chain key, using defaults")
-                                }
-                            }
-                        }
-                    } catch (ex: Exception) {
-                        loge("CryptoProviderManager", "Switch account hardware-backed key: Error determining algorithms: ${ex.message}, using defaults")
-                    }
-
                     // Return AndroidKeystoreCryptoProvider directly
-                    return AndroidKeystoreCryptoProvider(e.alias!!, determinedSigningAlgorithm, determinedHashingAlgorithm)
+                    return AndroidKeystoreCryptoProvider(e.prefix!!)
                 }
 
                 if (privateKey == null) {
@@ -746,7 +365,6 @@ object CryptoProviderManager {
             // Handle prefix-based accounts
             if (switchAccount.prefix.isNullOrBlank().not()) {
                 // Load the stored private key using the prefix-based ID with backward compatibility
-                val keyId = "prefix_key_${switchAccount.prefix}"
                 val privateKey = try {
                     KeyCompatibilityManager.getPrivateKeyWithFallback(switchAccount.prefix, storage)
                 } catch (e: HardwareBackedKeyException) {
@@ -754,7 +372,7 @@ object CryptoProviderManager {
                     loge("CryptoProviderManager", "Creating AndroidKeystoreCryptoProvider for hardware-backed key")
 
                     // For LocalSwitchAccount, we use defaults since we don't have wallet address
-                    return AndroidKeystoreCryptoProvider(e.alias!!, SigningAlgorithm.ECDSA_P256, null)
+                    return AndroidKeystoreCryptoProvider(e.prefix!!)
                 }
 
                 if (privateKey == null) {

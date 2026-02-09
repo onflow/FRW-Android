@@ -30,7 +30,7 @@ class ChildAccountDetailViewModel : ViewModel() {
                     CoinData(
                         token?.name ?: contractName,
                                 token?.tokenIcon().orEmpty().ifBlank {
-                            "https://lilico.app/placeholder-2.0.png"
+                            "https://web.api.wallet.flow.com/placeholder-2.0.png"
                         },
                         token?.symbol.orEmpty(),
                         it.balance

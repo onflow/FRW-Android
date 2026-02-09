@@ -227,7 +227,7 @@ fun generateFclExtensionInject(): String {
           provider: {
             address: '$address',
             name: 'Flow Wallet',
-            icon: 'https://lilico.app/fcw-logo.png',
+            icon: 'https://web.api.wallet.flow.com/fcw-logo.png',
             description: 'Digital wallet created for everyone.',
           }
         }

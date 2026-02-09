@@ -15,6 +15,18 @@ suspend fun walletConnectAuthnServiceResponse(
     nonce: String?,
     appIdentifier: String?,
 ): String {
+    val services = mutableListOf(
+        preAuthz(address.toAddress(), keyId),
+        authn(address.toAddress(), keyId),
+        authz(address.toAddress(), keyId),
+        userSign(address.toAddress(), keyId)
+    )
+
+    val proof = accountProof(address, keyId, nonce, appIdentifier)
+    if (proof.isNotBlank()) {
+        services.add(proof)
+    }
+
     return """
 {
   "f_type": "PollingResponse",
@@ -24,16 +36,7 @@ suspend fun walletConnectAuthnServiceResponse(
     "f_vsn": "1.0.0",
     "paddr": null,
     "services": [
-      ${
-        """
-            ${authn(address.toAddress(), keyId)},
-            ${authz(address.toAddress(), keyId)},
-            ${userSign(address.toAddress(), keyId)},
-            ${preAuthz(address.toAddress(), keyId)},
-            ${signMessage() + if (nonce.isNullOrBlank() || appIdentifier.isNullOrBlank()) "" else ","}
-            ${accountProof(address, keyId, nonce, appIdentifier)}
-        """.trimIndent()
-      }
+      ${services.joinToString(",")}
     ],
     "addr": "${address.toAddress()}",
     "address": "${address.toAddress()}",
@@ -48,6 +51,7 @@ private fun authn(address: String, keyId: Int): String {
     return """
 {
     "f_type": "Service",
+    "method": "WC/RPC",
     "uid": "https://frw-link.lilico.app/wc",
     "provider": {
         "f_type": "ServiceProvider",
@@ -58,13 +62,14 @@ private fun authn(address: String, keyId: Int): String {
         "color": "#41CC5D",
         "supportEmail": "wallet@flow.com",
         "website": "https://frw-link.lilico.app/wc",
-        "icon": "https://lilico.app/logo_mobile.png"
+        "icon": "https://web.api.wallet.flow.com/logo_mobile.png"
     },
     "id": "$address",
     "f_vsn": "1.0.0",
     "endpoint": "flow_authn",
     "type": "authn",
-    "identity": { "address": "$address", "keyId": $keyId }
+    "identity": { "address": "$address", "keyId": $keyId },
+    "network": "${chainNetWorkString()}"
 }
     """.trimIndent()
 }
@@ -78,7 +83,8 @@ private fun authz(address: String, keyId: Int): String {
     "f_vsn": "1.0.0",
     "endpoint": "flow_authz",
     "type": "authz",
-    "identity": { "address": "$address", "keyId": $keyId }
+    "identity": { "address": "$address", "keyId": $keyId },
+    "network": "${chainNetWorkString()}"
 }
     """.trimIndent()
 }
@@ -92,7 +98,8 @@ private fun userSign(address: String, keyId: Int): String {
     "f_vsn": "1.0.0",
     "endpoint": "flow_user_sign",
     "type": "user-signature",
-    "identity": { "address": "$address", "keyId": $keyId }
+    "identity": { "address": "$address", "keyId": $keyId },
+    "network": "${chainNetWorkString()}"
 }
     """.trimIndent()
 }
@@ -112,7 +119,8 @@ private fun preAuthz(address: String, keyId: Int): String {
         "keyId": $keyId,
         "network": "${chainNetWorkString()}"
     },
-    "data": {}
+    "data": {},
+    "network": "${chainNetWorkString()}"
 }
     """.trimIndent()
 }
@@ -150,19 +158,6 @@ private suspend fun accountProof(address: String, keyId: Int, nonce: String?, ap
             }
           ]
         }
-    }
-""".trimIndent()
-}
-
-private fun signMessage(): String {
-    return """
-    {
-        "f_type": "Service",
-        "f_vsn": "1.0.0",
-        "type": "user-signature",
-        "uid": "https://frw-link.lilico.app/wc",
-        "endpoint": "${WalletConnectMethod.USER_SIGNATURE.value}",
-        "method": "WC/RPC"
     }
 """.trimIndent()
 }

@@ -2,9 +2,10 @@ package com.flowfoundation.wallet.network
 
 import android.webkit.WebStorage
 import android.widget.Toast
+import com.flow.wallet.KeyManager
 import com.flow.wallet.crypto.BIP39
-import com.flow.wallet.keys.PrivateKey
 import com.flow.wallet.storage.FileSystemStorage
+import com.flow.wallet.toFormatString
 import com.flow.wallet.wallet.WalletFactory
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.firebase.auth.firebaseCustomLogin
@@ -20,6 +21,7 @@ import com.flowfoundation.wallet.manager.app.isMainnet
 import com.flowfoundation.wallet.manager.app.refreshChainNetworkSync
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.evm.DAppEVMConnectionManager
+import com.flowfoundation.wallet.manager.key.AndroidKeystoreCryptoProvider
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.key.KeyCompatibilityManager
 import com.flowfoundation.wallet.manager.nft.NftCollectionStateManager
@@ -54,19 +56,17 @@ import com.flowfoundation.wallet.utils.storeWalletPassword
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.updateChainNetworkPreference
 import com.flowfoundation.wallet.wallet.Wallet
-// Removed: import com.flowfoundation.wallet.wallet.createWalletFromServer - was causing duplicate account creation
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.nftco.flow.sdk.HashAlgorithm
 import kotlinx.coroutines.delay
 import org.onflow.flow.ChainId
-import org.onflow.flow.models.DomainTag
-import org.onflow.flow.models.HashingAlgorithm
-import org.onflow.flow.models.SigningAlgorithm
 import java.io.File
 import java.security.MessageDigest
+import kotlin.collections.joinToString
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -176,114 +176,114 @@ private var pendingRegistrationPrefix: String? = null
 suspend fun initWalletWithTxId(
   txId: String
 ): Pair<Boolean, String?> = suspendCoroutine { continuation ->
-  ioScope {
-    try {
-      logd(TAG, "[InitWallet] Starting wallet initialization with txId: $txId")
+    ioScope {
+        try {
+            logd(TAG, "[InitWallet] Starting wallet initialization with txId: $txId")
 
-      val service = retrofit().create(ApiService::class.java)
+            val service = retrofit().create(ApiService::class.java)
 
-      // Get user info
-      val userInfo = try { service.userInfo().data } catch (e: Exception) {
-        loge(TAG, "[InitWallet] Failed to fetch user info: ${e.message}")
-        continuation.resume(Pair(false, null))
-        return@ioScope
-      }
+            // Get user info
+            val userInfo = try { service.userInfo().data } catch (e: Exception) {
+                loge(TAG, "[InitWallet] Failed to fetch user info: ${e.message}")
+                continuation.resume(Pair(false, null))
+                return@ioScope
+            }
 
-      // Get the prefix from the pending registration (stored during early return)
-      val prefix = pendingRegistrationPrefix
-      if (prefix == null) {
-        loge(TAG, "[InitWallet] No pending registration prefix found")
-        continuation.resume(Pair(false, null))
-        return@ioScope
-      }
-      logd(TAG, "[InitWallet] Using prefix from pending registration: $prefix")
+            // Get the prefix from the pending registration (stored during early return)
+            val prefix = pendingRegistrationPrefix
+            if (prefix == null) {
+                loge(TAG, "[InitWallet] No pending registration prefix found")
+                continuation.resume(Pair(false, null))
+                return@ioScope
+            }
+            logd(TAG, "[InitWallet] Using prefix from pending registration: $prefix")
 
-      // Fetch account by txId using Wallet SDK
-      val chainId = when (chainNetWorkString()) {
-        "mainnet" -> ChainId.Mainnet
-        "testnet" -> ChainId.Testnet
-        else -> ChainId.Mainnet
-      }
+            // Fetch account by txId using Wallet SDK
+            val chainId = when (chainNetWorkString()) {
+                "mainnet" -> ChainId.Mainnet
+                "testnet" -> ChainId.Testnet
+                else -> ChainId.Mainnet
+            }
 
-      val storage = FileSystemStorage(File(Env.getApp().filesDir, "wallet"))
-      val keyForWalletSDK = KeyCompatibilityManager.getPrivateKeyWithFallback(prefix, storage)
-      if (keyForWalletSDK == null) {
-        loge(TAG, "[InitWallet] Failed to retrieve stored private key")
-        continuation.resume(Pair(false, null))
-        return@ioScope
-      }
+            val storage = FileSystemStorage(File(Env.getApp().filesDir, "wallet"))
+            val keyForWalletSDK = KeyCompatibilityManager.getPrivateKeyWithFallback(prefix, storage)
+            if (keyForWalletSDK == null) {
+                loge(TAG, "[InitWallet] Failed to retrieve stored private key")
+                continuation.resume(Pair(false, null))
+                return@ioScope
+            }
 
-      val walletForSDK = WalletFactory.createKeyWallet(
-        keyForWalletSDK,
-        setOf(ChainId.Mainnet, ChainId.Testnet),
-        storage
-      )
+            val walletForSDK = WalletFactory.createKeyWallet(
+                keyForWalletSDK,
+                setOf(ChainId.Mainnet, ChainId.Testnet),
+                storage
+            )
 
-      logd(TAG, "[InitWallet] Fetching account by txId: $txId")
-      val fetchedAccount = walletForSDK.fetchAccountByCreationTxId(txId, chainId)
-      val createdAddress = fetchedAccount.address
+            logd(TAG, "[InitWallet] Fetching account by txId: $txId")
+            val fetchedAccount = walletForSDK.fetchAccountByCreationTxId(txId, chainId)
+            val createdAddress = fetchedAccount.address
 
-      logd(TAG, "[InitWallet] Account fetched successfully at address: $createdAddress")
+            logd(TAG, "[InitWallet] Account fetched successfully at address: $createdAddress")
 
-      // Fetch wallet list to get wallet metadata
-      val walletListData: com.flowfoundation.wallet.network.model.WalletListData?
-      try {
-        walletListData = service.getWalletList().data
-        if (walletListData == null) {
-          loge(TAG, "[InitWallet] Failed to fetch wallet list")
-          continuation.resume(Pair(false, null))
-          return@ioScope
+            // Fetch wallet list to get wallet metadata
+            val walletListData: com.flowfoundation.wallet.network.model.WalletListData?
+            try {
+                walletListData = service.getWalletList().data
+                if (walletListData == null) {
+                    loge(TAG, "[InitWallet] Failed to fetch wallet list")
+                    continuation.resume(Pair(false, null))
+                    return@ioScope
+                }
+            } catch (e: Exception) {
+                loge(TAG, "[InitWallet] Error fetching wallet list: ${e.message}")
+                continuation.resume(Pair(false, null))
+                return@ioScope
+            }
+
+            // Build initial walletNodes with the FlowWallet we know about
+            val formattedCreatedAddress = if (createdAddress.startsWith("0x")) createdAddress else "0x$createdAddress"
+            val emojiInfo = AccountEmojiManager.getEmojiByAddress(formattedCreatedAddress)
+            val initialWalletNodes = listOf(
+                FlowWallet(
+                    address = formattedCreatedAddress,
+                    name = emojiInfo.emojiName,
+                    emojiId = emojiInfo.emojiId,
+                    chainIdString = chainNetWorkString(),
+                    linkedWallets = emptyList()
+                )
+            )
+            logd(TAG, "[InitWallet] Created initial FlowWallet node: address=$formattedCreatedAddress, network=${chainNetWorkString()}")
+
+            // Add account to AccountManager with walletNodes populated
+            AccountManager.add(
+                Account(
+                    userInfo = userInfo,
+                    prefix = prefix,
+                    wallet = walletListData,
+                    walletNodes = initialWalletNodes
+                ),
+                firebaseUid()
+            )
+
+            logd(TAG, "[InitWallet] Account added to AccountManager with FlowWallet, address: $createdAddress")
+
+            // Clear the pending prefix now that wallet init is complete
+            pendingRegistrationPrefix = null
+
+            continuation.resume(Pair(true, createdAddress))
+        } catch (e: Exception) {
+            loge(TAG, "[InitWallet] Error: ${e.message}")
+            e.printStackTrace()
+            // Clear pending prefix on error too
+            pendingRegistrationPrefix = null
+            continuation.resume(Pair(false, null))
         }
-      } catch (e: Exception) {
-        loge(TAG, "[InitWallet] Error fetching wallet list: ${e.message}")
-        continuation.resume(Pair(false, null))
-        return@ioScope
-      }
-
-      // Build initial walletNodes with the FlowWallet we know about
-      val formattedCreatedAddress = if (createdAddress.startsWith("0x")) createdAddress else "0x$createdAddress"
-      val emojiInfo = AccountEmojiManager.getEmojiByAddress(formattedCreatedAddress)
-      val initialWalletNodes = listOf(
-        FlowWallet(
-          address = formattedCreatedAddress,
-          name = emojiInfo.emojiName,
-          emojiId = emojiInfo.emojiId,
-          chainIdString = chainNetWorkString(),
-          linkedWallets = emptyList()
-        )
-      )
-      logd(TAG, "[InitWallet] Created initial FlowWallet node: address=$formattedCreatedAddress, network=${chainNetWorkString()}")
-
-      // Add account to AccountManager with walletNodes populated
-      AccountManager.add(
-        Account(
-          userInfo = userInfo,
-          prefix = prefix,
-          wallet = walletListData,
-          walletNodes = initialWalletNodes
-        ),
-        firebaseUid()
-      )
-
-      logd(TAG, "[InitWallet] Account added to AccountManager with FlowWallet, address: $createdAddress")
-
-      // Clear the pending prefix now that wallet init is complete
-      pendingRegistrationPrefix = null
-
-      continuation.resume(Pair(true, createdAddress))
-    } catch (e: Exception) {
-      loge(TAG, "[InitWallet] Error: ${e.message}")
-      e.printStackTrace()
-      // Clear pending prefix on error too
-      pendingRegistrationPrefix = null
-      continuation.resume(Pair(false, null))
     }
-  }
 }
 
 // register one step, create user & create wallet
 suspend fun registerOutblock(
-  username: String,
+    username: String,
 ) = suspendCoroutine { continuation ->
   ioScope {
     // Ensure we're on mainnet for account creation (backend creates accounts on mainnet)
@@ -317,7 +317,7 @@ suspend fun registerOutblock(
           // The service calls here should ideally just fetch the latest state if needed,
           // not perform new registrations or key creations.
 
-          val userInfo = try { service.userInfo().data } catch (e: Exception) {
+          val userInfo = try { service.userInfo().data } catch (_: Exception) {
             logd(TAG, "Failed to fetch user info after registration")
             continuation.resume(false)
             return@ioScope
@@ -506,272 +506,226 @@ suspend fun registerOutblock(
 }
 
 private suspend fun registerOutblockUserInternal(
-  username: String,
-  callback: (isSuccess: Boolean, prefix: String) -> Unit,
+    username: String,
+    callback: (isSuccess: Boolean, prefix: String) -> Unit,
 ) {
-  val prefix = generatePrefix(username)
-  try {
-    if (!setToAnonymous()) {
-      resumeAccount()
-      callback.invoke(false, prefix)
-      return
-    }
-    val user = registerServer(username, prefix)
+    val prefix = generatePrefix(username)
+    try {
+        if (!setToAnonymous()) {
+            resumeAccount()
+            callback.invoke(false, prefix)
+            return
+        }
+        val user = registerServer(username, prefix)
 
-    if (user.status > 400) {
-      callback(false, prefix)
-      return
+        if (user.status > 400) {
+            callback(false, prefix)
+            return
+        }
+        logd(TAG, "SYNC Register userId:::${user.data.uid}")
+        logd(TAG, "start delete user")
+        registerFirebase(user) { isSuccess ->
+            callback.invoke(isSuccess, prefix)
+        }
+    } catch (e: Exception) {
+        if (e is IllegalStateException) {
+            ErrorReporter.reportCriticalWithMixpanel(WalletError.KEY_STORE_FAILED, e)
+        } else {
+            ErrorReporter.reportWithMixpanel(AccountError.REGISTER_USER_FAILED, e)
+        }
+        callback.invoke(false, prefix)
     }
-    logd(TAG, "SYNC Register userId:::${user.data.uid}")
-    logd(TAG, "start delete user")
-    registerFirebase(user) { isSuccess ->
-      callback.invoke(isSuccess, prefix)
-    }
-  } catch (e: Exception) {
-    if (e is IllegalStateException) {
-      ErrorReporter.reportCriticalWithMixpanel(WalletError.KEY_STORE_FAILED, e)
-    } else {
-      ErrorReporter.reportWithMixpanel(AccountError.REGISTER_USER_FAILED, e)
-    }
-    callback.invoke(false, prefix)
-  }
 }
 
 private fun registerFirebase(user: RegisterResponse, callback: (isSuccess: Boolean) -> Unit) {
-  FirebaseMessaging.getInstance().deleteToken()
-  Firebase.auth.currentUser?.delete()?.addOnCompleteListener {
-    logd(TAG, "delete user finish exception:${it.exception}")
-    if (it.isSuccessful) {
-      firebaseCustomLogin(user.data.customToken) { isSuccessful, _ ->
-        if (isSuccessful) {
-          MixpanelManager.identifyUserProfile()
-          callback(true)
+    FirebaseMessaging.getInstance().deleteToken()
+    Firebase.auth.currentUser?.delete()?.addOnCompleteListener {
+        logd(TAG, "delete user finish exception:${it.exception}")
+        if (it.isSuccessful) {
+            firebaseCustomLogin(user.data.customToken) { isSuccessful, _ ->
+                if (isSuccessful) {
+                    MixpanelManager.identifyUserProfile()
+                    callback(true)
+                } else callback(false)
+            }
         } else callback(false)
-      }
-    } else callback(false)
-  }
+    }
 }
 
 private suspend fun registerServer(username: String, prefix: String): RegisterResponse {
-  logd(TAG, "Starting server registration for username: $username (using v4 API)")
-  val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
-  val service = retrofit().create(ApiService::class.java)
-  val baseDir = File(Env.getApp().filesDir, "wallet")
-  val storage = FileSystemStorage(baseDir)
+    val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
+    val service = retrofit().create(ApiService::class.java)
+    val keyPair = KeyManager.generateKeyWithPrefix(prefix)
 
-  try {
-    // Generate and store mnemonic globally for potential future EOA support
-    val mnemonic = BIP39.generate(BIP39.SeedPhraseLength.TWELVE)
-    logd(TAG, "Generated new 12-word mnemonic for backup support")
-
-    val passwordMap = try {
-      val pref = readWalletPassword()
-      if (pref.isBlank()) {
-        HashMap<String, String>()
-      } else {
-        Gson().fromJson(pref, object : TypeToken<HashMap<String, String>>() {}.type)
-      }
-    } catch (e: Exception) {
-      HashMap<String, String>()
-    }
-
-    // Store mnemonic globally (available for future EOA enablement if user chooses)
-    storeWalletPassword(Gson().toJson(passwordMap.apply { put("global", mnemonic) }))
-    logd(TAG, "Stored mnemonic globally for backup support")
-
-    // Create a new private key
-    val privateKey = PrivateKey.create(storage)
-    logd(TAG, "Created new private key for registration")
-
-    // Store the private key with prefix as ID for later retrieval
-    val keyId = "prefix_key_$prefix"
-    privateKey.store(keyId, prefix) // Use prefix as password for simplicity
-    logd(TAG, "Stored private key with ID: $keyId")
-
-    // Get the uncompressed public key using the fixed Flow-Wallet-Kit method
-    val publicKeyBytes = privateKey.publicKey(SigningAlgorithm.ECDSA_P256)
-    if (publicKeyBytes == null) {
-      logd(TAG, "Failed to get public key from private key")
-      throw IllegalStateException("Failed to get public key from private key")
-    }
-
-    logd(TAG, "Public key size: ${publicKeyBytes.size} bytes")
-
-    // Convert public key to hex string, removing "04" prefix if present
-    // Flow expects uncompressed public keys without the format indicator
-    val hexPublicKey = if (publicKeyBytes.size == 65 && publicKeyBytes[0] == 0x04.toByte()) {
-      // Remove the "04" prefix for uncompressed keys
-      publicKeyBytes.copyOfRange(1, publicKeyBytes.size).joinToString("") { "%02x".format(it) }
-    } else {
-      publicKeyBytes.joinToString("") { "%02x".format(it) }
-    }
-    logd(TAG, "Formatted public key: $hexPublicKey (${hexPublicKey.length} chars)")
-
-    // Get Firebase JWT for signing (v4 requires signature verification)
-    val firebaseJwt = getFirebaseJwt()
-    logd(TAG, "Got Firebase JWT for signing")
-
-    // Sign the Firebase JWT with the private key
-    // Important: Prepend DomainTag.User.bytes to match what backend expects
-    val dataToSign = DomainTag.User.bytes + firebaseJwt.toByteArray(Charsets.UTF_8)
-    logd(TAG, "Signing data with DomainTag.User prefix, total size: ${dataToSign.size}")
-
-    val signatureBytes = privateKey.sign(dataToSign, SigningAlgorithm.ECDSA_P256, HashingAlgorithm.SHA2_256)
-    if (signatureBytes == null) {
-      logd(TAG, "Failed to sign Firebase JWT")
-      throw IllegalStateException("Failed to sign Firebase JWT")
-    }
-
-    val hexSignature = signatureBytes.joinToString("") { "%02x".format(it) }
-    logd(TAG, "Signed Firebase JWT, signature length: ${hexSignature.length} chars (${signatureBytes.size} bytes)")
-
-    // Create v4 registration request with FlowAccountInfo containing signature
-    val flowAccountInfo = com.flowfoundation.wallet.network.model.FlowAccountInfo(
-      accountKey = AccountKey(
-        publicKey = hexPublicKey
-        // Using default values: ECDSA_P256 and SHA2_256
-      ),
-      signature = hexSignature
-    )
-
-    // Create EVMAccountInfo for registration
-    // IMPORTANT: EVM key must be derived from the MNEMONIC, not from the P256 private key
-    // The extension derives EVM from mnemonic with BIP44 path m/44'/60'/0'/0/0
-    val evmAccountInfo = try {
-      // Use Trust Wallet Core to derive EVM key from mnemonic
-      val hdWallet = wallet.core.jni.HDWallet(mnemonic, "")
-      val evmDerivationPath = "m/44'/60'/0'/0/0" // Standard Ethereum BIP44 path
-      
-      // Get private key for EVM using secp256k1 curve
-      val evmPrivateKey = hdWallet.getKeyByCurve(wallet.core.jni.Curve.SECP256K1, evmDerivationPath)
-      val evmPublicKey = evmPrivateKey.getPublicKeySecp256k1(false) // uncompressed
-      
-      // Derive EVM address from public key
-      val evmAddress = wallet.core.jni.AnyAddress(evmPublicKey, wallet.core.jni.CoinType.ETHEREUM).description()
-      logd(TAG, "Derived EVM address from mnemonic: $evmAddress")
-      
-      // Sign keccak256(idToken) for EVM - NO domain tag, same as extension
-      val jwtBytes = firebaseJwt.toByteArray(Charsets.UTF_8)
-      val jwtHash = Hash.keccak256(jwtBytes)
-      
-      // Sign the digest with secp256k1
-      val signatureData = evmPrivateKey.sign(jwtHash, wallet.core.jni.Curve.SECP256K1)
-      
-      val evmSignature = "0x" + signatureData.joinToString("") { "%02x".format(it) }
-      logd(TAG, "Generated EVM signature from mnemonic, length: ${evmSignature.length}")
-      
-      EvmAccountInfo(
-        eoaAddress = evmAddress,
-        signature = evmSignature
-      )
-    } catch (e: Exception) {
-      logd(TAG, "Error creating EVM account info from mnemonic: ${e.message}")
-      e.printStackTrace()
-      null
-    }
-
-    val request = RegisterRequest(
-      flowAccountInfo = flowAccountInfo,
-      evmAccountInfo = evmAccountInfo,
-      username = username,
-      deviceInfo = deviceInfoRequest
-    )
-
-    logd(TAG, "Sending v4 registration request for username: $username")
     try {
-      val user = service.register(request)
-      logd(TAG, "Registration response: $user")
+        val cryptoProvider = AndroidKeystoreCryptoProvider(prefix)
 
-      if (user.status > 400) {
-        logd(TAG, "Registration failed with status: ${user.status}, message: ${user.message}")
-        throw IllegalStateException("Registration failed with status: ${user.status}, message: ${user.message}")
-      }
+        val firebaseJwt = getFirebaseJwt()
 
-      return user
-    } catch (e: retrofit2.HttpException) {
-      val errorBody = e.response()?.errorBody()?.string()
-      logd(TAG, "HTTP Error: ${e.code()}, Response: $errorBody")
-      throw e
+        // Create v4 registration request with FlowAccountInfo containing signature
+        val flowAccountInfo = com.flowfoundation.wallet.network.model.FlowAccountInfo(
+            accountKey = AccountKey(
+                publicKey = keyPair.public.toFormatString()
+            ),
+            signature = cryptoProvider.getUserSignature(
+              firebaseJwt
+            )
+        )
+        // Create EVMAccountInfo for registration
+        // IMPORTANT: EVM key must be derived from the MNEMONIC, not from the P256 private key
+        // The extension derives EVM from mnemonic with BIP44 path m/44'/60'/0'/0/0
+        val evmAccountInfo = try {
+            // Generate and store mnemonic globally for potential future EOA support
+            val mnemonic = BIP39.generate(BIP39.SeedPhraseLength.TWELVE)
+            logd(TAG, "Generated new 12-word mnemonic for backup support")
+
+            val passwordMap = try {
+              val pref = readWalletPassword()
+              if (pref.isBlank()) {
+                HashMap<String, String>()
+              } else {
+                Gson().fromJson(pref, object : TypeToken<HashMap<String, String>>() {}.type)
+              }
+            } catch (_: Exception) {
+              HashMap()
+            }
+
+            // Store mnemonic globally (available for future EOA enablement if user chooses)
+            storeWalletPassword(Gson().toJson(passwordMap.apply { put("global", mnemonic) }))
+            logd(TAG, "Stored mnemonic globally for backup support")
+            // Use Trust Wallet Core to derive EVM key from mnemonic
+            val hdWallet = wallet.core.jni.HDWallet(mnemonic, "")
+            val evmDerivationPath = "m/44'/60'/0'/0/0" // Standard Ethereum BIP44 path
+
+            // Get private key for EVM using secp256k1 curve
+            val evmPrivateKey = hdWallet.getKeyByCurve(wallet.core.jni.Curve.SECP256K1, evmDerivationPath)
+            val evmPublicKey = evmPrivateKey.getPublicKeySecp256k1(false) // uncompressed
+
+            // Derive EVM address from public key
+            val evmAddress = wallet.core.jni.AnyAddress(evmPublicKey, wallet.core.jni.CoinType.ETHEREUM).description()
+            logd(TAG, "Derived EVM address from mnemonic: $evmAddress")
+
+            // Sign keccak256(idToken) for EVM - NO domain tag, same as extension
+            val jwtBytes = firebaseJwt.toByteArray(Charsets.UTF_8)
+            val jwtHash = Hash.keccak256(jwtBytes)
+
+            // Sign the digest with secp256k1
+            val signatureData = evmPrivateKey.sign(jwtHash, wallet.core.jni.Curve.SECP256K1)
+
+            val evmSignature = "0x" + signatureData.joinToString("") { "%02x".format(it) }
+            logd(TAG, "Generated EVM signature from mnemonic, length: ${evmSignature.length}")
+
+            EvmAccountInfo(
+                eoaAddress = evmAddress,
+                signature = evmSignature
+            )
+        } catch (e: Exception) {
+            logd(TAG, "Error creating EVM account info from mnemonic: ${e.message}")
+            e.printStackTrace()
+            null
+        }
+
+        val request = RegisterRequest(
+            flowAccountInfo = flowAccountInfo,
+            evmAccountInfo = evmAccountInfo,
+            username = username,
+            deviceInfo = deviceInfoRequest
+        )
+        logd(TAG, "Sending v4 registration request for username: $username")
+        try {
+            val user = service.register(request)
+            logd(TAG, "Registration response: $user")
+
+            if (user.status > 400) {
+              logd(TAG, "Registration failed with status: ${user.status}, message: ${user.message}")
+              throw IllegalStateException("Registration failed with status: ${user.status}, message: ${user.message}")
+            }
+
+            return user
+        } catch (e: retrofit2.HttpException) {
+            val errorBody = e.response()?.errorBody()?.string()
+            logd(TAG, "HTTP Error: ${e.code()}, Response: $errorBody")
+            throw e
+        }
+    } catch (e: Exception) {
+        logd(TAG, "Error during server registration: ${e.message}")
+        logd(TAG, "Error stack trace: ${e.stackTraceToString()}")
+        throw e
     }
-  } catch (e: Exception) {
-    logd(TAG, "Error during server registration: ${e.message}")
-    logd(TAG, "Error stack trace: ${e.stackTraceToString()}")
-    throw e
-  }
 }
 
 fun generatePrefix(text: String): String {
-  val timestamp = System.currentTimeMillis().toString()
-  val combinedInput = "${text}_$timestamp"
-  val bytes = MessageDigest.getInstance("SHA-256")
-    .digest(combinedInput.toByteArray())
-  return bytes.joinToString("") { "%02x".format(it) }
+    val timestamp = System.currentTimeMillis().toString()
+    val combinedInput = "${text}_$timestamp"
+    val bytes = MessageDigest.getInstance(HashAlgorithm.SHA2_256.algorithm)
+        .digest(combinedInput.toByteArray())
+    return bytes.joinToString("") { "%02x".format(it) }
 }
 
 private suspend fun setToAnonymous(): Boolean {
-  if (!isAnonymousSignIn()) {
-    Firebase.auth.signOut()
-    return signInAnonymously()
-  }
-  return true
+    if (!isAnonymousSignIn()) {
+        Firebase.auth.signOut()
+        return signInAnonymously()
+    }
+    return true
 }
 
 // create user failed, resume account
 private suspend fun resumeAccount() {
-  if (!setToAnonymous()) {
-    toast(msgRes = R.string.resume_login_error, duration = Toast.LENGTH_LONG)
-    return
-  }
-  val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
-  val service = retrofit().create(ApiService::class.java)
-  val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
-  if (cryptoProvider == null) {
-    toast(msgRes = R.string.resume_login_error, duration = Toast.LENGTH_LONG)
-    return
-  }
-  val resp = service.login(
-    LoginRequest(
-      signature = cryptoProvider.getUserSignature(getFirebaseJwt()),
-      accountKey = AccountKey(
-        publicKey = cryptoProvider.getPublicKey(),
-        hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
-        signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
-      ),
-      deviceInfo = deviceInfoRequest
-    )
-  )
-  if (resp.data?.customToken.isNullOrBlank()) {
-    toast(msgRes = R.string.resume_login_error, duration = Toast.LENGTH_LONG)
-    return
-  }
-  firebaseLogin(resp.data?.customToken!!) { isSuccess ->
-    if (isSuccess) {
-      setRegistered()
-      if (AccountManager.get()?.prefix == null && AccountManager.get()?.keyStoreInfo == null) {
-        Wallet.store().resume()
-      }
-    } else {
-      toast(msgRes = R.string.resume_login_error, duration = Toast.LENGTH_LONG)
-      return@firebaseLogin
+    if (!setToAnonymous()) {
+        toast(msgRes = R.string.resume_login_error, duration = Toast.LENGTH_LONG)
+        return
     }
-  }
+    val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
+    val service = retrofit().create(ApiService::class.java)
+    val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
+    if (cryptoProvider == null) {
+        toast(msgRes = R.string.resume_login_error, duration = Toast.LENGTH_LONG)
+        return
+    }
+    val resp = service.login(
+        LoginRequest(
+            signature = cryptoProvider.getUserSignature(getFirebaseJwt()),
+            accountKey = AccountKey(
+                publicKey = cryptoProvider.getPublicKey(),
+                hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
+                signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
+            ),
+            deviceInfo = deviceInfoRequest
+        )
+    )
+    if (resp.data?.customToken.isNullOrBlank()) {
+        toast(msgRes = R.string.resume_login_error, duration = Toast.LENGTH_LONG)
+        return
+    }
+    firebaseLogin(resp.data.customToken) { isSuccess ->
+        if (isSuccess) {
+            setRegistered()
+            if (AccountManager.get()?.prefix == null && AccountManager.get()?.keyStoreInfo == null) {
+                Wallet.store().resume()
+            }
+        } else {
+            toast(msgRes = R.string.resume_login_error, duration = Toast.LENGTH_LONG)
+            return@firebaseLogin
+        }
+    }
 }
 
 suspend fun clearUserCache() {
-  clearCacheDir()
-  clearWebViewCache()
-  setMeowDomainClaimed(false)
-  FungibleTokenListManager.clear()
-  WalletManager.clear()
-  DAppEVMConnectionManager.clearPreferences()
-  NftCollectionStateManager.clear()
-  TransactionStateManager.reload()
-  StakingManager.clear()
-  CryptoProviderManager.clear()
-  cleanBackupMnemonicPreference()
-  delay(1000)
+    clearCacheDir()
+    clearWebViewCache()
+    setMeowDomainClaimed(false)
+    FungibleTokenListManager.clear()
+    WalletManager.clear()
+    DAppEVMConnectionManager.clearPreferences()
+    NftCollectionStateManager.clear()
+    TransactionStateManager.reload()
+    StakingManager.clear()
+    CryptoProviderManager.clear()
+    cleanBackupMnemonicPreference()
+    delay(1000)
 }
 
 fun clearWebViewCache() {
-  WebStorage.getInstance().deleteAllData()
+    WebStorage.getInstance().deleteAllData()
 }

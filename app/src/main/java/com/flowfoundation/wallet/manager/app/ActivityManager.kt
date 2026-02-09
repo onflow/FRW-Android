@@ -73,6 +73,11 @@ object ActivityManager {
         }
     }
 
+    @JvmStatic
+    fun getReactContext(): ReactApplicationContext? {
+        return reactContextRef?.get()
+    }
+
     /**
      * Clear all references
      * Should be called when the application is being destroyed

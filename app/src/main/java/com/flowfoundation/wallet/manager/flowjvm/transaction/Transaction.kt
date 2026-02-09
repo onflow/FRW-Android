@@ -28,7 +28,6 @@ import com.ionspin.kotlin.bignum.integer.BigInteger
 import kotlinx.serialization.ExperimentalSerializationApi
 import org.onflow.flow.infrastructure.getTypeName
 import org.onflow.flow.infrastructure.removeHexPrefix
-import com.flowfoundation.wallet.manager.key.MultiRestoreCryptoProvider
 import com.flowfoundation.wallet.network.functions.executeHttpFunction
 
 private const val TAG = "Transaction"
@@ -44,21 +43,6 @@ suspend fun sendTransaction(
     // Check if this account requires multi-signature (multi-restore account)
     val walletAddress = transactionBuilder.walletAddress?.toAddress()
       ?: throw RuntimeException("No wallet address specified")
-
-    val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
-      ?: throw RuntimeException("Could not get CryptoProvider for wallet $walletAddress")
-
-    // Check if this is a multi-restore account that needs multi-signature
-    if (cryptoProvider is MultiRestoreCryptoProvider) {
-      logd(TAG, "Detected multi-restore account with ${cryptoProvider.getAllProviders().size} providers (total weight: ${cryptoProvider.getKeyWeight()})")
-      logd(TAG, "Routing to multi-signature transaction flow")
-
-      // Use multi-signature transaction flow for multi-restore accounts
-      return sendTransactionWithMultiSignature(
-        providers = cryptoProvider.getAllProviders(),
-        builder = builder // Pass the original builder
-      )
-    }
 
     // Use single-signature transaction flow for regular accounts
     logd(TAG, "Using single-signature transaction flow for regular account")
@@ -476,12 +460,12 @@ suspend fun Transaction.send(): Transaction {
     // The user can check the transaction status on FlowScan using the transaction ID
     TransactionResult(
       blockId = "",
-      status = org.onflow.flow.models.TransactionStatus.SEALED,
+      status = TransactionStatus.SEALED,
       statusCode = 0,
       errorMessage = "Result parsing failed due to Flow SDK JSON deserialization issue. Transaction was submitted successfully. Check status on FlowScan.",
       computationUsed = "0",
       events = emptyList(),
-      execution = org.onflow.flow.models.TransactionExecution.success,
+      execution = TransactionExecution.success,
       links = null
     )
   } catch (e: RuntimeException) {
@@ -495,12 +479,12 @@ suspend fun Transaction.send(): Transaction {
       // Return a mock sealed result since the transaction was submitted successfully
       TransactionResult(
         blockId = "",
-        status = org.onflow.flow.models.TransactionStatus.SEALED,
+        status = TransactionStatus.SEALED,
         statusCode = 0,
         errorMessage = "Result parsing failed due to Flow SDK JSON parsing issue. Transaction was submitted successfully. Check status on FlowScan.",
         computationUsed = "0",
         events = emptyList(),
-        execution = org.onflow.flow.models.TransactionExecution.success,
+        execution = TransactionExecution.success,
         links = null
       )
     } else {

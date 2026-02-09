@@ -65,6 +65,8 @@
     <string name="multiple_accounts_found">여러 개의 계정이 발견되었습니다.</string>
     <string name="enter_password">비밀번호 입력</string>
     <string name="continue_str">계속하기</string>
+    <string name="dapp_prompt_title">주의하여 진행</string>
+    <string name="dapp_prompt_body">Flow Wallet이 아닌 타사에 의해 이곳으로 이동되었습니다. 계속하면 Dapp이 열립니다.</string>
     <string name="restore_with_google_drive">Google 드라이브로 복원</string>
     <string name="wrong_password">잘못된 비밀번호</string>
     <string name="word_not_found">죄송합니다, 단어를 찾을 수 없습니다.</string>
@@ -716,6 +718,24 @@
     <string name="import_from_pdf">PDF에서 가져오기</string>
     <string name="pdf_parse_error_message">키스토어 JSON 형식이 잘못되었습니다. Flow Wallet Extension을 다운로드하여 키스토어 파일을 올바르게 내보내세요.</string>
     <string name="extension_download_url">https://chromewebstore.google.com/detail/flow-wallet/hpclkefagolihohboafpheddmmgdffjm?hl=en</string>
+
+    <!-- PDF Import Feature -->
+    <string name="pdf_password_hint">PDF 비밀번호를 입력하세요</string>
+    <string name="pdf_password_protected_info">이 PDF는 비밀번호로 보호되어 있습니다. 개인 키를 추출하려면 비밀번호를 입력하세요.</string>
+    <string name="extract_private_key_from_pdf">PDF에서 개인 키 추출</string>
+    <string name="pdf_file_not_found">PDF 파일을 찾을 수 없습니다</string>
+    <string name="pdf_extract_json_failed">PDF에서 JSON 추출 실패</string>
+    <string name="pdf_private_key_extracted">PDF에서 개인 키가 추출되었습니다. 확인 후 가져오기를 누르세요.</string>
+    <string name="pdf_contains_keystore">이 PDF에는 키스토어가 포함되어 있습니다. 키스토어 가져오기 옵션을 사용하세요.</string>
+    <string name="pdf_unknown_format">PDF의 알 수 없는 JSON 형식. private_key 또는 키스토어 형식이 필요합니다.</string>
+    <string name="pdf_password_incorrect">비밀번호가 올바르지 않습니다. 비밀번호를 확인하고 다시 시도하세요.</string>
+    <string name="pdf_extract_failed">PDF 추출 실패: %1$s</string>
+    <string name="pdf_keystore_extracted">PDF에서 키스토어가 추출되었습니다. 비밀번호를 입력하고 가져오기를 누르세요.</string>
+    <string name="pdf_imported_success">PDF 가져오기 성공: %1$s</string>
+    <string name="pdf_password_required_title">비밀번호 필요</string>
+    <string name="pdf_password_required_desc">이 PDF는 비밀번호로 보호되어 있습니다. 비밀번호를 입력하세요.</string>
+    <string name="unlock">잠금 해제</string>
+    <string name="pdf_contains_private_key">이 PDF에는 개인 키가 포함되어 있습니다. 개인 키 가져오기 옵션을 사용하세요.</string>
     <string name="surge_pricing_title">정말로 서지 가격으로 계속하시겠습니까?</string>
     <string name="surge_current_fee">귀하의 거래 수수료:</string>
     <string name="surge_active">서지 가격 활성화</string>

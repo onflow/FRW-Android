@@ -32,7 +32,7 @@ class TransferRecordItemPresenter(
                 iconView.setImageResource(R.drawable.ic_transaction_default)
             } else {
                 Glide.with(iconView)
-                    .load(model.logo().svgToPng())
+                    .load(model.logo())
                     .error(R.drawable.ic_transaction_default)
                     .placeholder(R.drawable.ic_transaction_default)
                     .into(iconView)

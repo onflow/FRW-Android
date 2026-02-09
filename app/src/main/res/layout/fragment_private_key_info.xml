@@ -46,6 +46,7 @@
         app:layout_constraintTop_toBottomOf="@id/tv_private_key_title"/>
 
     <TextView
+        android:id="@+id/tv_private_key_asterisk"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/inter"
@@ -78,6 +79,109 @@
         app:layout_constraintTop_toBottomOf="@id/tv_private_key"
         tools:text=""/>
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_import_from_pdf"
+        style="@style/Button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="16dp"
+        android:minHeight="34dp"
+        android:paddingStart="24dp"
+        android:paddingTop="16dp"
+        android:paddingEnd="24dp"
+        android:paddingBottom="16dp"
+        android:text="@string/import_from_pdf"
+        app:icon="@drawable/ic_import_pdf"
+        app:iconGravity="start"
+        app:iconTint="@color/button_text"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/et_private_key"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        />
+
+    <TextView
+        android:id="@+id/tv_pdf_password_info"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginTop="24dp"
+        android:fontFamily="@font/inter"
+        android:text="@string/pdf_password_protected_info"
+        android:textSize="14sp"
+        android:textColor="@color/text_2"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_private_key_title"/>
+
+    <TextView
+        android:id="@+id/tv_password"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="16dp"
+        android:fontFamily="@font/inter"
+        android:text="@string/password"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_pdf_password_info"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/tv_password_asterisk"
+        android:fontFamily="@font/inter"
+        android:text="@string/required_asterisk"
+        android:textColor="@color/info_error_red"
+        android:textSize="14sp"
+        android:visibility="gone"
+        app:layout_constraintStart_toEndOf="@id/tv_password"
+        app:layout_constraintTop_toTopOf="@id/tv_password"/>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/til_password"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="24dp"
+        android:elevation="8dp"
+        android:textCursorDrawable="@drawable/bg_edittext_cursor"
+        android:translationZ="8dp"
+        android:visibility="gone"
+        app:boxBackgroundMode="none"
+        app:hintAnimationEnabled="false"
+        app:hintEnabled="false"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_password"
+        app:passwordToggleEnabled="true">
+
+        <EditText
+            android:id="@+id/et_password"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:layout_marginHorizontal="24dp"
+            android:layout_marginTop="4dp"
+            android:background="@drawable/bg_round_16dp"
+            android:backgroundTint="@color/bg_1"
+            android:fontFamily="@font/inter"
+            android:hint="@string/key_store_password_hint"
+            android:imeOptions="actionNext"
+            android:autofillHints="password"
+            android:importantForAutofill="yes"
+            android:inputType="textPassword"
+            android:padding="20dp"
+            android:gravity="start"
+            android:textColor="@color/text_1"
+            android:textColorHint="@color/text_3"
+            android:textSize="14sp"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
     <TextView
         android:id="@+id/tv_address"
         android:layout_width="wrap_content"
@@ -89,7 +193,7 @@
         android:textSize="14sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/et_private_key"/>
+        app:layout_constraintTop_toBottomOf="@id/btn_import_from_pdf"/>
 
     <EditText
         android:id="@+id/et_address"

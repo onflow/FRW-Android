@@ -85,13 +85,6 @@ object AccountManager {
 
         ioScope {
             try {
-                // Perform keystore migration before loading accounts
-                try {
-                    logd(TAG, "Performing keystore migration check...")
-                    KeyStoreMigrationManager.performMigrationIfNeeded()
-                } catch (e: Exception) {
-                    logd(TAG, "Error during keystore migration: ${e.message}")
-                }
                 // Load user prefixes first
                 val userPrefixList = UserPrefixCacheManager.read()
                 if (!userPrefixList.isNullOrEmpty()) {
@@ -109,8 +102,6 @@ object AccountManager {
                     }
                     return@ioScope
                 }
-                logd(TAG, "all accounts: $accountList")
-
                 logd(TAG, "Found ${accountList.size} cached accounts")
                 accounts.addAll(accountList)
 
@@ -267,6 +258,23 @@ object AccountManager {
             // Clear account cache
             AccountCacheManager.cache(Accounts().apply { addAll(accounts) })
             logd(TAG, "Cleared account cache")
+
+
+            // Clear WalletManager state
+            try {
+                WalletManager.clear()
+                logd(TAG, "Cleared WalletManager state")
+            } catch (e: Exception) {
+                logd(TAG, "Error clearing WalletManager: ${e.message}")
+            }
+
+            // Clear CryptoProviderManager state
+            try {
+                CryptoProviderManager.clear()
+                logd(TAG, "Cleared CryptoProviderManager state")
+            } catch (e: Exception) {
+                logd(TAG, "Error clearing CryptoProviderManager: ${e.message}")
+            }
 
             try {
                 AccountEmojiManager.clear()
