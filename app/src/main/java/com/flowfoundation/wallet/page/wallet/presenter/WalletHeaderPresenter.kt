@@ -91,7 +91,11 @@ class WalletHeaderPresenter(
                 flAddToken.gone()
             } else {
                 flAddToken.setOnClickListener {
-                    ReactNativeActivity.launch(view.context, RNBridge.ScreenType.ADD_TOKENS)
+                    if (WalletManager.isEVMAccountSelected()) {
+                        com.flowfoundation.wallet.page.token.custom.AddCustomTokenActivity.launch(view.context)
+                    } else {
+                        ReactNativeActivity.launch(view.context, RNBridge.ScreenType.ADD_TOKENS)
+                    }
                 }
                 cvSwap.setOnClickListener {
                     activity?.let {
