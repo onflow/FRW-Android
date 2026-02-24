@@ -99,6 +99,7 @@ class ReactNativeActivity : ReactActivity() {
                 RNBridge.ScreenType.ONBOARDING -> "onboarding"
                 RNBridge.ScreenType.RECEIVE -> "receive"
                 RNBridge.ScreenType.ACTIVITY -> "activity"
+                RNBridge.ScreenType.ADD_TOKENS -> "add-tokens"
             }
         }
 
@@ -126,6 +127,7 @@ class ReactNativeActivity : ReactActivity() {
                 RNBridge.ScreenType.ONBOARDING -> RNBridge.InitialRoute.GET_STARTED.routeName
                 RNBridge.ScreenType.RECEIVE -> "Receive"
                 RNBridge.ScreenType.ACTIVITY -> "Activity"
+                RNBridge.ScreenType.ADD_TOKENS -> RNBridge.InitialRoute.ADD_TOKENS.routeName
             }
         }
 

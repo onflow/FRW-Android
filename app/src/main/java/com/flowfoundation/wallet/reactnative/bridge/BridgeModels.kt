@@ -23,7 +23,8 @@ class RNBridge {
         @SerializedName("token-detail") TOKEN_DETAIL,
         @SerializedName("onboarding") ONBOARDING,
         @SerializedName("receive") RECEIVE,
-        @SerializedName("activity") ACTIVITY
+        @SerializedName("activity") ACTIVITY,
+        @SerializedName("add-tokens") ADD_TOKENS
     }
 
     enum class AccountTypeType {
@@ -423,7 +424,8 @@ class RNBridge {
         @SerializedName("SelectTokens") SELECT_TOKENS("SelectTokens"),
         @SerializedName("SendTo") SEND_TO("SendTo"),
         @SerializedName("SendTokens") SEND_TOKENS("SendTokens"),
-        @SerializedName("Home") HOME("Home")
+        @SerializedName("Home") HOME("Home"),
+        @SerializedName("AddTokens") ADD_TOKENS("AddTokens")
     }
 
     enum class NativeScreenName {
