@@ -68,9 +68,18 @@ class UIBridgeHandler(private val reactContext: ReactApplicationContext) {
                 return
             }
 
-            // If a flowIdentifier is provided, fetch full TokenInfo and execute the enable tx
+            // If a flowIdentifier is provided, close the screen immediately then execute the tx in background
             if (!id.isNullOrBlank()) {
-                logd(TAG, "closeRN() - flowIdentifier provided, triggering add token tx: $id")
+                logd(TAG, "closeRN() - flowIdentifier provided, closing screen and triggering add token tx: $id")
+                // Close the activity first so the user isn't waiting on the API call
+                currentActivity.runOnUiThread {
+                    if (!currentActivity.isFinishing && !currentActivity.isDestroyed) {
+                        currentActivity.setResult(android.app.Activity.RESULT_OK)
+                        currentActivity.finish()
+                        logd(TAG, "closeRN() - activity finished, tx will execute in background")
+                    }
+                }
+                // Fetch token info and submit the Cadence tx in the background
                 ioScope {
                     try {
                         val service = retrofitApi().create(ApiService::class.java)
@@ -99,14 +108,6 @@ class UIBridgeHandler(private val reactContext: ReactApplicationContext) {
                     } catch (e: Exception) {
                         loge(TAG, "closeRN() - Failed to enable token: ${e.message}")
                         e.printStackTrace()
-                    }
-                    // Close the activity after the tx attempt (success or failure)
-                    currentActivity.runOnUiThread {
-                        if (!currentActivity.isFinishing && !currentActivity.isDestroyed) {
-                            currentActivity.setResult(android.app.Activity.RESULT_OK)
-                            currentActivity.finish()
-                            logd(TAG, "closeRN() - activity finished after token tx")
-                        }
                     }
                 }
                 return
