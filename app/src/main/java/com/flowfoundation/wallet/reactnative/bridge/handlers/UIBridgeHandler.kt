@@ -4,6 +4,12 @@ import android.content.Intent
 import android.widget.Toast
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
+import com.flowfoundation.wallet.manager.app.chainNetWorkString
+import com.flowfoundation.wallet.manager.flowjvm.cadenceEnableToken
+import com.flowfoundation.wallet.manager.transaction.TransactionState
+import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
+import com.flowfoundation.wallet.network.ApiService
+import com.flowfoundation.wallet.network.retrofitApi
 import com.flowfoundation.wallet.page.backup.BackupRecoveryPhraseActivity
 import com.flowfoundation.wallet.page.backup.WalletBackupActivity
 import com.flowfoundation.wallet.page.backup.device.CreateDeviceBackupActivity
@@ -13,13 +19,17 @@ import com.flowfoundation.wallet.page.restore.keystore.KeyStoreRestoreActivity
 import com.flowfoundation.wallet.page.restore.multirestore.MultiRestoreActivity
 import com.flowfoundation.wallet.page.walletrestore.WalletRestoreActivity as GoogleDriveRestoreActivity
 import com.flowfoundation.wallet.page.scan.ScanBarcodeActivity
+import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.reactnative.bridge.QRCodeScanManager
 import com.flowfoundation.wallet.reactnative.bridge.NativeScreen
+import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.logw
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
+import com.google.gson.Gson
+import org.onflow.flow.models.TransactionStatus
 
 /**
  * Handler for UI-related bridge methods
@@ -53,30 +63,72 @@ class UIBridgeHandler(private val reactContext: ReactApplicationContext) {
             val currentActivity = reactContext.currentActivity
             logd(TAG, "closeRN() - currentActivity: ${currentActivity?.javaClass?.simpleName}, isFinishing: ${currentActivity?.isFinishing}, isDestroyed: ${currentActivity?.isDestroyed}")
 
-            if (currentActivity != null && !currentActivity.isFinishing && !currentActivity.isDestroyed) {
-                // Use runOnUiThread to ensure activity operations run on main thread
-                currentActivity.runOnUiThread {
+            if (currentActivity == null || currentActivity.isFinishing || currentActivity.isDestroyed) {
+                logw(TAG, "closeRN() - Activity is null, finishing, or destroyed - skipping closeRN")
+                return
+            }
+
+            // If a flowIdentifier is provided, fetch full TokenInfo and execute the enable tx
+            if (!id.isNullOrBlank()) {
+                logd(TAG, "closeRN() - flowIdentifier provided, triggering add token tx: $id")
+                ioScope {
                     try {
-                        if (!currentActivity.isFinishing && !currentActivity.isDestroyed) {
-                            logd(TAG, "closeRN() - Calling finish() to close React Native activity and return to previous activity")
-                            // Use finish() to close the activity and return to the previous activity in the task stack
-                            // This should return to the native home screen that launched React Native
-                            currentActivity.setResult(android.app.Activity.RESULT_OK)
-                            currentActivity.finish()
-                            logd(TAG, "closeRN() - finish() called successfully")
+                        val service = retrofitApi().create(ApiService::class.java)
+                        val tokenList = service.getAddTokenList("flow", chainNetWorkString())
+                        val coin = tokenList.tokens.firstOrNull { it.contractId() == id }
+                        if (coin == null) {
+                            logw(TAG, "closeRN() - token not found for contractId: $id")
                         } else {
-                            logw(TAG, "closeRN() - Activity already finishing or destroyed, skipping")
+                            logd(TAG, "closeRN() - found token: ${coin.tokenName()}, executing cadenceEnableToken")
+                            val transactionId = cadenceEnableToken(coin)
+                            if (transactionId.isNullOrBlank()) {
+                                loge(TAG, "closeRN() - cadenceEnableToken returned null/blank transactionId")
+                            } else {
+                                logd(TAG, "closeRN() - tx submitted: $transactionId")
+                                val transactionState = TransactionState(
+                                    transactionId = transactionId,
+                                    time = System.currentTimeMillis(),
+                                    state = TransactionStatus.PENDING.ordinal,
+                                    type = TransactionState.TYPE_ADD_TOKEN,
+                                    data = Gson().toJson(coin)
+                                )
+                                TransactionStateManager.newTransaction(transactionState)
+                                pushBubbleStack(transactionState)
+                            }
                         }
                     } catch (e: Exception) {
-                        loge(TAG, "closeRN() - Failed to finish activity on UI thread: ${e.message}")
+                        loge(TAG, "closeRN() - Failed to enable token: ${e.message}")
                         e.printStackTrace()
                     }
+                    // Close the activity after the tx attempt (success or failure)
+                    currentActivity.runOnUiThread {
+                        if (!currentActivity.isFinishing && !currentActivity.isDestroyed) {
+                            currentActivity.setResult(android.app.Activity.RESULT_OK)
+                            currentActivity.finish()
+                            logd(TAG, "closeRN() - activity finished after token tx")
+                        }
+                    }
                 }
-            } else {
-                logw(TAG, "closeRN() - Activity is null, finishing, or destroyed - skipping closeRN")
+                return
+            }
+
+            // No flowIdentifier → just close the activity
+            currentActivity.runOnUiThread {
+                try {
+                    if (!currentActivity.isFinishing && !currentActivity.isDestroyed) {
+                        logd(TAG, "closeRN() - Calling finish() to close React Native activity")
+                        currentActivity.setResult(android.app.Activity.RESULT_OK)
+                        currentActivity.finish()
+                        logd(TAG, "closeRN() - finish() called successfully")
+                    } else {
+                        logw(TAG, "closeRN() - Activity already finishing or destroyed, skipping")
+                    }
+                } catch (e: Exception) {
+                    loge(TAG, "closeRN() - Failed to finish activity on UI thread: ${e.message}")
+                    e.printStackTrace()
+                }
             }
         } catch (e: Exception) {
-            // If finishing activity fails, log error but don't crash
             loge(TAG, "closeRN() - Failed to close React Native activity: ${e.message}")
             e.printStackTrace()
         }
