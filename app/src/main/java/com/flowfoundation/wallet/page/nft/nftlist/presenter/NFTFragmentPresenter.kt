@@ -10,7 +10,8 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.FragmentNftBinding
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.page.nft.collectionlist.NftCollectionListActivity
+import com.flowfoundation.wallet.reactnative.ReactNativeActivity
+import com.flowfoundation.wallet.reactnative.bridge.RNBridge
 import com.flowfoundation.wallet.page.nft.nftlist.NFTFragment
 import com.flowfoundation.wallet.page.nft.nftlist.NftViewModel
 import com.flowfoundation.wallet.page.nft.nftlist.adapter.NftListPageAdapter
@@ -36,7 +37,7 @@ class NFTFragmentPresenter(
         with(binding) {
             with(toolbar) { post { setPadding(paddingLeft, paddingTop + statusBarHeight, paddingRight, paddingBottom) } }
             viewPager.adapter = NftListPageAdapter(fragment)
-            addButton.setOnClickListener { NftCollectionListActivity.launch(fragment.requireContext()) }
+            addButton.setOnClickListener { ReactNativeActivity.launch(fragment.requireContext(), RNBridge.ScreenType.ADD_NFT_COLLECTION) }
 
             with(refreshLayout) {
                 isEnabled = true

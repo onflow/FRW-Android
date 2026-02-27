@@ -24,7 +24,8 @@ class RNBridge {
         @SerializedName("onboarding") ONBOARDING,
         @SerializedName("receive") RECEIVE,
         @SerializedName("activity") ACTIVITY,
-        @SerializedName("add-tokens") ADD_TOKENS
+        @SerializedName("add-tokens") ADD_TOKENS,
+        @SerializedName("add-nft-collection") ADD_NFT_COLLECTION
     }
 
     enum class AccountTypeType {
@@ -425,7 +426,8 @@ class RNBridge {
         @SerializedName("SendTo") SEND_TO("SendTo"),
         @SerializedName("SendTokens") SEND_TOKENS("SendTokens"),
         @SerializedName("Home") HOME("Home"),
-        @SerializedName("AddTokens") ADD_TOKENS("AddTokens")
+        @SerializedName("AddTokens") ADD_TOKENS("AddTokens"),
+        @SerializedName("AddNFTCollection") ADD_NFT_COLLECTION("AddNFTCollection")
     }
 
     enum class NativeScreenName {
