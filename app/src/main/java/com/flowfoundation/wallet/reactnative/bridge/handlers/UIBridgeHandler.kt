@@ -6,6 +6,7 @@ import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.flowjvm.cadenceEnableToken
+import com.flowfoundation.wallet.manager.flowjvm.cadenceNftEnabled
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.network.ApiService
@@ -131,6 +132,82 @@ class UIBridgeHandler(private val reactContext: ReactApplicationContext) {
             }
         } catch (e: Exception) {
             loge(TAG, "closeRN() - Failed to close React Native activity: ${e.message}")
+            e.printStackTrace()
+        }
+    }
+
+    fun closeRNWithNFT(id: String?) {
+        logd(TAG, "closeRNWithNFT() called - id: $id")
+        try {
+            val currentActivity = reactContext.currentActivity
+
+            if (currentActivity == null || currentActivity.isFinishing || currentActivity.isDestroyed) {
+                logw(TAG, "closeRNWithNFT() - Activity is null, finishing, or destroyed - skipping")
+                return
+            }
+
+            if (!id.isNullOrBlank()) {
+                logd(TAG, "closeRNWithNFT() - flowIdentifier provided, closing screen and triggering enable NFT collection tx: $id")
+                // Close the activity first so the user isn't waiting on the API call
+                currentActivity.runOnUiThread {
+                    if (!currentActivity.isFinishing && !currentActivity.isDestroyed) {
+                        currentActivity.setResult(android.app.Activity.RESULT_OK)
+                        currentActivity.finish()
+                        logd(TAG, "closeRNWithNFT() - activity finished, tx will execute in background")
+                    }
+                }
+                // Fetch NFT collection info and submit the Cadence tx in the background
+                ioScope {
+                    try {
+                        val service = retrofitApi().create(ApiService::class.java)
+                        val response = service.getNFTCollections()
+                        val collection = response.data.firstOrNull { it.flowIdentifier == id }
+                        if (collection == null) {
+                            logw(TAG, "closeRNWithNFT() - NFT collection not found for flowIdentifier: $id")
+                        } else {
+                            logd(TAG, "closeRNWithNFT() - found collection: ${collection.name}, executing cadenceNftEnabled")
+                            val transactionId = cadenceNftEnabled(collection)
+                            if (transactionId.isNullOrBlank()) {
+                                loge(TAG, "closeRNWithNFT() - cadenceNftEnabled returned null/blank transactionId")
+                            } else {
+                                logd(TAG, "closeRNWithNFT() - tx submitted: $transactionId")
+                                val transactionState = TransactionState(
+                                    transactionId = transactionId,
+                                    time = System.currentTimeMillis(),
+                                    state = TransactionStatus.PENDING.ordinal,
+                                    type = TransactionState.TYPE_ENABLE_NFT,
+                                    data = Gson().toJson(collection)
+                                )
+                                TransactionStateManager.newTransaction(transactionState)
+                                pushBubbleStack(transactionState)
+                            }
+                        }
+                    } catch (e: Exception) {
+                        loge(TAG, "closeRNWithNFT() - Failed to enable NFT collection: ${e.message}")
+                        e.printStackTrace()
+                    }
+                }
+                return
+            }
+
+            // No flowIdentifier → just close the activity
+            currentActivity.runOnUiThread {
+                try {
+                    if (!currentActivity.isFinishing && !currentActivity.isDestroyed) {
+                        logd(TAG, "closeRNWithNFT() - Calling finish() to close React Native activity")
+                        currentActivity.setResult(android.app.Activity.RESULT_OK)
+                        currentActivity.finish()
+                        logd(TAG, "closeRNWithNFT() - finish() called successfully")
+                    } else {
+                        logw(TAG, "closeRNWithNFT() - Activity already finishing or destroyed, skipping")
+                    }
+                } catch (e: Exception) {
+                    loge(TAG, "closeRNWithNFT() - Failed to finish activity on UI thread: ${e.message}")
+                    e.printStackTrace()
+                }
+            }
+        } catch (e: Exception) {
+            loge(TAG, "closeRNWithNFT() - Failed to close React Native activity: ${e.message}")
             e.printStackTrace()
         }
     }
