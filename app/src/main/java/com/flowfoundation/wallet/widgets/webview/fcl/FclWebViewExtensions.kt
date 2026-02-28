@@ -39,7 +39,7 @@ fun WebView?.postAuthnViewReadyResponse(fcl: FclAuthnResponse, address: String) 
 fun WebView?.postPreAuthzResponse() {
     ioScope {
         // Use a more reliable method to get the wallet address
-        var address = WalletManager.wallet().walletAddress()
+        var address = WalletManager.getCurrentFlowWalletAddress()
 
         // If that failed, try getting it from the AccountManager
         if (address.isNullOrBlank()) {

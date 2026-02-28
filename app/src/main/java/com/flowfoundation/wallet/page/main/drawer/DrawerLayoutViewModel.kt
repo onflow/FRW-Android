@@ -81,7 +81,7 @@ class DrawerLayoutViewModel : ViewModel(), OnAccountUpdate, OnEmojiUpdate {
                                 address = mainNode.address,
                                 name = emojiInfo.emojiName,
                                 emojiId = emojiInfo.emojiId,
-                                isSelected = WalletManager.selectedWalletAddress() == mainNode.address,
+                                isSelected = WalletManager.selectedWalletAddress().equals(mainNode.address, ignoreCase = true),
                                 isEOAAccount = true
                             )
                         )
@@ -101,7 +101,7 @@ class DrawerLayoutViewModel : ViewModel(), OnAccountUpdate, OnEmojiUpdate {
                                                 name = linkedWallet.name,
                                                 icon = linkedWallet.icon,
                                                 emojiId = AccountEmojiManager.getEmojiByAddress(linkedWallet.address).emojiId,
-                                                isSelected = WalletManager.selectedWalletAddress() == linkedWallet.address,
+                                                isSelected = WalletManager.selectedWalletAddress().equals(linkedWallet.address, ignoreCase = true),
                                                 isCOAAccount = false
                                             )
                                         )
@@ -119,7 +119,7 @@ class DrawerLayoutViewModel : ViewModel(), OnAccountUpdate, OnEmojiUpdate {
                                                     name = linkedEmojiInfo.emojiName,
                                                     icon = null,
                                                     emojiId = linkedEmojiInfo.emojiId,
-                                                    isSelected = WalletManager.selectedWalletAddress() == evmAddress,
+                                                    isSelected = WalletManager.selectedWalletAddress().equals(evmAddress, ignoreCase = true),
                                                     isCOAAccount = true
                                                 )
                                             )
@@ -133,7 +133,7 @@ class DrawerLayoutViewModel : ViewModel(), OnAccountUpdate, OnEmojiUpdate {
                                     address = mainNode.address,
                                     name = emojiInfo.emojiName,
                                     emojiId = emojiInfo.emojiId,
-                                    isSelected = WalletManager.selectedWalletAddress() == mainNode.address,
+                                    isSelected = WalletManager.selectedWalletAddress().equals(mainNode.address, ignoreCase = true),
                                     linkedAccounts = linkedAccounts
                                 )
                             )

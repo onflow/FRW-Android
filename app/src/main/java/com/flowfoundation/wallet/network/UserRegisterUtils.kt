@@ -205,18 +205,11 @@ suspend fun initWalletWithTxId(
                 else -> ChainId.Mainnet
             }
 
-            val storage = FileSystemStorage(File(Env.getApp().filesDir, "wallet"))
-            val keyForWalletSDK = KeyCompatibilityManager.getPrivateKeyWithFallback(prefix, storage)
-            if (keyForWalletSDK == null) {
-                loge(TAG, "[InitWallet] Failed to retrieve stored private key")
-                continuation.resume(Pair(false, null))
-                return@ioScope
-            }
-
-            val walletForSDK = WalletFactory.createKeyWallet(
-                keyForWalletSDK,
+            val provider = AndroidKeystoreCryptoProvider(prefix)
+            val walletForSDK = WalletFactory.createProxyWallet(
+                provider,
                 setOf(ChainId.Mainnet, ChainId.Testnet),
-                storage
+                Env.getStorage()
             )
 
             logd(TAG, "[InitWallet] Fetching account by txId: $txId")
@@ -353,16 +346,10 @@ suspend fun registerOutblock(
               }
 
               // Initialize wallet SDK early to use fetchAccountByCreationTxId
-              val storage = FileSystemStorage(File(Env.getApp().filesDir, "wallet"))
-              val keyForWalletSDK = KeyCompatibilityManager.getPrivateKeyWithFallback(prefix, storage)
-              if (keyForWalletSDK == null) {
-                logd(TAG, "Failed to retrieve stored private key for Wallet SDK init from both new and old storage.")
-                continuation.resume(false)
-                return@ioScope
-              }
-
-              val walletForSDK = WalletFactory.createKeyWallet(
-                keyForWalletSDK,
+              val storage = Env.getStorage()
+              val provider = AndroidKeystoreCryptoProvider(prefix)
+              val walletForSDK = WalletFactory.createProxyWallet(
+                provider,
                 setOf(ChainId.Mainnet, ChainId.Testnet),
                 storage
               )
@@ -450,7 +437,7 @@ suspend fun registerOutblock(
             ),
             firebaseUid()
           )
-          logd(TAG, "Account added to AccountManager with FlowWallet in walletNodes.")
+          logd(TAG, "Account added to AccountManager with FlowWallet in walletNodes. Nodes: ${initialWalletNodes.map { it.address }}")
 
           // Get the Flow address from wallet data
           val flowAddress = walletListData.wallets

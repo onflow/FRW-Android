@@ -88,6 +88,11 @@ class UtilsBridgeHandler(private val reactContext: ReactApplicationContext) {
                 BuildConfig.INSTABUG_RN_TOKEN_DEV
             } else {
                 BuildConfig.INSTABUG_RN_TOKEN_PROD
+            },
+            MIXPANEL_TOKEN = if (isTesting() || isDev()) {
+                BuildConfig.MIXPANEL_TOKEN_DEV
+            } else {
+                BuildConfig.MIXPANEL_TOKEN_PROD
             }
         )
 

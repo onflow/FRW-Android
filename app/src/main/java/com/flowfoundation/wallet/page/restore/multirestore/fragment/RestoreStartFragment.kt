@@ -53,18 +53,7 @@ class RestoreStartFragment: Fragment() {
             btnNext.setOnClickListener {
                 restoreViewModel.startRestore()
             }
-            if (restoreViewModel.isRestoreValid().not()) {
-                restoreViewModel.selectOption(RestoreOption.RESTORE_FROM_GOOGLE_DRIVE) { isSelected ->
-                    oiGoogleDrive.changeItemStatus(isSelected)
-                }
-                restoreViewModel.selectOption(RestoreOption.RESTORE_FROM_RECOVERY_PHRASE) { isSelected ->
-                    oiRecoveryPhrase.changeItemStatus(isSelected)
-                }
-                restoreViewModel.selectOption(RestoreOption.RESTORE_FROM_DROPBOX) { isSelected ->
-                    oiDropbox.changeItemStatus(isSelected)
-                }
-                checkRestoreValid()
-            }
+            checkRestoreValid()
         }
     }
 

@@ -5,6 +5,8 @@ import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.json.JsonNames
+import kotlinx.serialization.ExperimentalSerializationApi
 
 class WalletListResponse(
     @SerializedName("data")
@@ -37,10 +39,12 @@ data class WalletData(
 
 @Serializable
 @Parcelize
+@OptIn(ExperimentalSerializationApi::class)
 data class BlockchainData(
     @SerializedName("address")
     val address: String,
-    @SerialName("chain_id")  // Needed: property name "chainId" differs from JSON key "chain_id"
+    @SerialName("chain_id")
     @SerializedName("chain_id")
-    val chainId: String
+    @JsonNames("chainId")
+    val chainId: String = ""
 ) : Parcelable

@@ -36,6 +36,7 @@ import com.flow.wallet.storage.InMemoryStorage
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.flowfoundation.wallet.firebase.auth.isAnonymousSignIn
 import com.flowfoundation.wallet.firebase.auth.signInAnonymously
+import com.flowfoundation.wallet.wallet.DERIVATION_PATH
 import org.onflow.flow.models.toHexString
 import org.onflow.flow.models.DomainTag
 import org.onflow.flow.models.SigningAlgorithm
@@ -187,12 +188,12 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                 // Create SeedPhraseKey from mnemonic to derive account key
                 // IMPORTANT: Use in-memory storage only - mnemonic is NOT confirmed yet
                 // It will be saved to disk later when saveMnemonic() is called after user confirmation
-                val inMemoryStorage = com.flow.wallet.storage.InMemoryStorage()
+                val inMemoryStorage = InMemoryStorage()
 
                 // Use Flow derivation path: m/44'/539'/0'/0/0
-                val derivationPath = "m/44'/539'/0'/0/0"
+                val derivationPath = DERIVATION_PATH
 
-                val seedPhraseKey = com.flow.wallet.keys.SeedPhraseKey(
+                val seedPhraseKey = SeedPhraseKey(
                     mnemonicString = mnemonic,
                     passphrase = "",
                     derivationPath = derivationPath,
@@ -200,7 +201,7 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                 )
 
                 // Derive public key using ECDSA_secp256k1 (matches EOA flow default)
-                val publicKeyBytes = seedPhraseKey.publicKey(org.onflow.flow.models.SigningAlgorithm.ECDSA_secp256k1)
+                val publicKeyBytes = seedPhraseKey.publicKey(SigningAlgorithm.ECDSA_secp256k1)
                   ?: throw IllegalStateException("Failed to get public key from seed phrase key")
 
                 // Convert public key bytes to hex string
@@ -221,11 +222,11 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                 // ECDSA_secp256k1 = sign_algo 2, SHA2_256 = hash_algo 1 (matches extension defaults)
                 val accountKey = RNBridge.AccountKey(
                     publicKey = publicKeyHex,
-                    hashAlgoStr = "SHA2_256",
-                    signAlgoStr = "ECDSA_secp256k1",
+                    hashAlgoStr = HashingAlgorithm.SHA2_256.value,
+                    signAlgoStr = SigningAlgorithm.ECDSA_secp256k1.value,
                     weight = 1000, // Standard weight for Flow accounts
-                    hashAlgo = 1, // SHA2_256
-                    signAlgo = 2  // ECDSA_secp256k1
+                    hashAlgo = HashingAlgorithm.SHA2_256.cadenceIndex, // SHA2_256
+                    signAlgo = SigningAlgorithm.ECDSA_secp256k1.cadenceIndex  // ECDSA_secp256k1
                 )
 
                 // Derive EVM address from the seed phrase for faster display in UI
@@ -292,14 +293,14 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
 
                 // Step 2: Get Firebase JWT
                 val firebaseJwt = getFirebaseJwt()
-                if (firebaseJwt.isNullOrBlank()) {
+                if (firebaseJwt.isBlank()) {
                     throw IllegalStateException("Failed to get Firebase JWT")
                 }
                 logd(TAG, "getV4RegistrationSignatures() - Got Firebase JWT")
 
                 // Step 3: Derive private key from mnemonic
                 val inMemoryStorage = InMemoryStorage()
-                val derivationPath = "m/44'/539'/0'/0/0"
+                val derivationPath = DERIVATION_PATH
                 val seedPhraseKey = SeedPhraseKey(
                     mnemonicString = mnemonic,
                     passphrase = "",
@@ -326,11 +327,11 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                 // Use Trust Wallet Core's HDWallet for proper derivation
                 val hdWallet = wallet.core.jni.HDWallet(mnemonic, "")
                 val evmDerivationPath = "m/44'/60'/0'/0/0" // Standard Ethereum BIP44 path
-                
+
                 // Get private key for EVM using secp256k1 curve with Ethereum path
                 val evmPrivateKey = hdWallet.getKeyByCurve(wallet.core.jni.Curve.SECP256K1, evmDerivationPath)
                 val evmPublicKey = evmPrivateKey.getPublicKeySecp256k1(false) // uncompressed
-                
+
                 // Derive EVM address from public key using Trust Wallet Core
                 val eoaAddress = wallet.core.jni.AnyAddress(evmPublicKey, wallet.core.jni.CoinType.ETHEREUM).description()
                 logd(TAG, "getV4RegistrationSignatures() - Derived EOA address from mnemonic: $eoaAddress")
@@ -339,10 +340,10 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                 val jwtBytes = firebaseJwt.toByteArray(Charsets.UTF_8)
                 val jwtHash = wallet.core.jni.Hash.keccak256(jwtBytes)
                 logd(TAG, "getV4RegistrationSignatures() - EVM: keccak256 hash of JWT, hash size: ${jwtHash.size}")
-                
+
                 // Sign the digest with secp256k1
                 val signatureData = evmPrivateKey.sign(jwtHash, wallet.core.jni.Curve.SECP256K1)
-                
+
                 val evmSignature = "0x" + signatureData.joinToString("") { "%02x".format(it) }
                 logd(TAG, "getV4RegistrationSignatures() - Generated EVM signature from mnemonic, length: ${evmSignature.length} chars")
 
@@ -386,7 +387,7 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                     val jwt = getFirebaseJwt(forceRefresh = true)
                                     val firebaseUid = com.flowfoundation.wallet.firebase.auth.firebaseUid()
 
-                                    if (!jwt.isNullOrBlank() && firebaseUid != null) {
+                                    if (jwt.isNotBlank() && firebaseUid != null) {
                                         logd(TAG, "signInWithCustomToken() - JWT ready after $attempts attempt(s), Firebase UID: $firebaseUid")
 
                                         // Validate with backend - make sure the user is recognized
@@ -478,7 +479,7 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                         val jwt = getFirebaseJwt(forceRefresh = true)
                                         val currentUid = com.flowfoundation.wallet.firebase.auth.firebaseUid()
 
-                                        if (!jwt.isNullOrBlank() && currentUid != null) {
+                                        if (jwt.isNotBlank() && currentUid != null) {
                                             tokenRefreshed = true
                                             logd(TAG, "saveMnemonic() - Firebase ID token refreshed after $refreshAttempts attempt(s), UID: $currentUid")
 
@@ -740,12 +741,12 @@ private fun authenticateWithFirebase(
 
     /**
      * Setup account and wallet for mnemonic-only accounts (cleaner architecture).
-     * 
+     *
      * This is used for RN seed phrase accounts that only store the mnemonic,
      * without a prefix-based private key duplication. The account will have:
      * - No prefix field set (null)
      * - Mnemonic stored via AccountWalletManager (keyed by userId)
-     * 
+     *
      * CryptoProviderManager and WalletCreationHelper will detect this as a mnemonic-only
      * account and use AccountWalletManager.getHDWalletMnemonicByUID() to access the key.
      */
