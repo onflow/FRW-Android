@@ -35,7 +35,7 @@ object WalletCreationHelper {
     /**
      * Create Wallet object from Account using only key-related information
      * This method focuses solely on cryptographic key data and ignores wallet/address info
-     * 
+     *
      * Account types and their key storage:
      * 1. Keystore-based: Has keyStoreInfo (may have encrypted mnemonic or private key)
      * 2. Prefix-based (legacy/hardware): Has prefix for hardware-backed or legacy keys
@@ -141,17 +141,17 @@ object WalletCreationHelper {
 
     /**
      * Create wallet from prefix-based key
-     * 
+     *
      * This handles:
      * - Secure Enclave (hardware-backed) keys: EOA is disabled since we can't derive EOA from hardware keys
      * - Legacy prefix-based keys: EOA is disabled (no mnemonic available)
-     * 
+     *
      * Note: Mnemonic-only accounts (cleaner architecture) are handled separately by createWalletFromHDMnemonic
      * and should not reach this function.
      */
     private fun createWalletFromPrefix(prefix: String, isCurrentAccount: Boolean): Wallet? {
         val storage = getStorage()
-        
+
         return try {
             val privateKey = KeyCompatibilityManager.getPrivateKeyWithFallback(prefix, storage)
             if (privateKey != null) {
@@ -175,15 +175,15 @@ object WalletCreationHelper {
             if (isCurrentAccount) {
                 WalletManager.setEoaDisabled(true)
             }
-            if (e.alias != null) {
-                val provider = AndroidKeystoreCryptoProvider(e.alias, SigningAlgorithm.ECDSA_P256, null)
+            if (e.prefix != null) {
+                val provider = AndroidKeystoreCryptoProvider(e.prefix)
                 WalletFactory.createProxyWallet(
                     provider,
                     setOf(ChainId.Mainnet, ChainId.Testnet),
                     storage
                 )
             } else {
-                logd(TAG, "Hardware-backed key alias is null")
+                logd(TAG, "Hardware-backed key prefix is null")
                 null
             }
         }

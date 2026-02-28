@@ -392,11 +392,20 @@ object WalletManager {
         }
 
         // Fallback to the first MainWallet address if the preferred address is not found
-        val defaultAddress = walletNodes?.firstOrNull()?.address.orEmpty()
+        // Prioritize FlowWallet matching current network, then any FlowWallet, then EOAWallet
+        val currentNetwork = chainNetWorkString()
+        val networkFlowWallet = walletNodes?.filterIsInstance<FlowWallet>()
+            ?.firstOrNull { it.chainIdString.equals(currentNetwork, ignoreCase = true) }
+            ?.address
+
+        val defaultAddress = networkFlowWallet
+            ?: walletNodes?.firstOrNull { it is FlowWallet }?.address
+            ?: walletNodes?.firstOrNull()?.address.orEmpty()
+        
         if (defaultAddress.isNotBlank()) {
             selectedWalletAddressRef.set(defaultAddress)
             updateSelectedWalletAddress(defaultAddress)
-            logd(TAG, "Selected address not found in walletNodes. Falling back to default: $defaultAddress")
+            logd(TAG, "Selected address not found in walletNodes. Falling back to default (Network/Flow priority): $defaultAddress")
             return defaultAddress
         }
 
