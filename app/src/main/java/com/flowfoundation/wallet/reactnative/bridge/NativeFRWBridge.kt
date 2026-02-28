@@ -57,6 +57,7 @@ import com.flowfoundation.wallet.reactnative.bridge.handlers.AuthBridgeHandler
 import com.flowfoundation.wallet.reactnative.bridge.handlers.UIBridgeHandler
 import com.flowfoundation.wallet.reactnative.bridge.handlers.UtilsBridgeHandler
 import com.flowfoundation.wallet.reactnative.bridge.handlers.WalletBridgeHandler
+import com.flowfoundation.wallet.wallet.DERIVATION_PATH
 
 class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSpec(reactContext) {
 
@@ -122,7 +123,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
             val seedPhraseKey = SeedPhraseKey(
               mnemonicString = mnemonic,
               passphrase = "",
-              derivationPath = "m/44'/539'/0'/0/0",
+              derivationPath = DERIVATION_PATH,
               storage = getStorage()
             )
             val cryptoProvider = HDWalletCryptoProvider(seedPhraseKey)

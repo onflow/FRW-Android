@@ -24,21 +24,23 @@ class CadenceTokenListProvider(private val walletAddress: String): TokenListProv
         network: String?
     ): List<FungibleToken> {
         val tokenResponse = service.getFlowTokenList(walletAddress, currency?.name, network)
-        tokenList.clear()
-        tokenList.addAll(
-            tokenResponse.data?.result?.map { token ->
-                token.toFungibleToken()
-            }?.toList() ?: emptyList()
-        )
-        return tokenList
+        val newTokens = tokenResponse.data?.result?.map { token ->
+            token.toFungibleToken()
+        }?.toList() ?: emptyList()
+
+        synchronized(this) {
+            tokenList.clear()
+            tokenList.addAll(newTokens)
+        }
+        return newTokens
     }
 
     override fun getTokenById(contractId: String): FungibleToken? {
-        return tokenList.firstOrNull { it.contractId() == contractId }
+        return synchronized(this) { tokenList.firstOrNull { it.contractId() == contractId } }
     }
 
     override fun getFlowToken(): FungibleToken? {
-        return tokenList.firstOrNull { it.isFlowToken() }
+        return synchronized(this) { tokenList.firstOrNull { it.isFlowToken() } }
     }
 
     override fun addCustomToken() {
@@ -54,7 +56,7 @@ class CadenceTokenListProvider(private val walletAddress: String): TokenListProv
     }
 
     override fun getFungibleTokenListSnapshot(): List<FungibleToken> {
-        return tokenList
+        return synchronized(this) { tokenList.toList() }
     }
 
 }

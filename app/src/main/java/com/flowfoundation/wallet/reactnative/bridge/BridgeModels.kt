@@ -1,6 +1,6 @@
 //
 //  BridgeModels.kt
-//
+//  
 //  Auto-generated from TypeScript bridge types
 //  Do not edit manually
 //
@@ -19,10 +19,11 @@ class RNBridge {
 
     enum class ScreenType {
         @SerializedName("send-asset") SEND_ASSET,
+        @SerializedName("backup-tip") BACKUP_TIP,
         @SerializedName("token-detail") TOKEN_DETAIL,
         @SerializedName("onboarding") ONBOARDING,
         @SerializedName("receive") RECEIVE,
-        @SerializedName("backup-tip") BACKUP_TIP,
+        @SerializedName("activity") ACTIVITY,
         @SerializedName("keystore-migration") KEYSTORE_MIGRATION
     }
 
@@ -166,7 +167,9 @@ class RNBridge {
         @SerializedName("GO_API_URL")
         val GO_API_URL: String,
         @SerializedName("INSTABUG_TOKEN")
-        val INSTABUG_TOKEN: String
+        val INSTABUG_TOKEN: String,
+        @SerializedName("MIXPANEL_TOKEN")
+        val MIXPANEL_TOKEN: String?
     )
 
     data class Currency(
@@ -293,48 +296,6 @@ class RNBridge {
         val currency: String?
     )
 
-    enum class InitialRoute(val routeName: String) {
-        @SerializedName("GetStarted") GET_STARTED("GetStarted"),
-        @SerializedName("ProfileTypeSelection") PROFILE_TYPE_SELECTION("ProfileTypeSelection"),
-        @SerializedName("ImportProfile") IMPORT_PROFILE("ImportProfile"),
-        @SerializedName("SelectTokens") SELECT_TOKENS("SelectTokens"),
-        @SerializedName("SendTo") SEND_TO("SendTo"),
-        @SerializedName("SendTokens") SEND_TOKENS("SendTokens"),
-        @SerializedName("Home") HOME("Home")
-    }
-
-    enum class NativeScreenName {
-        @SerializedName("multiBackup") MULTI_BACKUP,
-        @SerializedName("deviceBackup") DEVICE_BACKUP,
-        @SerializedName("seedPhraseBackup") SEED_PHRASE_BACKUP,
-        @SerializedName("backupOptions") BACKUP_OPTIONS,
-        @SerializedName("walletRestore") WALLET_RESTORE,
-        @SerializedName("recoveryPhraseRestore") RECOVERY_PHRASE_RESTORE,
-        @SerializedName("keyStoreRestore") KEY_STORE_RESTORE,
-        @SerializedName("privateKeyRestore") PRIVATE_KEY_RESTORE,
-        @SerializedName("googleDriveRestore") GOOGLE_DRIVE_RESTORE,
-        @SerializedName("icloudRestore") ICLOUD_RESTORE,
-        @SerializedName("multiRestore") MULTI_RESTORE
-    }
-
-    enum class ScreenName {
-        @SerializedName("GetStarted") GET_STARTED,
-        @SerializedName("ProfileTypeSelection") PROFILE_TYPE_SELECTION,
-        @SerializedName("RecoveryPhrase") RECOVERY_PHRASE,
-        @SerializedName("ConfirmRecoveryPhrase") CONFIRM_RECOVERY_PHRASE,
-        @SerializedName("SecureEnclave") SECURE_ENCLAVE,
-        @SerializedName("ImportProfile") IMPORT_PROFILE,
-        @SerializedName("ImportOtherMethods") IMPORT_OTHER_METHODS,
-        @SerializedName("ConfirmImportProfile") CONFIRM_IMPORT_PROFILE,
-        @SerializedName("NotificationPreferences") NOTIFICATION_PREFERENCES,
-        @SerializedName("SelectTokens") SELECT_TOKENS,
-        @SerializedName("SendTo") SEND_TO,
-        @SerializedName("SendTokens") SEND_TOKENS,
-        @SerializedName("SendSummary") SEND_SUMMARY,
-        @SerializedName("NFTList") NFT_LIST,
-        @SerializedName("NFTDetail") NFT_DETAIL
-    }
-
     data class NFTModel(
         @SerializedName("id")
         val id: String?,
@@ -454,6 +415,48 @@ class RNBridge {
     enum class WalletType {
         @SerializedName("flow") FLOW,
         @SerializedName("evm") EVM
+    }
+
+    enum class InitialRoute(val routeName: String) {
+        @SerializedName("GetStarted") GET_STARTED("GetStarted"),
+        @SerializedName("ProfileTypeSelection") PROFILE_TYPE_SELECTION("ProfileTypeSelection"),
+        @SerializedName("ImportProfile") IMPORT_PROFILE("ImportProfile"),
+        @SerializedName("SelectTokens") SELECT_TOKENS("SelectTokens"),
+        @SerializedName("SendTo") SEND_TO("SendTo"),
+        @SerializedName("SendTokens") SEND_TOKENS("SendTokens"),
+        @SerializedName("Home") HOME("Home")
+    }
+
+    enum class NativeScreenName {
+        @SerializedName("multiBackup") MULTI_BACKUP,
+        @SerializedName("deviceBackup") DEVICE_BACKUP,
+        @SerializedName("seedPhraseBackup") SEED_PHRASE_BACKUP,
+        @SerializedName("backupOptions") BACKUP_OPTIONS,
+        @SerializedName("walletRestore") WALLET_RESTORE,
+        @SerializedName("recoveryPhraseRestore") RECOVERY_PHRASE_RESTORE,
+        @SerializedName("keyStoreRestore") KEY_STORE_RESTORE,
+        @SerializedName("privateKeyRestore") PRIVATE_KEY_RESTORE,
+        @SerializedName("googleDriveRestore") GOOGLE_DRIVE_RESTORE,
+        @SerializedName("icloudRestore") ICLOUD_RESTORE,
+        @SerializedName("multiRestore") MULTI_RESTORE
+    }
+
+    enum class ScreenName {
+        @SerializedName("GetStarted") GET_STARTED,
+        @SerializedName("ProfileTypeSelection") PROFILE_TYPE_SELECTION,
+        @SerializedName("RecoveryPhrase") RECOVERY_PHRASE,
+        @SerializedName("ConfirmRecoveryPhrase") CONFIRM_RECOVERY_PHRASE,
+        @SerializedName("SecureEnclave") SECURE_ENCLAVE,
+        @SerializedName("ImportProfile") IMPORT_PROFILE,
+        @SerializedName("ImportOtherMethods") IMPORT_OTHER_METHODS,
+        @SerializedName("ConfirmImportProfile") CONFIRM_IMPORT_PROFILE,
+        @SerializedName("NotificationPreferences") NOTIFICATION_PREFERENCES,
+        @SerializedName("SelectTokens") SELECT_TOKENS,
+        @SerializedName("SendTo") SEND_TO,
+        @SerializedName("SendTokens") SEND_TOKENS,
+        @SerializedName("SendSummary") SEND_SUMMARY,
+        @SerializedName("NFTList") NFT_LIST,
+        @SerializedName("NFTDetail") NFT_DETAIL
     }
 
 }
