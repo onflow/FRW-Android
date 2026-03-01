@@ -7,9 +7,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -69,10 +69,10 @@ fun DappPromptDialog(
                     .height(58.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                    backgroundColor = colorResource(id = R.color.button),
+                    containerColor = colorResource(id = R.color.button),
                     contentColor = colorResource(id = R.color.button_text)
                 ),
-                elevation = ButtonDefaults.elevation(0.dp, 0.dp)
+                elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp)
             ) {
                 Text(
                     text = stringResource(id = R.string.continue_str),

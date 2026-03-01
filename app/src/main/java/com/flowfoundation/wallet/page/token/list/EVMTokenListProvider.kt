@@ -28,30 +28,47 @@ class EVMTokenListProvider(private val walletAddress: String): TokenListProvider
         network: String?
     ): List<FungibleToken> {
         val tokenResponse = service.getEVMTokenList(walletAddress, currency?.name, network)
-        tokenList.clear()
-        tokenList.addAll(
-            tokenResponse.data?.map { token ->
-                token.toFungibleToken()
-            }?.toList() ?: emptyList()
-        )
-        addCustomToken()
-        return tokenList
+        
+        val newTokens = tokenResponse.data?.map { token ->
+            token.toFungibleToken()
+        }?.toMutableList() ?: mutableListOf()
+        
+        val customTokens = getCustomTokens()
+        val uniqueCustomTokens = customTokens.filter { ft ->
+            newTokens.none { existingToken ->
+                existingToken.evmAddress?.equals(ft.evmAddress, ignoreCase = true) == true
+            }
+        }
+        newTokens.addAll(uniqueCustomTokens)
+
+        synchronized(this) {
+            tokenList.clear()
+            tokenList.addAll(newTokens)
+        }
+        return newTokens
     }
 
-    override fun addCustomToken() {
+    private fun getCustomTokens(): List<FungibleToken> {
         val customTokenItems = CustomTokenManager.getCurrentCustomTokenList()
-        val newFungibleTokens = customTokenItems.mapNotNull { customItem ->
+        return customTokenItems.mapNotNull { customItem ->
             if (customItem.tokenType == TokenType.EVM) {
                 customItem.toFungibleToken()
             } else {
                 null
             }
-        }.filter { ft ->
-            tokenList.none { existingToken ->
-                existingToken.evmAddress?.equals(ft.evmAddress, ignoreCase = true) == true
-            }
         }
-        tokenList.addAll(newFungibleTokens)
+    }
+
+    override fun addCustomToken() {
+        synchronized(this) {
+            val customTokens = getCustomTokens()
+            val newFungibleTokens = customTokens.filter { ft ->
+                tokenList.none { existingToken ->
+                    existingToken.evmAddress?.equals(ft.evmAddress, ignoreCase = true) == true
+                }
+            }
+            tokenList.addAll(newFungibleTokens)
+        }
     }
 
     override fun deleteCustomToken(contractAddress: String) {
@@ -63,14 +80,14 @@ class EVMTokenListProvider(private val walletAddress: String): TokenListProvider
     }
 
     override fun getFungibleTokenListSnapshot(): List<FungibleToken> {
-        return tokenList
+        return synchronized(this) { tokenList.toList() }
     }
 
     override fun getTokenById(contractId: String): FungibleToken? {
-        return tokenList.firstOrNull { it.contractId() == contractId }
+        return synchronized(this) { tokenList.firstOrNull { it.contractId() == contractId } }
     }
 
     override fun getFlowToken(): FungibleToken? {
-        return tokenList.firstOrNull { it.isFlowToken() }
+        return synchronized(this) { tokenList.firstOrNull { it.isFlowToken() } }
     }
 }

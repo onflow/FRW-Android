@@ -2,27 +2,27 @@ package com.flowfoundation.wallet.page.account
 
 import androidx.lifecycle.ViewModel
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
+import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.AccountVisibilityManager
-import com.flowfoundation.wallet.manager.app.NETWORK_NAME_MAINNET
-import com.flowfoundation.wallet.manager.app.NETWORK_NAME_TESTNET
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.emoji.OnEmojiUpdate
-import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.flowjvm.cadenceGetAllFlowBalance
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.walletdata.COAWallet
+import com.flowfoundation.wallet.manager.walletdata.ChildWallet
+import com.flowfoundation.wallet.manager.walletdata.EOAWallet
+import com.flowfoundation.wallet.manager.walletdata.FlowWallet
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofitApi
-import java.math.BigDecimal
 import com.flowfoundation.wallet.page.main.model.WalletAccountData
 import com.flowfoundation.wallet.page.main.model.LinkedAccountData
 import com.flowfoundation.wallet.utils.formatLargeBalanceNumber
 import com.flowfoundation.wallet.utils.ioScope
-import com.flowfoundation.wallet.wallet.toAddress
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import org.onflow.flow.ChainId
+import java.math.BigDecimal
 
 class AccountListViewModel : ViewModel(), OnEmojiUpdate {
 
@@ -50,93 +50,85 @@ class AccountListViewModel : ViewModel(), OnEmojiUpdate {
 
     private fun refreshWalletList(refreshBalance: Boolean = true) {
         ioScope {
-            val wallet = WalletManager.wallet() ?: return@ioScope
-            val walletAddresses = wallet.accounts.mapNotNull { (chainId, accounts) ->
-                val isCurrentChain = when (chainNetWorkString()) {
-                    NETWORK_NAME_MAINNET -> chainId == ChainId.Mainnet
-                    NETWORK_NAME_TESTNET -> chainId == ChainId.Testnet
-                    else -> false
-                }
-                if (isCurrentChain) {
-                    accounts.map { it.address.toAddress() }
-                } else {
-                    null
-                }
-            }.flatten()
+            val currentNetwork = chainNetWorkString()
+            val walletNodes = AccountManager.walletNodes() ?: return@ioScope
 
             val addressList = mutableListOf<String>()
             val accounts = mutableListOf<WalletAccountData>()
             val pendingEvmAddresses = mutableListOf<Pair<String, String>>() // EVM address to wallet address mapping
 
-            // Add EOA account if exists
-            val eoaAddress = WalletManager.getEOAAddress()
-            if (eoaAddress != null) {
-                val emojiInfo = AccountEmojiManager.getEmojiByAddress(eoaAddress)
-                addressList.add(eoaAddress)
-                accounts.add(
-                    WalletAccountData(
-                        address = eoaAddress,
-                        name = emojiInfo.emojiName,
-                        emojiId = emojiInfo.emojiId,
-                        isSelected = WalletManager.selectedWalletAddress() == eoaAddress,
-                        isEOAAccount = true
-                    )
-                )
-            }
-
-            // Add wallet accounts
-            walletAddresses.forEach { address ->
-                val emojiInfo = AccountEmojiManager.getEmojiByAddress(address)
-                val linkedAccounts = mutableListOf<LinkedAccountData>()
-
-                // Add child accounts
-                WalletManager.childAccountList(address).forEach { childAccount ->
-                    addressList.add(childAccount.address)
-                    linkedAccounts.add(
-                        LinkedAccountData(
-                            address = childAccount.address,
-                            name = childAccount.name,
-                            icon = childAccount.icon,
-                            emojiId = AccountEmojiManager.getEmojiByAddress(childAccount.address).emojiId,
-                            isSelected = WalletManager.selectedWalletAddress() == childAccount.address,
-                            isCOAAccount = false
-                        )
-                    )
-                }
-
-                // Handle EVM address (COA)
-                EVMWalletManager.getEVMAddressByAddress(address)?.let { evmAddress ->
-                    addressList.add(evmAddress)
-                    // Add to pending list for verification if not already verified
-                    if (evmAddress !in verifiedEvmAddresses) {
-                        pendingEvmAddresses.add(Pair(evmAddress, address))
-                    } else {
-                        // Add directly to linkedAccounts if already verified
-                        val evmEmojiInfo = AccountEmojiManager.getEmojiByAddress(evmAddress)
-                        linkedAccounts.add(
-                            LinkedAccountData(
-                                address = evmAddress,
-                                name = evmEmojiInfo.emojiName,
-                                icon = null,
-                                emojiId = evmEmojiInfo.emojiId,
-                                isSelected = WalletManager.selectedWalletAddress() == evmAddress,
-                                isCOAAccount = true
+            walletNodes.forEach { mainNode ->
+                when (mainNode) {
+                    is EOAWallet -> {
+                        val emojiInfo = AccountEmojiManager.getEmojiByAddress(mainNode.address)
+                        addressList.add(mainNode.address)
+                        accounts.add(
+                            WalletAccountData(
+                                address = mainNode.address,
+                                name = emojiInfo.emojiName,
+                                emojiId = emojiInfo.emojiId,
+                                isSelected = WalletManager.selectedWalletAddress().equals(mainNode.address, ignoreCase = true),
+                                isEOAAccount = true
                             )
                         )
                     }
-                }
+                    is FlowWallet -> {
+                        if (mainNode.chainIdString == currentNetwork) {
+                            val emojiInfo = AccountEmojiManager.getEmojiByAddress(mainNode.address)
+                            val linkedAccounts = mutableListOf<LinkedAccountData>()
 
-                accounts.add(
-                    WalletAccountData(
-                        address = address,
-                        name = emojiInfo.emojiName,
-                        emojiId = emojiInfo.emojiId,
-                        isSelected = WalletManager.selectedWalletAddress() == address,
-                        linkedAccounts = linkedAccounts,
-                        isEOAAccount = false
-                    )
-                )
-                addressList.add(address)
+                            mainNode.linkedWallets.forEach { linkedWallet ->
+                                when (linkedWallet) {
+                                    is ChildWallet -> {
+                                        addressList.add(linkedWallet.address)
+                                        linkedAccounts.add(
+                                            LinkedAccountData(
+                                                address = linkedWallet.address,
+                                                name = linkedWallet.name,
+                                                icon = linkedWallet.icon,
+                                                emojiId = AccountEmojiManager.getEmojiByAddress(linkedWallet.address).emojiId,
+                                                isSelected = WalletManager.selectedWalletAddress().equals(linkedWallet.address, ignoreCase = true),
+                                                isCOAAccount = false
+                                            )
+                                        )
+                                    }
+                                    is COAWallet -> {
+                                        val evmAddress = linkedWallet.address
+                                        addressList.add(evmAddress)
+                                        // Restore logic: Only add if verified, otherwise add to pending
+                                        if (evmAddress !in verifiedEvmAddresses) {
+                                            pendingEvmAddresses.add(Pair(evmAddress, mainNode.address))
+                                        } else {
+                                            val linkedEmojiInfo = AccountEmojiManager.getEmojiByAddress(evmAddress)
+                                            linkedAccounts.add(
+                                                LinkedAccountData(
+                                                    address = evmAddress,
+                                                    name = linkedEmojiInfo.emojiName,
+                                                    icon = null,
+                                                    emojiId = linkedEmojiInfo.emojiId,
+                                                    isSelected = WalletManager.selectedWalletAddress().equals(evmAddress, ignoreCase = true),
+                                                    isCOAAccount = true
+                                                )
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            accounts.add(
+                                WalletAccountData(
+                                    address = mainNode.address,
+                                    name = emojiInfo.emojiName,
+                                    emojiId = emojiInfo.emojiId,
+                                    isSelected = WalletManager.selectedWalletAddress().equals(mainNode.address, ignoreCase = true),
+                                    linkedAccounts = linkedAccounts,
+                                    isEOAAccount = false
+                                )
+                            )
+                            addressList.add(mainNode.address)
+                        }
+                    }
+                }
             }
 
             // Note: AccountListViewModel shows all accounts (including hidden ones)
@@ -198,7 +190,7 @@ class AccountListViewModel : ViewModel(), OnEmojiUpdate {
                                     name = emojiInfo.emojiName,
                                     icon = null,
                                     emojiId = emojiInfo.emojiId,
-                                    isSelected = WalletManager.selectedWalletAddress() == evmAddress,
+                                    isSelected = WalletManager.selectedWalletAddress().equals(evmAddress, ignoreCase = true),
                                     isCOAAccount = true
                                 )
                             )
@@ -214,6 +206,8 @@ class AccountListViewModel : ViewModel(), OnEmojiUpdate {
                     }
                 } else {
                     // Remove EVM address from linked accounts if it no longer has assets
+                    // (Though typically it wouldn't be there yet if it was pending,
+                    // this handles the case where it might have been removed or balance drained)
                     val currentAccounts = _accounts.value.toMutableList()
                     val walletAccount = currentAccounts.find { it.address == walletAddress }
                     walletAccount?.let { account ->

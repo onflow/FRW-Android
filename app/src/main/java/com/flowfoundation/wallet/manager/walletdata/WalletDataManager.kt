@@ -232,13 +232,30 @@ object WalletDataManager {
     /**
      * Update data for the current account using provided Wallet
      */
-    private suspend fun updateCurrentAccountData(account: Account, wallet: Wallet) { // Method name changed
+    private suspend fun updateCurrentAccountData(account: Account, wallet: Wallet) {
         try {
             logd(TAG, "Refreshing wallet accounts for ${account.userInfo.username}...")
             wallet.refreshAccounts()
+            logd(TAG, "wallet.refreshAccounts() done. Internal accounts: ${wallet.accounts.map { "${it.key}: ${it.value.size}" }}")
 
-            // Fetch all BlockchainData directly
-            val allBlockchainData = fetchWalletListData(wallet)
+            // 1. Fetch data from Indexer
+            val indexerBlockchainData = fetchWalletListData(wallet)
+            logd(TAG, "Indexer discovered ${indexerBlockchainData.size} wallets: ${indexerBlockchainData.map { "${it.address} (${it.chainId})" }}")
+
+            // 2. Get data from Backend (preserved in account.wallet)
+            val backendBlockchainData = account.wallet?.wallets?.flatMap { w ->
+              w.blockchain?.map { b ->
+                BlockchainData(address = b.address, chainId = b.chainId)
+              } ?: emptyList()
+            } ?: emptyList()
+            logd(TAG, "Backend record has ${backendBlockchainData.size} wallets: ${backendBlockchainData.map { "${it.address} (${it.chainId})" }}")
+
+            // 3. Merge both sources to avoid losing networks (like Testnet) when indexer is slow
+            val allBlockchainData = (indexerBlockchainData + backendBlockchainData)
+                .distinctBy { "${it.address}-${it.chainId}" }
+                .filter { it.address.isNotBlank() }
+
+            logd(TAG, "Merged blockchain data: ${allBlockchainData.map { "${it.address} (${it.chainId})" }}")
 
             // Build Wallet Nodes
             val nodes = mutableListOf<MainWallet>()
@@ -251,7 +268,6 @@ object WalletDataManager {
             if (!WalletManager.isEoaDisabled()) {
                 val eoa = deriveEoaAddress(wallet)
                 logd(TAG, "Generated EOA address: $eoa")
-                logd(TAG, msg = "EOA Addresses: ${wallet.eoaAddresses.value}")
                 if (eoa.isNotEmpty()) {
                     logd(TAG, "Adding EOA for account: $eoa")
                     val eoaEmojiInfo = getEmojiInfo(eoa)
@@ -261,102 +277,80 @@ object WalletDataManager {
                         emojiId = eoaEmojiInfo.emojiId
                     ))
                 }
-            } else {
-                logd(TAG, "Skipping EOA derivation (isEoaDisabled=${WalletManager.isEoaDisabled()})")
             }
 
             kotlinx.coroutines.supervisorScope {
-                val deferredFlowNodes = allBlockchainData.mapNotNull { blockchainData ->
+                val deferredFlowNodes = allBlockchainData.map { blockchainData ->
                     val address = blockchainData.address
                     val chainId = blockchainData.chainId
 
-                    if (address.isBlank()) {
-                        null
-                    } else {
-                        async {
-                            val linkedWallets = mutableListOf<LinkedWallet>()
+                    async {
+                        // Find existing node if any to preserve existing linked wallets
+                        val existingNode = account.walletNodes.filterIsInstance<FlowWallet>()
+                            .firstOrNull { it.address == address && it.chainIdString == chainId }
 
-                            // Child Accounts
+                        val linkedWallets = mutableListOf<LinkedWallet>()
+
+                        // Start with existing linked wallets to prevent flickering/loss on error
+                        existingNode?.linkedWallets?.let { linkedWallets.addAll(it) }
+
+                        try {
+                            // Update Child Accounts
                             val children = fetchChildAccountsForAddress(address)
-                            children.forEach { child ->
-                                linkedWallets.add(ChildWallet(
-                                    address = child.address,
-                                    name = child.name,
-                                    icon = child.icon,
-                                    emojiId = getEmojiInfo(child.address).emojiId
-                                ))
+                            // Only update if we successfully fetched something or if we know for sure it's empty
+                            // (Here assuming fetchChildAccountsForAddress returns emptyList on error,
+                            // but we might want to check log logs. For now, strict replacement is risky without error diff.
+                            // Better strategy: replace specific types only if fetch succeeds)
+
+                            if (children.isNotEmpty()) {
+                                val nonChildLinks = linkedWallets.filter { it !is ChildWallet }
+                                val newChildren = children.map { child ->
+                                    ChildWallet(
+                                        address = child.address,
+                                        name = child.name,
+                                        icon = child.icon,
+                                        emojiId = getEmojiInfo(child.address).emojiId
+                                    )
+                                }
+                                linkedWallets.clear()
+                                linkedWallets.addAll(nonChildLinks + newChildren)
                             }
 
-                            // COA
+                            // Update COA
                             val coa = fetchEVMAddressForAddress(address)
                             if (coa != null) {
-                               val coaEmojiInfo = getEmojiInfo(coa)
-                               linkedWallets.add(COAWallet(
+                                val nonCoaLinks = linkedWallets.filter { it !is COAWallet }
+                                val coaEmojiInfo = getEmojiInfo(coa)
+                                linkedWallets.clear()
+                                linkedWallets.addAll(nonCoaLinks + COAWallet(
                                     address = coa,
                                     name = coaEmojiInfo.emojiName,
                                     emojiId = coaEmojiInfo.emojiId
                                 ))
+                                logd(TAG, "Updated COA for $address: $coa")
                             }
-                            val emojiInfo = getEmojiInfo(address)
-                            FlowWallet(
-                                address = address,
-                                name = emojiInfo.emojiName,
-                                emojiId = emojiInfo.emojiId,
-                                chainIdString = chainId,
-                                linkedWallets = linkedWallets
-                            )
+                        } catch (e: Exception) {
+                            logd(TAG, "Error updating linked data for $address: ${e.message}")
+                            // Keep existing linkedWallets on error
                         }
+
+                        val emojiInfo = getEmojiInfo(address)
+                        FlowWallet(
+                            address = address,
+                            name = emojiInfo.emojiName,
+                            emojiId = emojiInfo.emojiId,
+                            chainIdString = chainId,
+                            linkedWallets = linkedWallets
+                        )
                     }
                 }
                 nodes.addAll(deferredFlowNodes.awaitAll())
             }
 
-            logd(TAG, "Wallet nodes built: ${nodes.size}")
+            logd(TAG, "Final wallet nodes built: ${nodes.size}")
 
-            // Check if we found any FlowWallets from the key indexer
-            val newFlowWallets = nodes.filterIsInstance<FlowWallet>()
-            val existingFlowWallets = account.walletNodes.filterIsInstance<FlowWallet>()
-            
-            // If we didn't find any FlowWallets from key indexer but account already has some,
-            // preserve the existing ones (key indexer may not have indexed new accounts yet)
-            // BUT also query for COA on preserved FlowWallets that don't have linkedWallets yet
-            val finalNodes = if (newFlowWallets.isEmpty() && existingFlowWallets.isNotEmpty()) {
-                logd(TAG, "No FlowWallets found from key indexer, preserving ${existingFlowWallets.size} existing FlowWallets")
-                
-                // Query COA for preserved FlowWallets that have empty linkedWallets
-                val updatedExistingWallets = existingFlowWallets.map { flowWallet ->
-                    if (flowWallet.linkedWallets.isEmpty()) {
-                        try {
-                            val coa = fetchEVMAddressForAddress(flowWallet.address)
-                            if (coa != null) {
-                                logd(TAG, "Found COA for preserved FlowWallet ${flowWallet.address}: $coa")
-                                val coaEmojiInfo = getEmojiInfo(coa)
-                                flowWallet.copy(linkedWallets = listOf(COAWallet(
-                                    address = coa,
-                                    name = coaEmojiInfo.emojiName,
-                                    emojiId = coaEmojiInfo.emojiId
-                                )))
-                            } else {
-                                logd(TAG, "No COA found for preserved FlowWallet ${flowWallet.address}")
-                                flowWallet
-                            }
-                        } catch (e: Exception) {
-                            logd(TAG, "Error querying COA for preserved FlowWallet ${flowWallet.address}: ${e.message}")
-                            flowWallet
-                        }
-                    } else {
-                        flowWallet
-                    }
-                }
-                nodes + updatedExistingWallets
-            } else {
-                nodes
-            }
-
-            logd(TAG, "Final wallet nodes: ${finalNodes.size} (${finalNodes.filterIsInstance<FlowWallet>().size} FlowWallets, ${finalNodes.filterIsInstance<EOAWallet>().size} EOAWallets)")
-
-            // Persist changes to AccountManager (always use updateCurrentAccount as it's for current)
-            AccountManager.updateCurrentAccount { it.copy(walletNodes = finalNodes) }
+            // Persist changes to AccountManager
+            AccountManager.updateCurrentAccount { it.copy(walletNodes = nodes) }
             logd(TAG, "Updated current account data for ${account.userInfo.username}")
 
         } catch (e: Exception) {
@@ -382,7 +376,7 @@ object WalletDataManager {
                 // Build Wallet Nodes
                 val nodes = mutableListOf<MainWallet>()
                 fun getEmojiInfo(address: String) = AccountEmojiManager.getEmojiByAddress(address)
-                
+
                 // EOA - WalletCreationHelper.createWalletFromAccount() sets isEoaDisabled
                 // based on key type (Secure Enclave = disabled, others = enabled)
                 if (!WalletManager.isEoaDisabled()) {
@@ -491,13 +485,20 @@ object WalletDataManager {
         return try {
             val evmAddress = cadenceQueryEVMAddress(address)
             if (!evmAddress.isNullOrBlank()) {
+                logd(TAG, "fetchEVMAddressForAddress: raw evmAddress from Cadence: $evmAddress")
                 val formatedAddress = evmAddress.toAddress()
+                logd(TAG, "fetchEVMAddressForAddress: formattedAddress: $formatedAddress")
+
                 if (EVMWalletManager.isValidEVMAddress(formatedAddress)) {
-                    EVMWalletManager.toChecksumEVMAddress(formatedAddress)
+                    val checksumAddress = EVMWalletManager.toChecksumEVMAddress(formatedAddress)
+                    logd(TAG, "fetchEVMAddressForAddress: valid checksum address: $checksumAddress")
+                    checksumAddress
                 } else {
+                    logd(TAG, "fetchEVMAddressForAddress: Invalid EVM address format: $formatedAddress")
                     null
                 }
             } else {
+                logd(TAG, "fetchEVMAddressForAddress: Cadence returned empty/null for $address")
                 null
             }
         } catch (e: Exception) {
