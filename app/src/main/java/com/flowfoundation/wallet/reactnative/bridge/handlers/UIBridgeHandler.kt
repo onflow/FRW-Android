@@ -161,7 +161,10 @@ class UIBridgeHandler(private val reactContext: ReactApplicationContext) {
                     try {
                         val service = retrofitApi().create(ApiService::class.java)
                         val response = service.getNFTCollections()
-                        val collection = response.data.firstOrNull { it.contractId() == id || it.flowIdentifier == id }
+                        // Normalize id by stripping 0x from address segment (e.g. A.0x1234.Name → A.1234.Name)
+                        // so it matches contractId() which always strips the 0x prefix
+                        val normalizedId = id.replace(Regex("^A\\.0x"), "A.")
+                        val collection = response.data.firstOrNull { it.contractId() == normalizedId || it.flowIdentifier == id }
                         if (collection == null) {
                             logw(TAG, "closeRNWithNFT() - NFT collection not found for flowIdentifier: $id")
                         } else {
