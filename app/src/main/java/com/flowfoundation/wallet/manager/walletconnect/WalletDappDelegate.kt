@@ -21,7 +21,9 @@ import com.flowfoundation.wallet.mixpanel.RestoreType
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.clearUserCache
 import com.flowfoundation.wallet.network.model.AccountKey
+import com.flowfoundation.wallet.network.model.FlowAccountInfo
 import com.flowfoundation.wallet.network.model.LoginRequest
+import com.flowfoundation.wallet.network.model.LoginV4Request
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.page.wallet.confirm.WalletConfirmActivity
@@ -185,19 +187,19 @@ internal class WalletDappDelegate : SignClient.DappDelegate {
                     val catching = runCatching {
                         val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
                         val service = retrofit().create(ApiService::class.java)
-                        val resp = service.login(
-                            LoginRequest(
-                                signature = cryptoProvider.getUserSignature(
-                                    getFirebaseJwt()
-                                ),
-                                accountKey = AccountKey(
-                                    publicKey = cryptoProvider.getPublicKey(),
-                                    hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
-                                    signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
-                                ),
-                                deviceInfo = deviceInfoRequest
-                            )
+                        val jwt = getFirebaseJwt()
+                        val signature = cryptoProvider.getUserSignature(jwt)
+                        val accountKey = AccountKey(
+                            publicKey = cryptoProvider.getPublicKey(),
+                            hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
+                            signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
                         )
+                        val loginRequest = LoginV4Request(
+                            flowAccountInfo = FlowAccountInfo(accountKey = accountKey, signature = signature),
+                            evmAccountInfo = null, // WalletConnect dApp login doesn't have mnemonic for EVM
+                            deviceInfo = deviceInfoRequest
+                        )
+                        val resp = service.loginV4(loginRequest)
                         if (resp.data?.customToken.isNullOrBlank()) {
                             if (resp.status == 404) {
                                 callback.invoke(false)

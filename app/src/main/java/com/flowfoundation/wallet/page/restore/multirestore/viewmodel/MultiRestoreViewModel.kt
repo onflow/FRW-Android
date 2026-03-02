@@ -28,7 +28,9 @@ import com.flowfoundation.wallet.network.generatePrefix
 import com.flowfoundation.wallet.network.model.AccountKey
 import com.flowfoundation.wallet.network.model.AccountKeySignature
 import com.flowfoundation.wallet.network.model.AccountSignRequest
+import com.flowfoundation.wallet.network.model.FlowAccountInfo
 import com.flowfoundation.wallet.network.model.LoginRequest
+import com.flowfoundation.wallet.network.model.LoginV4Request
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.page.restore.multirestore.model.RestoreDropboxOption
@@ -365,17 +367,17 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                         val jwt = getFirebaseJwt()
                         val signature = cryptoProvider.getUserSignature(jwt)
 
-                        val resp = service.login(
-                            LoginRequest(
-                                signature = signature,
-                                accountKey = AccountKey(
-                                    publicKey = publicKey,
-                                    hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
-                                    signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
-                                ),
-                                deviceInfo = deviceInfoRequest
-                            )
+                        val accountKey = AccountKey(
+                            publicKey = publicKey,
+                            hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
+                            signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
                         )
+                        val loginRequest = LoginV4Request(
+                            flowAccountInfo = FlowAccountInfo(accountKey = accountKey, signature = signature),
+                            evmAccountInfo = null, // Prefix accounts don't have mnemonic for EVM
+                            deviceInfo = deviceInfoRequest
+                        )
+                        val resp = service.loginV4(loginRequest)
                         if (resp.data?.customToken.isNullOrBlank()) {
                             callback.invoke(false)
                         } else {

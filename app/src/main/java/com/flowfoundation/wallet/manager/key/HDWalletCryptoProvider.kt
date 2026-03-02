@@ -2,10 +2,13 @@ package com.flowfoundation.wallet.manager.key
 
 import com.flow.wallet.CryptoProvider
 import com.flow.wallet.keys.SeedPhraseKey
+import com.flowfoundation.wallet.network.model.EvmAccountInfo
+import com.flowfoundation.wallet.utils.logd
 import org.onflow.flow.models.DomainTag
 import org.onflow.flow.models.HashingAlgorithm
 import org.onflow.flow.models.SigningAlgorithm
 import org.onflow.flow.models.Transaction
+import wallet.core.jni.Hash
 
 class HDWalletCryptoProvider(
     private val seedPhraseKey: SeedPhraseKey,
@@ -104,5 +107,45 @@ class HDWalletCryptoProvider(
 
     override fun getKeyWeight(): Int {
         return 1000
+    }
+
+    /**
+     * Generates EVM account info by deriving the EVM key from the mnemonic and signing the JWT.
+     * Used for v4 login/register endpoints that require EVM signatures.
+     * 
+     * @param jwt The Firebase JWT token to sign
+     * @return EvmAccountInfo containing the EOA address and signature, or null if generation fails
+     */
+    fun getEvmAccountInfo(jwt: String): EvmAccountInfo? {
+        return generateEvmAccountInfo(getMnemonic(), jwt)
+    }
+
+    companion object {
+        private const val TAG = "HDWalletCryptoProvider"
+        private const val EVM_DERIVATION_PATH = "m/44'/60'/0'/0/0"
+
+        /**
+         * Static helper to generate EVM account info from a raw mnemonic string.
+         * Derives the EVM key using BIP44 path m/44'/60'/0'/0/0 and signs the JWT with keccak256.
+         * 
+         * @param mnemonic The mnemonic phrase (space-separated words)
+         * @param jwt The Firebase JWT token to sign
+         * @return EvmAccountInfo containing the EOA address and signature, or null if generation fails
+         */
+        fun generateEvmAccountInfo(mnemonic: String, jwt: String): EvmAccountInfo? {
+            return try {
+                val hdWallet = wallet.core.jni.HDWallet(mnemonic, "")
+                val evmPrivateKey = hdWallet.getKeyByCurve(wallet.core.jni.Curve.SECP256K1, EVM_DERIVATION_PATH)
+                val evmPublicKey = evmPrivateKey.getPublicKeySecp256k1(false)
+                val evmAddress = wallet.core.jni.AnyAddress(evmPublicKey, wallet.core.jni.CoinType.ETHEREUM).description()
+                val jwtHash = Hash.keccak256(jwt.toByteArray(Charsets.UTF_8))
+                val signatureData = evmPrivateKey.sign(jwtHash, wallet.core.jni.Curve.SECP256K1)
+                val evmSignature = "0x" + signatureData.joinToString("") { "%02x".format(it) }
+                EvmAccountInfo(eoaAddress = evmAddress, signature = evmSignature)
+            } catch (e: Exception) {
+                logd(TAG, "Could not generate EVM account info: ${e.message}")
+                null
+            }
+        }
     }
 }

@@ -16,7 +16,9 @@ import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.clearUserCache
 import com.flowfoundation.wallet.network.model.AccountKey
 import com.flowfoundation.wallet.network.model.WalletListData
+import com.flowfoundation.wallet.network.model.FlowAccountInfo
 import com.flowfoundation.wallet.network.model.LoginRequest
+import com.flowfoundation.wallet.network.model.LoginV4Request
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
@@ -160,17 +162,17 @@ fun requestWalletRestoreLogin(
 
                         logd(TAG, "Test signature created successfully")
 
-                        val resp = service.login(
-                            LoginRequest(
-                                signature = testSignature,
-                                accountKey = AccountKey(
-                                    publicKey = cryptoProvider.getPublicKey(),
-                                    hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
-                                    signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
-                                ),
-                                deviceInfo = deviceInfoRequest
-                            )
+                        val accountKey = AccountKey(
+                            publicKey = cryptoProvider.getPublicKey(),
+                            hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
+                            signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
                         )
+                        val loginRequest = LoginV4Request(
+                            flowAccountInfo = FlowAccountInfo(accountKey = accountKey, signature = testSignature),
+                            evmAccountInfo = null, // Wallet restore doesn't have mnemonic for EVM
+                            deviceInfo = deviceInfoRequest
+                        )
+                        val resp = service.loginV4(loginRequest)
                         if (resp.data?.customToken.isNullOrBlank()) {
                             if (resp.status == 404) {
                                 callback.invoke(false, ERROR_ACCOUNT_NOT_FOUND)

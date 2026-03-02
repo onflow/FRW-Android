@@ -33,7 +33,11 @@ interface ApiService {
     suspend fun searchUser(@Query("keyword") keyword: String): SearchUserResponse
 
     @POST("/v3/login")
+    @Deprecated("Use loginV4 instead", ReplaceWith("loginV4(params)"))
     suspend fun login(@Body params: LoginRequest): LoginResponse
+
+    @POST("/v4/login")
+    suspend fun loginV4(@Body params: LoginV4Request): LoginResponse
 
     @POST("/v3/import")
     suspend fun import(@Body params: ImportRequest): LoginResponse

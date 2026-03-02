@@ -32,12 +32,14 @@ import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.walletdata.FlowWallet
 import com.flowfoundation.wallet.mixpanel.AccountCreateKeyType
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
+import com.flowfoundation.wallet.manager.key.HDWalletCryptoProvider
 import com.flowfoundation.wallet.network.model.AccountKey
 import com.flowfoundation.wallet.network.model.EvmAccountInfo
+import com.flowfoundation.wallet.network.model.FlowAccountInfo
 import com.flowfoundation.wallet.network.model.LoginRequest
+import com.flowfoundation.wallet.network.model.LoginV4Request
 import com.flowfoundation.wallet.network.model.RegisterRequest
 import com.flowfoundation.wallet.network.model.RegisterResponse
-import wallet.core.jni.Hash
 import com.flowfoundation.wallet.page.walletrestore.firebaseLogin
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.NETWORK_MAINNET
@@ -670,22 +672,30 @@ private suspend fun resumeAccount() {
         toast(msgRes = R.string.resume_login_error, duration = Toast.LENGTH_LONG)
         return
     }
-    val resp = service.login(
-        LoginRequest(
-            signature = cryptoProvider.getUserSignature(getFirebaseJwt()),
-            accountKey = AccountKey(
-                publicKey = cryptoProvider.getPublicKey(),
-                hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
-                signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
-            ),
-            deviceInfo = deviceInfoRequest
-        )
+
+    val firebaseJwt = getFirebaseJwt()
+    val flowSignature = cryptoProvider.getUserSignature(firebaseJwt)
+    val accountKey = AccountKey(
+        publicKey = cryptoProvider.getPublicKey(),
+        hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
+        signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
     )
+
+    // Build EVM account info if provider has mnemonic (HDWallet accounts)
+    val evmAccountInfo = (cryptoProvider as? HDWalletCryptoProvider)?.getEvmAccountInfo(firebaseJwt)
+
+    val loginRequest = LoginV4Request(
+        flowAccountInfo = FlowAccountInfo(accountKey = accountKey, signature = flowSignature),
+        evmAccountInfo = evmAccountInfo,
+        deviceInfo = deviceInfoRequest
+    )
+
+    val resp = service.loginV4(loginRequest)
     if (resp.data?.customToken.isNullOrBlank()) {
         toast(msgRes = R.string.resume_login_error, duration = Toast.LENGTH_LONG)
         return
     }
-    firebaseLogin(resp.data.customToken) { isSuccess ->
+    firebaseLogin(resp.data?.customToken!!) { isSuccess ->
         if (isSuccess) {
             setRegistered()
             if (AccountManager.get()?.prefix == null && AccountManager.get()?.keyStoreInfo == null) {

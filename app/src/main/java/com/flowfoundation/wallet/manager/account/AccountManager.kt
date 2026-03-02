@@ -20,8 +20,12 @@ import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.walletdata.FlowWallet
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.clearUserCache
+import com.flowfoundation.wallet.manager.key.HDWalletCryptoProvider
 import com.flowfoundation.wallet.network.model.AccountKey
+import com.flowfoundation.wallet.network.model.EvmAccountInfo
+import com.flowfoundation.wallet.network.model.FlowAccountInfo
 import com.flowfoundation.wallet.network.model.LoginRequest
+import com.flowfoundation.wallet.network.model.LoginV4Request
 import com.flowfoundation.wallet.network.model.UserInfoData
 import com.flowfoundation.wallet.network.model.WalletListData
 import com.flowfoundation.wallet.network.retrofit
@@ -557,13 +561,16 @@ object AccountManager {
             logd(TAG, "  Sign Algorithm: ${cryptoProvider.getSignatureAlgorithm()}")
             logd(TAG, "  Signature length: ${signature.length}")
 
-            val resp = service.login(
-                LoginRequest(
-                    signature = signature,
-                    accountKey = accountKey,
-                    deviceInfo = deviceInfoRequest
-                )
+            // Build EVM account info if provider has mnemonic (HDWallet accounts)
+            val evmAccountInfo = (cryptoProvider as? HDWalletCryptoProvider)?.getEvmAccountInfo(jwt)
+
+            val loginRequest = LoginV4Request(
+                flowAccountInfo = FlowAccountInfo(accountKey = accountKey, signature = signature),
+                evmAccountInfo = evmAccountInfo,
+                deviceInfo = deviceInfoRequest
             )
+
+            val resp = service.loginV4(loginRequest)
 
             if (resp.data?.customToken.isNullOrBlank()) {
                 loge(tag = "SWITCH_ACCOUNT", msg = "get customToken failed :: ${resp.data?.customToken}")
@@ -712,13 +719,16 @@ object AccountManager {
             logd(TAG, "  Signature length: ${signature.length}")
             logd(TAG, "  Account: ${switchAccount.username} (${switchAccount.address})")
 
-            val resp = service.login(
-                LoginRequest(
-                    signature = signature,
-                    accountKey = accountKey,
-                    deviceInfo = deviceInfoRequest
-                )
+            // Build EVM account info if provider has mnemonic (HDWallet accounts)
+            val evmAccountInfo = (cryptoProvider as? HDWalletCryptoProvider)?.getEvmAccountInfo(jwt)
+
+            val loginRequest = LoginV4Request(
+                flowAccountInfo = FlowAccountInfo(accountKey = accountKey, signature = signature),
+                evmAccountInfo = evmAccountInfo,
+                deviceInfo = deviceInfoRequest
             )
+
+            val resp = service.loginV4(loginRequest)
             if (resp.data?.customToken.isNullOrBlank()) {
                 loge(tag = "SWITCH_ACCOUNT", msg = "get customToken failed :: ${resp.data?.customToken}")
                 callback.invoke(false)
