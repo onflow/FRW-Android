@@ -484,11 +484,12 @@ object AccountManager {
                 return@ioScope
             }
             isSwitching = true
-            currentAccount = account
-            logd(TAG, "Account switched. Current account is now: $currentAccount")
+            logd(TAG, "Starting account switch to: ${account.userInfo.username}")
             switchAccount(account) { isSuccess ->
                 if (isSuccess) {
                     isSwitching = false
+                    currentAccount = account
+                    logd(TAG, "Account switch successful. Current account updated to: $currentAccount")
                     accounts.forEach {
                         it.isActive = it.userInfo.username == account.userInfo.username
                     }

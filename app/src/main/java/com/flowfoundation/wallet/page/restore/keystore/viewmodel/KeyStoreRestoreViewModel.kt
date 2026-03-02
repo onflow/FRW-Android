@@ -1258,39 +1258,52 @@ class KeyStoreRestoreViewModel : ViewModel() {
             // Create EVMAccountInfo for keystore registration
             val evmAccountInfo = try {
                 val storage = getStorage()
-                val privateKeyHex = cryptoProvider.getPrivateKey()
-                val key = PrivateKey.create(storage).apply {
-                    val keyBytes = privateKeyHex.removePrefix("0x").hexToBytes()
-                    importPrivateKey(keyBytes, KeyFormat.RAW)
-                }
-
-                // Get secp256k1 public key for EVM address derivation
-                val evmPublicKeyBytes = key.publicKey(SigningAlgorithm.ECDSA_secp256k1)
-                if (evmPublicKeyBytes != null) {
-                    // Derive EVM address from public key using Keccak256
-                    val publicKeyForHash = if (evmPublicKeyBytes.size == 65 && evmPublicKeyBytes[0] == 0x04.toByte()) {
-                        evmPublicKeyBytes.copyOfRange(1, evmPublicKeyBytes.size)
-                    } else {
-                        evmPublicKeyBytes
-                    }
-                    val addressHash = Hash.keccak256(publicKeyForHash)
-                    val evmAddress = "0x" + addressHash.copyOfRange(12, 32).joinToString("") { "%02x".format(it) }
-                    logd("KeyStoreRestoreViewModel", "Derived EVM address: $evmAddress")
-
-                    // Sign Firebase JWT for EVM with secp256k1 key
-                    val dataToSign = DomainTag.User.bytes + firebaseJwt.toByteArray(Charsets.UTF_8)
-                    val evmSignatureBytes = key.sign(dataToSign, SigningAlgorithm.ECDSA_secp256k1, HashingAlgorithm.SHA2_256)
-                    val evmSignature = evmSignatureBytes.joinToString("") { "%02x".format(it) }
-                    logd("KeyStoreRestoreViewModel", "Generated EVM signature, length: ${evmSignature.length}")
-
-                    EvmAccountInfo(
-                        eoaAddress = evmAddress,
-                        signature = evmSignature
-                    )
+                if (currentMnemonic.isNullOrBlank().not()) {
+                    val hdWallet = wallet.core.jni.HDWallet(currentMnemonic, "")
+                    val evmDerivationPath = "m/44'/60'/0'/0/0"
+                    val evmPrivateKey = hdWallet.getKeyByCurve(wallet.core.jni.Curve.SECP256K1, evmDerivationPath)
+                    val evmPublicKey = evmPrivateKey.getPublicKeySecp256k1(false)
+                    val evmAddress = wallet.core.jni.AnyAddress(evmPublicKey, wallet.core.jni.CoinType.ETHEREUM).description()
+                    val jwtHash = Hash.keccak256(firebaseJwt.toByteArray(Charsets.UTF_8))
+                    val signatureData = evmPrivateKey.sign(jwtHash, wallet.core.jni.Curve.SECP256K1)
+                    val evmSignature = "0x" + signatureData.joinToString("") { "%02x".format(it) }
+                    EvmAccountInfo(eoaAddress = evmAddress, signature = evmSignature)
                 } else {
-                    logd("KeyStoreRestoreViewModel", "Could not derive secp256k1 public key, skipping EVM account")
-                    null
+                    val privateKeyHex = cryptoProvider.getPrivateKey()
+                    val key = PrivateKey.create(storage).apply {
+                        val keyBytes = privateKeyHex.removePrefix("0x").hexToBytes()
+                        importPrivateKey(keyBytes, KeyFormat.RAW)
+                    }
+
+                    // Get secp256k1 public key for EVM address derivation
+                    val evmPublicKeyBytes = key.publicKey(SigningAlgorithm.ECDSA_secp256k1)
+                    if (evmPublicKeyBytes != null) {
+                        // Derive EVM address from public key using Keccak256
+                        val publicKeyForHash = if (evmPublicKeyBytes.size == 65 && evmPublicKeyBytes[0] == 0x04.toByte()) {
+                            evmPublicKeyBytes.copyOfRange(1, evmPublicKeyBytes.size)
+                        } else {
+                            evmPublicKeyBytes
+                        }
+                        val addressHash = Hash.keccak256(publicKeyForHash)
+                        val evmAddress = "0x" + addressHash.copyOfRange(12, 32).joinToString("") { "%02x".format(it) }
+                        logd("KeyStoreRestoreViewModel", "Derived EVM address: $evmAddress")
+
+                        // Sign Firebase JWT for EVM with secp256k1 key
+                        val dataToSign = DomainTag.User.bytes + firebaseJwt.toByteArray(Charsets.UTF_8)
+                        val evmSignatureBytes = key.sign(dataToSign, SigningAlgorithm.ECDSA_secp256k1, HashingAlgorithm.SHA2_256)
+                        val evmSignature = evmSignatureBytes.joinToString("") { "%02x".format(it) }
+                        logd("KeyStoreRestoreViewModel", "Generated EVM signature, length: ${evmSignature.length}")
+
+                        EvmAccountInfo(
+                            eoaAddress = evmAddress,
+                            signature = evmSignature
+                        )
+                    } else {
+                        logd("KeyStoreRestoreViewModel", "Could not derive secp256k1 public key, skipping EVM account")
+                        null
+                    }
                 }
+
             } catch (e: Exception) {
                 logd("KeyStoreRestoreViewModel", "Error creating EVM account info: ${e.message}")
                 null

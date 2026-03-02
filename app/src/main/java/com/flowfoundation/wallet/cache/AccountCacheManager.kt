@@ -66,11 +66,8 @@ object AccountCacheManager{
             return null
         }
 
-        var str = cacheFile.read()
+        val str = cacheFile.read()
         logd(TAG, "Reading from ${cacheFile.name}: ${str.length} characters, isBlank=${str.isBlank()}")
-
-        // Migrate old field names to new format
-        str = migrateOldFieldNames(str)
 
         if (str.isBlank()) {
             logd(TAG, "Warning: Cache file ${cacheFile.name} exists but is empty")
@@ -196,29 +193,4 @@ object AccountCacheManager{
         }
     }
 
-    /**
-     * Migrates old field names in cached JSON to new format.
-     * This handles the transition from old cache format to new serialization format.
-     *
-     * Field mappings:
-     * - "isPrivate" -> "private" (UserInfoData field name change)
-     * - "chainId" -> "chain_id" (BlockchainData field name change)
-     */
-    private fun migrateOldFieldNames(json: String): String {
-        var migrated = json
-
-        // Migrate UserInfoData.isPrivate to private
-        if (migrated.contains("\"isPrivate\":")) {
-            logd(TAG, "Migrating old field name: isPrivate -> private")
-            migrated = migrated.replace("\"isPrivate\":", "\"private\":")
-        }
-
-        // Migrate BlockchainData.chainId to chain_id
-        if (migrated.contains("\"chainId\":")) {
-            logd(TAG, "Migrating old field name: chainId -> chain_id")
-            migrated = migrated.replace("\"chainId\":", "\"chain_id\":")
-        }
-
-        return migrated
-    }
 }
