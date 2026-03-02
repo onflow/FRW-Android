@@ -558,63 +558,10 @@ private suspend fun registerServer(username: String, prefix: String): RegisterRe
               firebaseJwt
             )
         )
-        // Create EVMAccountInfo for registration
-        // IMPORTANT: EVM key must be derived from the MNEMONIC, not from the P256 private key
-        // The extension derives EVM from mnemonic with BIP44 path m/44'/60'/0'/0/0
-        val evmAccountInfo = try {
-            // Generate and store mnemonic globally for potential future EOA support
-            val mnemonic = BIP39.generate(BIP39.SeedPhraseLength.TWELVE)
-            logd(TAG, "Generated new 12-word mnemonic for backup support")
-
-            val passwordMap = try {
-              val pref = readWalletPassword()
-              if (pref.isBlank()) {
-                HashMap<String, String>()
-              } else {
-                Gson().fromJson(pref, object : TypeToken<HashMap<String, String>>() {}.type)
-              }
-            } catch (_: Exception) {
-              HashMap()
-            }
-
-            // Store mnemonic globally (available for future EOA enablement if user chooses)
-            storeWalletPassword(Gson().toJson(passwordMap.apply { put("global", mnemonic) }))
-            logd(TAG, "Stored mnemonic globally for backup support")
-            // Use Trust Wallet Core to derive EVM key from mnemonic
-            val hdWallet = wallet.core.jni.HDWallet(mnemonic, "")
-            val evmDerivationPath = "m/44'/60'/0'/0/0" // Standard Ethereum BIP44 path
-
-            // Get private key for EVM using secp256k1 curve
-            val evmPrivateKey = hdWallet.getKeyByCurve(wallet.core.jni.Curve.SECP256K1, evmDerivationPath)
-            val evmPublicKey = evmPrivateKey.getPublicKeySecp256k1(false) // uncompressed
-
-            // Derive EVM address from public key
-            val evmAddress = wallet.core.jni.AnyAddress(evmPublicKey, wallet.core.jni.CoinType.ETHEREUM).description()
-            logd(TAG, "Derived EVM address from mnemonic: $evmAddress")
-
-            // Sign keccak256(idToken) for EVM - NO domain tag, same as extension
-            val jwtBytes = firebaseJwt.toByteArray(Charsets.UTF_8)
-            val jwtHash = Hash.keccak256(jwtBytes)
-
-            // Sign the digest with secp256k1
-            val signatureData = evmPrivateKey.sign(jwtHash, wallet.core.jni.Curve.SECP256K1)
-
-            val evmSignature = "0x" + signatureData.joinToString("") { "%02x".format(it) }
-            logd(TAG, "Generated EVM signature from mnemonic, length: ${evmSignature.length}")
-
-            EvmAccountInfo(
-                eoaAddress = evmAddress,
-                signature = evmSignature
-            )
-        } catch (e: Exception) {
-            logd(TAG, "Error creating EVM account info from mnemonic: ${e.message}")
-            e.printStackTrace()
-            null
-        }
 
         val request = RegisterRequest(
             flowAccountInfo = flowAccountInfo,
-            evmAccountInfo = evmAccountInfo,
+            evmAccountInfo = null,
             username = username,
             deviceInfo = deviceInfoRequest
         )
