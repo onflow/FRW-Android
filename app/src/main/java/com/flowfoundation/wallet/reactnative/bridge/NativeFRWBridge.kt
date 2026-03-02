@@ -81,6 +81,8 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
 
     override fun closeRN(id: String?) = uiHandler.closeRN(id)
 
+    override fun closeRNWithNFT(id: String?) = uiHandler.closeRNWithNFT(id)
+
     override fun getSignKeyIndex(): Double = accountHandler.getSignKeyIndex()
 
     override fun isFreeGasEnabled(promise: Promise) = utilsHandler.isFreeGasEnabled(promise)

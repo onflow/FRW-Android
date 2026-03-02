@@ -219,10 +219,6 @@
             android:screenOrientation="portrait"/>
 
         <activity
-            android:name=".page.token.addtoken.AddTokenActivity"
-            android:screenOrientation="portrait"/>
-
-        <activity
             android:name=".page.token.manage.ManageTokenActivity"
             android:screenOrientation="portrait"/>
 
@@ -251,10 +247,6 @@
 
         <activity
             android:name=".page.token.detail.TokenDetailActivity"
-            android:screenOrientation="portrait"/>
-
-        <activity
-            android:name=".page.nft.collectionlist.NftCollectionListActivity"
             android:screenOrientation="portrait"/>
 
         <activity

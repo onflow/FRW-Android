@@ -28,8 +28,6 @@ import com.flowfoundation.wallet.page.notification.model.Priority
 import com.flowfoundation.wallet.page.notification.model.Type
 import com.flowfoundation.wallet.page.notification.model.WalletNotification
 import com.flowfoundation.wallet.page.profile.subpage.walletconnect.session.model.PendingRequestModel
-import com.flowfoundation.wallet.page.token.addtoken.AddTokenActivity
-import com.flowfoundation.wallet.page.token.custom.AddCustomTokenActivity
 import com.flowfoundation.wallet.page.token.manage.ManageTokenActivity
 import com.flowfoundation.wallet.page.wallet.WalletFragmentViewModel
 import com.flowfoundation.wallet.page.wallet.dialog.SwapDialog
@@ -94,9 +92,9 @@ class WalletHeaderPresenter(
             } else {
                 flAddToken.setOnClickListener {
                     if (WalletManager.isEVMAccountSelected()) {
-                        AddCustomTokenActivity.launch(view.context)
+                        com.flowfoundation.wallet.page.token.custom.AddCustomTokenActivity.launch(view.context)
                     } else {
-                        AddTokenActivity.launch(view.context)
+                        ReactNativeActivity.launch(view.context, RNBridge.ScreenType.ADD_TOKENS)
                     }
                 }
                 cvSwap.setOnClickListener {

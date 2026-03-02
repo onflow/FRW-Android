@@ -99,6 +99,8 @@ class ReactNativeActivity : ReactActivity() {
                 RNBridge.ScreenType.ONBOARDING -> "onboarding"
                 RNBridge.ScreenType.RECEIVE -> "receive"
                 RNBridge.ScreenType.ACTIVITY -> "activity"
+                RNBridge.ScreenType.ADD_TOKENS -> "add-tokens"
+                RNBridge.ScreenType.ADD_NFT_COLLECTION -> "add-nft-collection"
             }
         }
 
@@ -126,6 +128,8 @@ class ReactNativeActivity : ReactActivity() {
                 RNBridge.ScreenType.ONBOARDING -> RNBridge.InitialRoute.GET_STARTED.routeName
                 RNBridge.ScreenType.RECEIVE -> "Receive"
                 RNBridge.ScreenType.ACTIVITY -> "Activity"
+                RNBridge.ScreenType.ADD_TOKENS -> RNBridge.InitialRoute.ADD_TOKENS.routeName
+                RNBridge.ScreenType.ADD_NFT_COLLECTION -> RNBridge.InitialRoute.ADD_NFT_COLLECTION.routeName
             }
         }
 
