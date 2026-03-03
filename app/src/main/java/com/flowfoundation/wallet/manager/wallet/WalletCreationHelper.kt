@@ -13,6 +13,7 @@ import com.flowfoundation.wallet.manager.account.AccountWalletManager
 import com.flowfoundation.wallet.manager.account.HardwareBackedKeyException
 import com.flowfoundation.wallet.manager.key.AndroidKeystoreCryptoProvider
 import com.flowfoundation.wallet.manager.key.KeyCompatibilityManager
+import com.flowfoundation.wallet.manager.key.storage.KeyStorageManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofitApi
 import com.flowfoundation.wallet.page.restore.keystore.model.KeystoreAddress
@@ -46,6 +47,28 @@ object WalletCreationHelper {
         return try {
             logd(TAG, "Creating wallet from account: ${account.userInfo.username}")
             val userId = account.wallet?.id
+
+            // --- New independent key storage (checked first, avoids Account dependency) ---
+            if (!userId.isNullOrBlank()) {
+                // SeedPhraseKey object retrieved directly → no intermediate string reconstruction
+                val seedPhraseKey = KeyStorageManager.getSeedPhraseKey(userId)
+                if (seedPhraseKey != null) {
+                    logd(TAG, "New storage: seed phrase key found for uid: $userId")
+                    return createWalletFromSeedPhraseKey(seedPhraseKey, isCurrentAccount)
+                }
+                // PrivateKey object retrieved directly → no intermediate string reconstruction
+                val privateKey = KeyStorageManager.getPrivateKeyObject(userId)
+                if (privateKey != null) {
+                    logd(TAG, "New storage: private key object found for uid: $userId")
+                    return createWalletFromPrivateKey(privateKey, isCurrentAccount)
+                }
+                // Android Keystore prefix → reconstruct provider at app layer
+                val akPrefix = KeyStorageManager.getAndroidKeystorePrefix(userId)
+                if (!akPrefix.isNullOrBlank()) {
+                    logd(TAG, "New storage: AK prefix found for uid: $userId")
+                    return createWalletFromPrefix(akPrefix, isCurrentAccount)
+                }
+            }
 
             // Create wallet based on account's key information only
             val wallet = when {
@@ -217,6 +240,26 @@ object WalletCreationHelper {
             logd(TAG, "HD wallet key not found for account ID: $accountId")
             return null
         }
+    }
+
+    /**
+     * Create wallet from a [SeedPhraseKey] object loaded directly from key storage.
+     * Avoids reconstructing the key from a mnemonic string.
+     */
+    private fun createWalletFromSeedPhraseKey(seedPhraseKey: SeedPhraseKey, isCurrentAccount: Boolean): Wallet {
+        val storage = getStorage()
+        if (isCurrentAccount) WalletManager.setEoaDisabled(false)
+        return WalletFactory.createKeyWallet(seedPhraseKey, setOf(ChainId.Mainnet, ChainId.Testnet), storage)
+    }
+
+    /**
+     * Create wallet from a [PrivateKey] object loaded directly from key storage.
+     * Cannot derive EOA addresses (no mnemonic available).
+     */
+    private fun createWalletFromPrivateKey(privateKey: PrivateKey, isCurrentAccount: Boolean): Wallet {
+        val storage = getStorage()
+        if (isCurrentAccount) WalletManager.setEoaDisabled(true)
+        return WalletFactory.createKeyWallet(privateKey, setOf(ChainId.Mainnet, ChainId.Testnet), storage)
     }
 
     /**

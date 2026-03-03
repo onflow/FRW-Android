@@ -352,7 +352,7 @@ dependencies {
     api fileTree(dir: "libs", include: ["*.aar", "*.jar"], exclude: ["trustwalletcore.aar"])
 
     // Fetch Flow Wallet Kit from GitHub Packages
-    implementation 'com.github.onflow.flow-wallet-kit:flow-wallet-android:0.2.3'
+    implementation 'com.github.onflow.flow-wallet-kit:flow-wallet-android:0.2.4'
     implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.22"
     /** Android Architecture **/
     implementation 'androidx.core:core-ktx:1.13.1'

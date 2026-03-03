@@ -56,7 +56,10 @@ import com.flowfoundation.wallet.utils.storeWalletPassword
 import com.flowfoundation.wallet.manager.walletdata.WalletDataManager
 
 import com.flowfoundation.wallet.manager.walletdata.MainWallet
+import com.flowfoundation.wallet.manager.key.storage.KeyStorageManager
+import com.flowfoundation.wallet.manager.key.storage.KeyStorageMigration
 import com.flowfoundation.wallet.page.restore.keystore.model.KeystoreAddress
+import com.flowfoundation.wallet.utils.safeRun
 import kotlin.text.isNullOrEmpty
 
 object AccountManager {
@@ -66,7 +69,6 @@ object AccountManager {
     private val listeners = CopyOnWriteArrayList<WeakReference<OnAccountUpdate>>()
     private val listListeners = CopyOnWriteArrayList<WeakReference<OnAccountListUpdate>>()
     private val userPrefixes = mutableListOf<UserPrefix>()
-    private val switchAccounts = mutableListOf<LocalSwitchAccount>()
 
     private var currentAccount: Account? = null
     private var isInitialized = false
@@ -84,7 +86,6 @@ object AccountManager {
         logd(TAG, "Starting AccountManager initialization")
         accounts.clear()
         userPrefixes.clear()
-        switchAccounts.clear()
         currentAccount = null
 
         ioScope {
@@ -129,6 +130,9 @@ object AccountManager {
                 }
 
                 logd(TAG, "AccountManager initialization completed successfully")
+                // Migrate key material to independent storage now that accounts are loaded.
+                // This must run inside the ioScope block so accounts list is fully populated.
+                safeRun { KeyStorageMigration.runMigrationIfNeeded() }
                 // Update Accounts info with WalletDataManager
                 WalletDataManager.updateWalletData()
 
@@ -144,7 +148,6 @@ object AccountManager {
                 // Clear potentially corrupted state
                 accounts.clear()
                 userPrefixes.clear()
-                switchAccounts.clear()
                 currentAccount = null
 
                 // Initialization failed - user needs to login/restore
@@ -155,27 +158,48 @@ object AccountManager {
     fun getSwitchAccountList(): List<Any> {
         logd(TAG, "getSwitchAccountList() called")
         logd(TAG, "Current accounts: $accounts")
-        logd(TAG, "Current switchAccounts: $switchAccounts")
 
         val list = mutableListOf<Any>()
         list.addAll(accounts)
 
-        // Collect all FlowWallet addresses for the current network from walletNodes
-        val currentNetwork = chainNetWorkString()
-        val addressSet = accounts.flatMap { account ->
-            account.walletNodes.filterIsInstance<FlowWallet>()
-                .filter { it.chainIdString == currentNetwork }
-                .map { it.address }
-        }.toSet()
+        val keyOnlyAccounts = buildLocalKeyAccounts()
+        logd(TAG, "Key-only accounts (no Account object): $keyOnlyAccounts")
 
-        logd(TAG, "Address set from accounts (current network): $addressSet")
-
-        val filteredSwitchAccounts = switchAccounts.filter { it.address !in addressSet }
-        logd(TAG, "Filtered switch accounts: $filteredSwitchAccounts")
-
-        list.addAll(filteredSwitchAccounts)
+        list.addAll(keyOnlyAccounts)
         logd(TAG, "Final list size: ${list.size}")
         return list
+    }
+
+    /**
+     * Builds a list of [LocalSwitchAccount] entries for UIDs that have key material stored
+     * in [KeyStorageManager] but no matching [Account] in [accounts] (i.e. the account cache
+     * was lost while the key survived).
+     *
+     * The returned list is computed fresh on each call and is not stored persistently.
+     */
+    private fun buildLocalKeyAccounts(): List<LocalSwitchAccount> {
+        // Collect all UIDs known to the accounts list
+        val knownUids = accounts.mapNotNull { it.wallet?.id }.toSet()
+
+        // Union of all UIDs present in any of the three key stores
+        val allKeyUids = (
+            KeyStorageManager.getAllSeedPhraseUids() +
+            KeyStorageManager.getAllPrivateKeyUids() +
+            KeyStorageManager.getAllAndroidKeystoreUids()
+        ).toSet()
+
+        // Only keep UIDs that have a key but no account
+        val orphanUids = allKeyUids - knownUids
+
+        return orphanUids.map { uid ->
+            val akPrefix = KeyStorageManager.getAndroidKeystorePrefix(uid)
+            LocalSwitchAccount(
+                username = uid,
+                address = "",
+                userId = uid,
+                prefix = akPrefix
+            )
+        }
     }
 
     fun add(account: Account, uid: String? = null) {
@@ -195,6 +219,8 @@ object AccountManager {
             userPrefixes.removeAll { it.userId == uid}
             userPrefixes.add(UserPrefix(uid, prefix))
             UserPrefixCacheManager.cache(UserPrefixes().apply { addAll(userPrefixes) })
+            // Write to independent key storage so prefix survives account-cache loss
+            KeyStorageManager.saveAndroidKeystorePrefix(uid, prefix)
         }
         AccountEmojiManager.init()
 
@@ -492,7 +518,9 @@ object AccountManager {
             switchAccount(switchAccount) { isSuccess ->
                 if (isSuccess) {
                     isSwitching = false
-                    switchAccounts.remove(switchAccount)
+                    // localKeyAccounts is computed dynamically from KeyStorageManager; once the
+                    // account is re-added via the login flow the UID will appear in accounts and
+                    // will be excluded from buildLocalKeyAccounts() automatically.
                     uiScope {
                         clearUserCache()
                         MainActivity.relaunch(Env.getApp(), true)

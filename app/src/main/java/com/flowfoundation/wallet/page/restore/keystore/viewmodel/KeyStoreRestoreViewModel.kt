@@ -52,6 +52,7 @@ import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.flowfoundation.wallet.manager.account.containsFlowWalletAddress
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
+import com.flowfoundation.wallet.manager.key.storage.KeyStorageManager
 import com.flowfoundation.wallet.utils.secret.EncryptedMnemonicUtils
 import com.flowfoundation.wallet.utils.RandomUsernameGenerator
 import wallet.core.jni.StoredKey
@@ -818,6 +819,8 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                                     wallet = walletData
                                                 )
                                             )
+                                            // Persist key material in independent storage
+                                            saveKeyToNewStorage(userId, keyStoreInfo)
                                             logd("KeyStoreRestoreViewModel", "Account added successfully")
                                             logd("KeyStoreRestoreViewModel", "Import process completed successfully")
                                             callback.invoke(true)
@@ -983,6 +986,8 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                         )
                                         clearUserCache()
                                         AccountManager.add(userAccount)
+                                        // Persist key material in independent storage
+                                        saveKeyToNewStorage(userId, Gson().toJson(keystoreAddress))
                                         MixpanelManager.accountRestore(finalWalletAddress, restoreType)
                                         accountSuccessfullyAdded = true
                                         logd("KeyStoreRestoreViewModel", "Post-login process completed successfully.")
@@ -1123,6 +1128,8 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                                 )
                                             )
                                         )
+                                        // Persist key material in independent storage
+                                        saveKeyToNewStorage(userId, keyStoreInfo)
                                         MixpanelManager.accountRestore(
                                             cryptoProvider.getAddress(),
                                             restoreType
@@ -1329,6 +1336,8 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                     )
                                 )
                             )
+                            // Persist key material in independent storage
+                            saveKeyToNewStorage(firebaseUid().orEmpty(), keyStoreInfo)
                             MixpanelManager.accountCreated(
                                 cryptoProvider.getPublicKey(),
                                 AccountCreateKeyType.RESTORE_KEYSTORE,
@@ -1362,6 +1371,31 @@ class KeyStoreRestoreViewModel : ViewModel() {
                     } else callback(false)
                 }
             } else callback(false)
+        }
+    }
+
+    /**
+     * Write key material to the independent [KeyStorageManager] store.
+     * Prefers the in-memory mnemonic (seed-phrase restore path); falls back to
+     * the private key stored in keyStoreInfo (private-key import path).
+     */
+    private fun saveKeyToNewStorage(uid: String, keyStoreInfo: String?) {
+        if (uid.isBlank()) return
+        val mnemonic = currentMnemonic
+        if (!mnemonic.isNullOrBlank()) {
+            KeyStorageManager.saveSeedPhrase(uid, mnemonic)
+            return
+        }
+        if (!keyStoreInfo.isNullOrBlank()) {
+            try {
+                val ks = Gson().fromJson(keyStoreInfo, KeystoreAddress::class.java)
+                val hex = ks?.privateKey?.removePrefix("0x")
+                if (!hex.isNullOrBlank()) {
+                    KeyStorageManager.savePrivateKey(uid, hex)
+                }
+            } catch (e: Exception) {
+                logd("KeyStoreRestoreViewModel", "saveKeyToNewStorage: failed to parse keyStoreInfo: ${e.message}")
+            }
         }
     }
 
