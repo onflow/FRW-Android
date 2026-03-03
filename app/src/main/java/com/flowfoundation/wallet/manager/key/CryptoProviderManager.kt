@@ -28,9 +28,11 @@ import com.flowfoundation.wallet.utils.readWalletPassword
 import com.flow.wallet.storage.StorageProtocol
 import com.flowfoundation.wallet.manager.account.HardwareBackedKeyException
 import com.flowfoundation.wallet.manager.account.firstFlowWalletAddress
+import com.flowfoundation.wallet.manager.key.storage.KeyStorageManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.wallet.DERIVATION_PATH
 import com.flowfoundation.wallet.wallet.Wallet
+import com.flow.wallet.keys.PrivateKey
 import org.onflow.flow.models.toHexString
 
 object CryptoProviderManager {
@@ -101,6 +103,25 @@ object CryptoProviderManager {
         logd(TAG, "generateAccountCryptoProvider: Generating for account: ${account.userInfo.username}, isActive: ${account.isActive}, hasKeystore: ${!account.keyStoreInfo.isNullOrBlank()}")
 
         return try {
+            // --- New independent key storage (checked first) ---
+            val uid = account.wallet?.id
+            if (!uid.isNullOrBlank()) {
+                // SeedPhraseKey object retrieved directly – no intermediate string reconstruction
+                val seedPhraseKey = KeyStorageManager.getSeedPhraseKey(uid)
+                if (seedPhraseKey != null) {
+                    logd(TAG, "New storage: found seed phrase key for uid: $uid")
+                    return HDWalletCryptoProvider(seedPhraseKey)
+                }
+                // PrivateKey object retrieved directly – no intermediate string reconstruction
+                val privateKey = KeyStorageManager.getPrivateKeyObject(uid)
+                if (privateKey != null) {
+                    logd(TAG, "New storage: found private key object for uid: $uid")
+                    val keyWallet = WalletFactory.createKeyWallet(privateKey, setOf(ChainId.Mainnet, ChainId.Testnet), storage) as KeyWallet
+                    return PrivateKeyCryptoProvider(privateKey, keyWallet)
+                }
+                // AKP prefix from new storage falls through to prefix-based branch below
+            }
+
             // Handle keystore-based accounts
             if (!account.keyStoreInfo.isNullOrBlank()) {
                 logd(TAG, "  Branch: Keystore-based account. Info (first 100 chars): ${account.keyStoreInfo!!.take(100)}")
@@ -125,15 +146,24 @@ object CryptoProviderManager {
                 return HDWalletCryptoProvider(seedPhraseKey)
             }
             // Handle prefix-based accounts (legacy or hardware-backed)
-            else if (!account.prefix.isNullOrBlank()) {
-                logd(TAG, "  Branch: Prefix-based account")
+            // Also check new AKP storage when account.prefix is absent
+            else if (!account.prefix.isNullOrBlank() || (!uid.isNullOrBlank() && KeyStorageManager.hasAndroidKeystorePrefix(uid))) {
+                val effectivePrefix = account.prefix?.takeIf { it.isNotBlank() }
+                    ?: uid?.let { KeyStorageManager.getAndroidKeystorePrefix(it) }
+
+                logd(TAG, "  Branch: Prefix-based account (effectivePrefix from ${if (account.prefix.isNullOrBlank()) "new storage" else "account"})")
+
+                if (effectivePrefix.isNullOrBlank()) {
+                    loge(TAG, "  Prefix-based: resolved prefix is blank, skipping")
+                    return null
+                }
 
                 // Standard prefix-based account handling (for non-multi-restore accounts)
                 logd(TAG, "  Standard prefix-based account handling")
 
                 // Try to get the private key, handling hardware-backed keys
                 val privateKey = try {
-                    KeyCompatibilityManager.getPrivateKeyWithFallback(account.prefix!!, storage)
+                    KeyCompatibilityManager.getPrivateKeyWithFallback(effectivePrefix, storage)
                 } catch (e: HardwareBackedKeyException) {
                     loge(TAG, "Hardware-backed key detected")
                     return AndroidKeystoreCryptoProvider(e.prefix!!)
@@ -189,7 +219,7 @@ object CryptoProviderManager {
                             // Create the provider with the correct algorithms
                             return PrivateKeyCryptoProvider(privateKey, wallet, determinedSigningAlgorithm, matchedKey.hashingAlgorithm)
                         } else {
-                            logd(TAG, "  Prefix-based: Could NOT find matching on-chain key for ${account.prefix}. Using default signing algorithm: $determinedSigningAlgorithm")
+                            logd(TAG, "  Prefix-based: Could NOT find matching on-chain key for $effectivePrefix. Using default signing algorithm: $determinedSigningAlgorithm")
                         }
                     } else {
                         logd(TAG, "  Prefix-based: No account address available for on-chain key lookup")
@@ -234,6 +264,22 @@ object CryptoProviderManager {
         val storage = getStorage()
 
         return try {
+            // --- New independent key storage (checked first) ---
+            val switchUid = account.wallet?.id
+            if (!switchUid.isNullOrBlank()) {
+                val seedPhraseKey = KeyStorageManager.getSeedPhraseKey(switchUid)
+                if (seedPhraseKey != null) {
+                    logd("CryptoProviderManager", "Switch account new storage: seed phrase key for uid: $switchUid")
+                    return HDWalletCryptoProvider(seedPhraseKey)
+                }
+                val privateKey = KeyStorageManager.getPrivateKeyObject(switchUid)
+                if (privateKey != null) {
+                    logd("CryptoProviderManager", "Switch account new storage: private key object for uid: $switchUid")
+                    val keyWallet = WalletFactory.createKeyWallet(privateKey, setOf(ChainId.Mainnet, ChainId.Testnet), storage) as KeyWallet
+                    return PrivateKeyCryptoProvider(privateKey, keyWallet)
+                }
+            }
+
             // Handle keystore-based accounts
             if (account.keyStoreInfo.isNullOrBlank().not()) {
                 PrivateKeyStoreCryptoProvider(account.keyStoreInfo!!)
@@ -256,10 +302,17 @@ object CryptoProviderManager {
             }
 
             // Handle prefix-based accounts (legacy or hardware-backed)
-            else if (account.prefix.isNullOrBlank().not()) {
+            // Also check new AKP storage when account.prefix is absent
+            else if (!account.prefix.isNullOrBlank() || (!switchUid.isNullOrBlank() && KeyStorageManager.hasAndroidKeystorePrefix(switchUid))) {
+                val switchEffectivePrefix = account.prefix?.takeIf { it.isNotBlank() }
+                    ?: switchUid?.let { KeyStorageManager.getAndroidKeystorePrefix(it) }
+                if (switchEffectivePrefix.isNullOrBlank()) {
+                    loge("CryptoProviderManager", "Switch account: resolved prefix is blank")
+                    return null
+                }
                 // Load the stored private key using the prefix-based ID with backward compatibility
                 val privateKey = try {
-                    KeyCompatibilityManager.getPrivateKeyWithFallback(account.prefix!!, storage)
+                    KeyCompatibilityManager.getPrivateKeyWithFallback(switchEffectivePrefix, storage)
                 } catch (e: HardwareBackedKeyException) {
                     loge("CryptoProviderManager", "Hardware-backed key detected for switch account")
                     loge("CryptoProviderManager", "Creating AndroidKeystoreCryptoProvider for hardware-backed key")
@@ -362,13 +415,32 @@ object CryptoProviderManager {
         val storage = getStorage()
 
         return try {
+            // --- New independent key storage (checked first for LocalSwitchAccount) ---
+            val localUid = switchAccount.userId
+            if (!localUid.isNullOrBlank()) {
+                val seedPhraseKey = KeyStorageManager.getSeedPhraseKey(localUid)
+                if (seedPhraseKey != null) {
+                    logd("CryptoProviderManager", "LocalSwitchAccount new storage: seed phrase key for uid: $localUid")
+                    return HDWalletCryptoProvider(seedPhraseKey)
+                }
+                val privateKey = KeyStorageManager.getPrivateKeyObject(localUid)
+                if (privateKey != null) {
+                    logd("CryptoProviderManager", "LocalSwitchAccount new storage: private key object for uid: $localUid")
+                    val keyWallet = WalletFactory.createKeyWallet(privateKey, setOf(ChainId.Mainnet, ChainId.Testnet), storage) as KeyWallet
+                    return PrivateKeyCryptoProvider(privateKey, keyWallet)
+                }
+            }
+
             // Handle prefix-based accounts
-            if (switchAccount.prefix.isNullOrBlank().not()) {
+            // Also check new AKP storage when switchAccount.prefix is absent
+            val localEffectivePrefix = switchAccount.prefix?.takeIf { it.isNotBlank() }
+                ?: localUid?.let { KeyStorageManager.getAndroidKeystorePrefix(it) }
+            if (!localEffectivePrefix.isNullOrBlank()) {
                 // Load the stored private key using the prefix-based ID with backward compatibility
                 val privateKey = try {
-                    KeyCompatibilityManager.getPrivateKeyWithFallback(switchAccount.prefix, storage)
+                    KeyCompatibilityManager.getPrivateKeyWithFallback(localEffectivePrefix, storage)
                 } catch (e: HardwareBackedKeyException) {
-                    loge("CryptoProviderManager", "Hardware-backed key detected for local switch account prefix ${switchAccount.prefix}")
+                    loge("CryptoProviderManager", "Hardware-backed key detected for local switch account prefix $localEffectivePrefix")
                     loge("CryptoProviderManager", "Creating AndroidKeystoreCryptoProvider for hardware-backed key")
 
                     // For LocalSwitchAccount, we use defaults since we don't have wallet address
@@ -376,7 +448,7 @@ object CryptoProviderManager {
                 }
 
                 if (privateKey == null) {
-                    loge("CryptoProviderManager", "CRITICAL ERROR: Failed to load stored private key for local switch account prefix ${switchAccount.prefix} from both new and old storage")
+                    loge("CryptoProviderManager", "CRITICAL ERROR: Failed to load stored private key for local switch account prefix $localEffectivePrefix from both new and old storage")
                     loge("CryptoProviderManager", "Cannot proceed without the stored key as it would create a different account")
                     return null
                 }

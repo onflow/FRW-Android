@@ -16,6 +16,7 @@ import com.flowfoundation.wallet.manager.account.firstFlowWalletAddress
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
+import com.flowfoundation.wallet.manager.key.storage.KeyStorageManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.walletdata.EOAWallet
 import com.flowfoundation.wallet.manager.walletdata.FlowWallet
@@ -567,6 +568,8 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                     throw IllegalStateException("Failed to store mnemonic for userId: $userId")
                                 }
                                 logd(TAG, "saveMnemonic() - Mnemonic stored successfully via AccountWalletManager")
+                                // Also persist in independent key storage so it survives account-cache loss
+                                KeyStorageManager.saveSeedPhrase(userId, mnemonic)
 
                                 // Account discovery is now handled by React Native layer
                                 // React Native will handle wallet initialization after Flow address is created

@@ -51,6 +51,7 @@ import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.generatePrefix
 import org.onflow.flow.infrastructure.Cadence.Companion.uint8
 import com.facebook.react.modules.core.DeviceEventManagerModule
+import com.flowfoundation.wallet.manager.key.storage.KeyStorageManager
 import com.flowfoundation.wallet.reactnative.bridge.handlers.AccountBridgeHandler
 import com.flowfoundation.wallet.reactnative.bridge.handlers.AuthBridgeHandler
 import com.flowfoundation.wallet.reactnative.bridge.handlers.UIBridgeHandler
@@ -158,6 +159,12 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
 
                 // Update and store the mnemonic in Wallet
                 Wallet.store().updateMnemonic(seedPhrase).store()
+
+                // Also persist in independent key storage so it survives account-cache loss
+                val uid = firebaseUid() ?: AccountManager.get()?.wallet?.id
+                if (!uid.isNullOrBlank()) {
+                    KeyStorageManager.saveSeedPhrase(uid, seedPhrase)
+                }
 
                 logd(TAG, "saveNewKey() - Seed phrase saved successfully")
                 uiScope {
