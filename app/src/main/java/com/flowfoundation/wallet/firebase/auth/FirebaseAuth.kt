@@ -53,7 +53,7 @@ fun firebaseCustomLogin(token: String, onComplete: FirebaseAuthCallback) {
                 logd(TAG, "Sign in successful, new user UID: ${newUser?.uid}")
                 logd(TAG, "Requesting ID token refresh")
 
-                newUser?.getIdToken(true)?.addOnSuccessListener { result ->
+                newUser?.getIdToken(true)?.addOnSuccessListener { _ ->
                     logd(TAG, "ID token obtained successfully")
                     uiScope {
                         onComplete.invoke(true, null)
