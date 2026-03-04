@@ -7,10 +7,6 @@ import android.content.BroadcastReceiver
 import android.content.IntentFilter
 import android.os.Bundle
 import androidx.core.view.GravityCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.updatePadding
 import androidx.lifecycle.ViewModelProvider
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.flowfoundation.wallet.base.activity.BaseActivity
@@ -61,13 +57,6 @@ class MainActivity : BaseActivity() {
 
         UltimateBarX.with(this).fitWindow(false).light(!isNightMode(this)).applyStatusBar()
 
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, windowInsets ->
-            val systemBarsInsets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
-            binding.navigationView.updatePadding(bottom = systemBarsInsets.bottom)
-            windowInsets
-        }
         contentPresenter = MainContentPresenter(this, binding)
         setupDrawerLayoutCompose(binding.drawerLayout)
         binding.drawerLayout.close()

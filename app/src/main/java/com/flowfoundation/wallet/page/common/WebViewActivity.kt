@@ -15,6 +15,7 @@ class WebViewActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_webview)
+
         findViewById<LilicoWebView>(R.id.webview).apply {
             loadUrl(this@WebViewActivity.url!!)
         }

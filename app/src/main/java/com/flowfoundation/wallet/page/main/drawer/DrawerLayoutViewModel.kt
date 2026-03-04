@@ -53,7 +53,6 @@ class DrawerLayoutViewModel : ViewModel(), OnAccountUpdate, OnEmojiUpdate {
     }
 
     fun loadData(refreshBalance: Boolean = false) {
-        loadEvmStatus()
         refreshWalletList(refreshBalance)
     }
 
@@ -155,6 +154,7 @@ class DrawerLayoutViewModel : ViewModel(), OnAccountUpdate, OnEmojiUpdate {
             }
 
             _accounts.value = filteredAccounts
+            loadEvmStatus()
             if (refreshBalance) {
                 fetchAllBalances(addressList, pendingEvmAddresses)
             }
