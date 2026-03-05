@@ -5,6 +5,7 @@ import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager.walletNodes
 import com.flowfoundation.wallet.manager.account.AccountWalletManager
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
+import com.flowfoundation.wallet.manager.key.storage.KeyStorageManager
 import com.flowfoundation.wallet.manager.walletdata.FlowWallet
 import com.flowfoundation.wallet.utils.*
 import com.flowfoundation.wallet.utils.error.AccountError
@@ -95,9 +96,14 @@ object AccountCacheManager{
 
             // Validate account data
             val validAccounts = result.filter { account ->
+                val uid = account.wallet?.id ?: ""
                 val isValid = account.userInfo.username.isNotBlank() &&
-                             (!account.keyStoreInfo.isNullOrBlank() || !account.prefix
-                                 .isNullOrBlank() || AccountWalletManager.isHDWallet(account.wallet?.id ?: ""))
+                             (!account.keyStoreInfo.isNullOrBlank() ||
+                              !account.prefix.isNullOrBlank() ||
+                              AccountWalletManager.isHDWallet(uid) ||
+                              KeyStorageManager.hasSeedPhrase(uid) ||
+                              KeyStorageManager.hasPrivateKey(uid) ||
+                              KeyStorageManager.hasAndroidKeystorePrefix(uid))
                 if (!isValid) {
                     logd(TAG, "Invalid account found: ${account.userInfo.username}")
                 }

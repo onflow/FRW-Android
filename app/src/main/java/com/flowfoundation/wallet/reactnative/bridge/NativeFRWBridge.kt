@@ -22,6 +22,7 @@ import org.json.JSONObject
 import org.json.JSONArray
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
+import com.flowfoundation.wallet.manager.account.firstFlowWalletAddress
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.logw
@@ -165,6 +166,10 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 val uid = firebaseUid() ?: AccountManager.get()?.wallet?.id
                 if (!uid.isNullOrBlank()) {
                     KeyStorageManager.saveSeedPhrase(uid, seedPhrase)
+                    val address = AccountManager.get()?.firstFlowWalletAddress()
+                    if (!address.isNullOrBlank()) {
+                        KeyStorageManager.saveWalletAddress(uid, address)
+                    }
                 }
 
                 logd(TAG, "saveNewKey() - Seed phrase saved successfully")
@@ -208,6 +213,11 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 // Update AccountManager cache
                 // AccountManager.add(account) will update the list and cache it
                 AccountManager.add(account)
+
+                // Delete any pkStorage entry that KeyStorageMigration (Case 2) may have created
+                if (!uid.isNullOrBlank()) {
+                    KeyStorageManager.deletePrivateKey(uid)
+                }
 
                 // 3. Clear CryptoProvider
                 CryptoProviderManager.clear()
@@ -375,8 +385,29 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
 
                 // 4. Update local account state with new prefix
                 logd(TAG, "keystoreMigration() - updating local account state")
+                val uid = firebaseUid() ?: account.wallet?.id
+                val oldPrefix = account.prefix
                 account.prefix = newPrefix
                 AccountManager.add(account)
+
+                // Sync new prefix to independent AKP storage
+                if (!uid.isNullOrBlank()) {
+                    KeyStorageManager.saveAndroidKeystorePrefix(uid, newPrefix)
+                    val address = account.firstFlowWalletAddress()
+                    if (!address.isNullOrBlank()) {
+                        KeyStorageManager.saveWalletAddress(uid, address)
+                    }
+                }
+
+                // Remove the stale file-private-key entry that KeyCompatibilityManager may find
+                if (!oldPrefix.isNullOrBlank()) {
+                    try {
+                        getStorage().remove("prefix_key_$oldPrefix")
+                        logd(TAG, "Removed old prefix key from shared storage: prefix_key_$oldPrefix")
+                    } catch (e: Exception) {
+                        loge(TAG, "Failed to remove old prefix key: ${e.message}")
+                    }
+                }
 
                 // 5. Reload CryptoProvider
                 logd(TAG, "keystoreMigration() - reloading crypto provider")

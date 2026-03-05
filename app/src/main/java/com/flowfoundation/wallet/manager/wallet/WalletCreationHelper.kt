@@ -60,7 +60,9 @@ object WalletCreationHelper {
                 val privateKey = KeyStorageManager.getPrivateKeyObject(userId)
                 if (privateKey != null) {
                     logd(TAG, "New storage: private key object found for uid: $userId")
-                    return createWalletFromPrivateKey(privateKey, isCurrentAccount)
+                    val wallet = createWalletFromPrivateKey(privateKey, isCurrentAccount)
+                    checkAndNotifyMnemonicRestoreIfNeeded(isCurrentAccount)
+                    return wallet
                 }
                 // Android Keystore prefix → reconstruct provider at app layer
                 val akPrefix = KeyStorageManager.getAndroidKeystorePrefix(userId)
@@ -116,7 +118,6 @@ object WalletCreationHelper {
             val uid = if (isCurrentAccount) firebaseUid() else userId
             if (!uid.isNullOrBlank()) {
                 val decryptedMnemonic = EncryptedMnemonicUtils.decrypt(ks.encryptedMnemonic, uid)
-                logd(TAG, "Decrypted mnemonic: $decryptedMnemonic")
                 if (!decryptedMnemonic.isNullOrBlank()) {
                     // Create HD Wallet using the decrypted mnemonic
                     val seedPhraseKey = SeedPhraseKey(
@@ -141,21 +142,7 @@ object WalletCreationHelper {
             }
         } else {
             logd(TAG, "No encrypted mnemonic found, using private key mode")
-            try {
-                val service = retrofitApi().create(ApiService::class.java)
-                val response = service.checkUserMnemonicStatus()
-                logd(TAG, "Checked user mnemonic status: ${response.data}")
-                if (response.data?.isExist == true) {
-                    logd(TAG, "Mnemonic restore required. Disabling EOA and notifying UI.")
-                    if (isCurrentAccount) {
-                        WalletManager.setEoaDisabled(true)
-                        LocalBroadcastManager.getInstance(com.flowfoundation.wallet.utils.Env.getApp())
-                            .sendBroadcast(android.content.Intent("ACTION_RESTORE_MNEMONIC"))
-                    }
-                }
-            } catch (e: Exception) {
-                logd(TAG, "Error checking mnemonic status: ${e.message}")
-            }
+            checkAndNotifyMnemonicRestoreIfNeeded(isCurrentAccount)
         }
 
         // Fallback to private key mode
@@ -260,6 +247,27 @@ object WalletCreationHelper {
         val storage = getStorage()
         if (isCurrentAccount) WalletManager.setEoaDisabled(true)
         return WalletFactory.createKeyWallet(privateKey, setOf(ChainId.Mainnet, ChainId.Testnet), storage)
+    }
+
+    /**
+     * Checks the server-side mnemonic status and fires ACTION_RESTORE_MNEMONIC if the user
+     * has no mnemonic backup yet. Only runs for the current account to avoid spurious prompts.
+     */
+    private suspend fun checkAndNotifyMnemonicRestoreIfNeeded(isCurrentAccount: Boolean) {
+        if (!isCurrentAccount) return
+        try {
+            val service = retrofitApi().create(ApiService::class.java)
+            val response = service.checkUserMnemonicStatus()
+            logd(TAG, "Checked user mnemonic status: ${response.data}")
+            if (response.data?.isExist == true) {
+                logd(TAG, "Mnemonic restore required. Disabling EOA and notifying UI.")
+                WalletManager.setEoaDisabled(true)
+                LocalBroadcastManager.getInstance(com.flowfoundation.wallet.utils.Env.getApp())
+                    .sendBroadcast(android.content.Intent("ACTION_RESTORE_MNEMONIC"))
+            }
+        } catch (e: Exception) {
+            logd(TAG, "Error checking mnemonic status: ${e.message}")
+        }
     }
 
     /**

@@ -157,7 +157,7 @@ object AccountManager {
 
     fun getSwitchAccountList(): List<Any> {
         logd(TAG, "getSwitchAccountList() called")
-        logd(TAG, "Current accounts: $accounts")
+        logd(TAG, "Current accounts: ${accounts.map { it.userInfo.username }}")
 
         val list = mutableListOf<Any>()
         list.addAll(accounts)
@@ -193,9 +193,10 @@ object AccountManager {
 
         return orphanUids.map { uid ->
             val akPrefix = KeyStorageManager.getAndroidKeystorePrefix(uid)
+            val address = KeyStorageManager.getWalletAddress(uid) ?: ""
             LocalSwitchAccount(
-                username = uid,
-                address = "",
+                username = address,
+                address = address,
                 userId = uid,
                 prefix = akPrefix
             )
@@ -207,7 +208,7 @@ object AccountManager {
         WalletManager.clear()
 
         currentAccount = account
-        logd(TAG, "Account added. Current account is now: $currentAccount")
+        logd(TAG, "Account added. Current account is now: ${currentAccount?.userInfo?.username.orEmpty()}")
         accounts.removeAll { it.userInfo.username == account.userInfo.username }
         accounts.add(account)
         accounts.forEach {
@@ -269,9 +270,6 @@ object AccountManager {
 
             logd(TAG, "Removing active account and clearing all related state")
 
-            // Set Firebase to anonymous before clearing state
-            setToAnonymous()
-
             // Clear the account from the list
             val account = accounts.removeAt(index)
             logd(TAG, "Removed account: ${account.userInfo.username}")
@@ -288,7 +286,6 @@ object AccountManager {
             // Clear account cache
             AccountCacheManager.cache(Accounts().apply { addAll(accounts) })
             logd(TAG, "Cleared account cache")
-
 
             // Clear WalletManager state
             try {
@@ -326,14 +323,20 @@ object AccountManager {
             setUploadedAddressSet(emptySet())
             logd(TAG, "Cleared uploaded address set")
 
-            uiScope {
-                // Clear user cache
-                clearUserCache()
-                logd(TAG, "Cleared user cache")
-
-                // Navigate to main activity (which should show the get started screen)
-                logd(TAG, "Relaunching MainActivity after account reset")
-                MainActivity.relaunch(Env.getApp(), true)
+            val nextAccount = accounts.firstOrNull()
+            if (nextAccount != null) {
+                // Switch to the first remaining account so Firebase re-authenticates properly.
+                // setToAnonymous() is called inside switchAccount() before the new login.
+                logd(TAG, "Remaining accounts found, switching to: ${nextAccount.userInfo.username}")
+                switch(nextAccount) {}
+            } else {
+                // No remaining accounts — go back to get started screen.
+                setToAnonymous()
+                uiScope {
+                    clearUserCache()
+                    logd(TAG, "Relaunching MainActivity after account reset")
+                    MainActivity.relaunch(Env.getApp(), true)
+                }
             }
         }
     }
@@ -441,14 +444,14 @@ object AccountManager {
     }
 
     fun list(): List<Account> {
-        logd(TAG, "list() called. Accounts: $accounts")
+        logd(TAG, "list() called. Accounts: ${accounts.map { it.userInfo.username }}")
         return accounts
     }
 
     private var isSwitching = false
 
     fun switch(account: Account, onFinish: () -> Unit) {
-        logd(TAG, "switch() called. Switching to account: $account")
+        logd(TAG, "switch() called. Switching to account: ${account.userInfo.username}")
 
         // Check if we're already on this account
         if (account.isActive && currentAccount?.userInfo?.username == account.userInfo.username) {
@@ -489,7 +492,7 @@ object AccountManager {
                 if (isSuccess) {
                     isSwitching = false
                     currentAccount = account
-                    logd(TAG, "Account switch successful. Current account updated to: $currentAccount")
+                    logd(TAG, "Account switch successful. Current account updated to: ${currentAccount?.userInfo?.username}")
                     accounts.forEach {
                         it.isActive = it.userInfo.username == account.userInfo.username
                     }
@@ -504,7 +507,7 @@ object AccountManager {
                     loge(TAG, "Account switch failed, showing error toast")
                     toast(msgRes = R.string.resume_login_error, duration = Toast.LENGTH_LONG)
                 }
-                logd(TAG, "switch() completed. Current account: $currentAccount")
+                logd(TAG, "switch() completed. Current account: ${currentAccount?.userInfo?.username}")
                 onFinish()
             }
         }
@@ -657,7 +660,7 @@ object AccountManager {
     }
 
     private fun dispatchListeners(account: Account) {
-        logd(TAG, "dispatchListeners: $account")
+        logd(TAG, "dispatchListeners: ${account.userInfo.username}")
         uiScope {
             listeners.removeAll { it.get() == null }
             listeners.forEach { it.get()?.onAccountUpdate(account) }
@@ -760,21 +763,43 @@ object AccountManager {
             val resp = service.loginV4(loginRequest)
             if (resp.data?.customToken.isNullOrBlank()) {
                 loge(tag = "SWITCH_ACCOUNT", msg = "get customToken failed :: ${resp.data?.customToken}")
+                loge(tag = "SWITCH_ACCOUNT", msg = "Response status: ${resp.status}, message: ${resp.message}")
                 callback.invoke(false)
             } else {
                 firebaseLogin(resp.data.customToken) { isSuccess ->
                     if (isSuccess) {
                         setRegistered()
-                        if (switchAccount.prefix == null) {
-                            Wallet.store().resume()
-                        } else {
-                            firebaseUid()?.let { userId ->
-                                userPrefixes.removeAll { it.userId == userId}
-                                userPrefixes.add(UserPrefix(userId, switchAccount.prefix))
-                                UserPrefixCacheManager.cache(UserPrefixes().apply { addAll(userPrefixes) })
+                        // Fetch user info and persist the account so it survives MainActivity relaunch.
+                        // Without this, AccountManager.init() reads an empty cache after relaunch.
+                        ioScope {
+                            try {
+                                val userInfo = service.userInfo().data
+                                val userId = firebaseUid() ?: ""
+                                clearUserCache()
+                                add(Account(
+                                    userInfo = userInfo,
+                                    wallet = WalletListData(id = userId, username = userInfo.username, wallets = null),
+                                    prefix = switchAccount.prefix
+                                ))
+                                logd(TAG, "LocalSwitchAccount: account stored for uid: $userId")
+
+                                if (switchAccount.prefix != null) {
+                                    // Hardware-backed key: persist prefix so CryptoProviderManager
+                                    // can reconstruct the provider after relaunch.
+                                    userPrefixes.removeAll { it.userId == userId }
+                                    userPrefixes.add(UserPrefix(userId, switchAccount.prefix))
+                                    UserPrefixCacheManager.cache(UserPrefixes().apply { addAll(userPrefixes) })
+                                } else if (!KeyStorageManager.hasPrivateKey(switchAccount.userId ?: "")) {
+                                    // HD wallet (seed phrase) account only — not private-key import.
+                                    // Mirrors the condition in switchAccount(Account):
+                                    // account.prefix == null && account.keyStoreInfo == null
+                                    Wallet.store().resume()
+                                }
+                            } catch (e: Exception) {
+                                loge(TAG, "LocalSwitchAccount: failed to fetch/store user info: ${e.message}")
                             }
+                            callback.invoke(true)
                         }
-                        callback.invoke(true)
                     } else {
                         loge(tag = "SWITCH_ACCOUNT", msg = "get firebase login failed :: ${resp.data.customToken}")
                         callback.invoke(false)

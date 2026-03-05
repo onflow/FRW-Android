@@ -289,8 +289,8 @@ class KeyStoreRestoreViewModel : ViewModel() {
     fun importPrivateKey(privateKey: String, address: String) {
         loadingLiveData.postValue(true)
         restoreType = RestoreType.PRIVATE_KEY
-        try {
-            ioScope {
+        ioScope {
+            try {
                 val storage = getStorage()
                 val key = PrivateKey.create(storage).apply {
                     logd("KeyStoreRestoreViewModel", "Created new PrivateKey instance")
@@ -321,12 +321,12 @@ class KeyStoreRestoreViewModel : ViewModel() {
                         p1PublicKey ?: ""
                     )
                 }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                ErrorReporter.reportWithMixpanel(BackupError.PRIVATE_KEY_RESTORE_FAILED, e)
+                loadingLiveData.postValue(false)
+                toast(msgRes = R.string.restore_failed)
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            ErrorReporter.reportWithMixpanel(BackupError.PRIVATE_KEY_RESTORE_FAILED, e)
-            loadingLiveData.postValue(false)
-            toast(msgRes = R.string.restore_failed)
         }
     }
 
@@ -335,8 +335,8 @@ class KeyStoreRestoreViewModel : ViewModel() {
         loadingLiveData.postValue(true)
         restoreType = RestoreType.SEED_PHRASE
         currentMnemonic = mnemonic // Store mnemonic for use in KeystoreAddress creation
-        try {
-            ioScope {
+        ioScope {
+            try {
                 val storage = getStorage()
                 val seedPhraseKey = SeedPhraseKey(
                     mnemonicString = mnemonic,
@@ -364,12 +364,12 @@ class KeyStoreRestoreViewModel : ViewModel() {
                         p1PublicKey ?: ""
                     )
                 }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                ErrorReporter.reportWithMixpanel(BackupError.SEED_PHRASE_RESTORE_FAILED, e)
+                loadingLiveData.postValue(false)
+                toast(msgRes = R.string.restore_failed)
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            ErrorReporter.reportWithMixpanel(BackupError.SEED_PHRASE_RESTORE_FAILED, e)
-            loadingLiveData.postValue(false)
-            toast(msgRes = R.string.restore_failed)
         }
     }
 
@@ -655,6 +655,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
         val account = AccountManager.list()
             .firstOrNull { it.containsFlowWalletAddress(currentKeyStoreAddress?.address ?: "") }
         if (account != null) {
+            loadingLiveData.postValue(false)
             AccountManager.switch(account) {}
             return
         }
@@ -1043,6 +1044,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
         val account = AccountManager.list()
             .firstOrNull { it.containsFlowWalletAddress(keystoreAddress.address) }
         if (account != null) {
+            loadingLiveData.postValue(false)
             AccountManager.switch(account) {}
             return
         }

@@ -533,11 +533,12 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
                 switchList.filterIsInstance<com.flowfoundation.wallet.manager.account.model.LocalSwitchAccount>().forEach { localAccount ->
                     logd(TAG, "getRecoverableProfiles() - processing LocalSwitchAccount: ${localAccount.username}")
 
-                    val mainEmojiInfo = createEmojiInfo(localAccount.address)
+                    val displayAddress = localAccount.address.ifBlank { null }
+                    val mainEmojiInfo = if (displayAddress != null) createEmojiInfo(displayAddress) else null
                     val mainAccount = RNBridge.WalletAccount(
-                        id = "main_${localAccount.address}",
+                        id = "main_${displayAddress ?: localAccount.userId ?: localAccount.username}",
                         name = mainEmojiInfo?.name ?: localAccount.username,
-                        address = localAccount.address,
+                        address = displayAddress ?: "",
                         emojiInfo = mainEmojiInfo,
                         parentEmoji = null,
                         parentAddress = null,
@@ -581,26 +582,35 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
         logd(TAG, "switchToProfile() called with userId: $userId")
         ioScope {
             try {
-                // Find the account with the matching userId (wallet id)
-                val accounts = AccountManager.list()
-                val targetAccount = accounts.find { it.wallet?.id == userId }
-
-                if (targetAccount == null) {
-                    logw(TAG, "switchToProfile() - account not found for userId: $userId")
-                    uiScope {
-                        promise.reject("PROFILE_NOT_FOUND", "Account not found for userId: $userId")
+                // 1. Check normal logged-in accounts first
+                val targetAccount = AccountManager.list().find { it.wallet?.id == userId }
+                if (targetAccount != null) {
+                    logd(TAG, "switchToProfile() - found normal account: ${targetAccount.userInfo.username}")
+                    AccountManager.switch(targetAccount) {
+                        logd(TAG, "switchToProfile() - switch completed for userId: $userId")
+                        uiScope { promise.resolve(null) }
                     }
                     return@ioScope
                 }
 
-                logd(TAG, "switchToProfile() - found account: ${targetAccount.userInfo.username}")
+                // 2. Not a normal account — check LocalSwitchAccount list (orphan keys)
+                // These are accounts with key material but no account cache entry.
+                val localAccount = AccountManager.getSwitchAccountList()
+                    .filterIsInstance<com.flowfoundation.wallet.manager.account.model.LocalSwitchAccount>()
+                    .find { it.userId == userId }
 
-                // Switch to the account
-                AccountManager.switch(targetAccount) {
-                    logd(TAG, "switchToProfile() - switch completed for userId: $userId")
-                    uiScope {
-                        promise.resolve(null) // Success - resolve with no value
+                if (localAccount != null) {
+                    logd(TAG, "switchToProfile() - found LocalSwitchAccount for userId: $userId")
+                    AccountManager.switch(localAccount) {
+                        logd(TAG, "switchToProfile() - LocalSwitchAccount switch completed for userId: $userId")
+                        uiScope { promise.resolve(null) }
                     }
+                    return@ioScope
+                }
+
+                logw(TAG, "switchToProfile() - account not found for userId: $userId")
+                uiScope {
+                    promise.reject("PROFILE_NOT_FOUND", "Account not found for userId: $userId")
                 }
             } catch (e: Exception) {
                 loge(TAG, "switchToProfile() - error: ${e.message}")

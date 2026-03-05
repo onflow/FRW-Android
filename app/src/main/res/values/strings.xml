@@ -84,6 +84,7 @@
         created your previous wallet.</string>
     <string name="restore_with_mnemonic">Sign in with \nRecovery Phrase</string>
     <string name="restore_mnemonic_hint">Enter the Recovery Phrase</string>
+    <string name="restore_mnemonic_mismatch">Recovery phrase does not match this account</string>
     <string name="account_not_found">Account not Found</string>
     <string name="account_not_found_desc">No account found with the recovery phrase. Do you want to create a new account with your phrase?</string>
     <string name="your_phrase">your phrase</string>
