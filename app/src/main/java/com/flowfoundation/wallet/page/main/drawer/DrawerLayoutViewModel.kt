@@ -17,6 +17,7 @@ import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofitApi
 import com.flowfoundation.wallet.utils.formatLargeBalanceNumber
+import com.flowfoundation.wallet.utils.isHideCOAWithZeroBalanceEnable
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.network.model.UserInfoData
 import com.flowfoundation.wallet.manager.account.AccountVisibilityManager
@@ -169,23 +170,31 @@ class DrawerLayoutViewModel : ViewModel(), OnAccountUpdate, OnEmojiUpdate {
             }
             _balanceMap.value = formattedBalanceMap
 
+            val hideCOAWithZeroBalance = isHideCOAWithZeroBalanceEnable()
+
             // Check each pending EVM address
             pendingEvmAddresses.forEach { (evmAddress, walletAddress) ->
-                val evmBalance = balanceMap[evmAddress]
-                val hasBalance = evmBalance != null && evmBalance > BigDecimal.ZERO
-                var hasNFTs = false
+                val shouldShow = if (!hideCOAWithZeroBalance) {
+                    true
+                } else {
+                    val evmBalance = balanceMap[evmAddress]
+                    val hasBalance = evmBalance != null && evmBalance > BigDecimal.ZERO
+                    var hasNFTs = false
 
-                if (!hasBalance) {
-                    try {
-                        val nftResponse = service.getEVMNFTCollections(evmAddress)
-                        val totalNftCount = nftResponse.data?.sumOf { it.count ?: 0 } ?: 0
-                        hasNFTs = nftResponse.data?.isNotEmpty() == true && totalNftCount > 0
-                    } catch (_: Exception) {
-                        // Ignore NFT API errors
+                    if (!hasBalance) {
+                        try {
+                            val nftResponse = service.getEVMNFTCollections(evmAddress)
+                            val totalNftCount = nftResponse.data?.sumOf { it.count ?: 0 } ?: 0
+                            hasNFTs = nftResponse.data?.isNotEmpty() == true && totalNftCount > 0
+                        } catch (_: Exception) {
+                            // Ignore NFT API errors
+                        }
                     }
+
+                    hasBalance || hasNFTs
                 }
 
-                if (hasBalance || hasNFTs) {
+                if (shouldShow) {
                     // Add EVM address to linked accounts
                     val currentAccounts = _accounts.value.toMutableList()
                     val walletAccount = currentAccounts.find { it.address == walletAddress }

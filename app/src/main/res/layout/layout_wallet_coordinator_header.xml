@@ -73,6 +73,41 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/tv_address"
             app:layout_constraintBottom_toBottomOf="@id/tv_address"/>
+
+        <com.facebook.shimmer.ShimmerFrameLayout
+            android:id="@+id/shimmer_balance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="5dp"
+            android:visibility="visible"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+            <View
+                android:layout_width="130dp"
+                android:layout_height="36dp"
+                android:background="@drawable/bg_round_4dp"
+                android:backgroundTint="@color/bg_icon"/>
+        </com.facebook.shimmer.ShimmerFrameLayout>
+
+        <com.facebook.shimmer.ShimmerFrameLayout
+            android:id="@+id/shimmer_address"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="17dp"
+            android:layout_marginBottom="25dp"
+            android:visibility="visible"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_balance"
+            app:layout_constraintBottom_toBottomOf="parent">
+            <View
+                android:layout_width="160dp"
+                android:layout_height="18dp"
+                android:background="@drawable/bg_round_4dp"
+                android:backgroundTint="@color/bg_icon"/>
+        </com.facebook.shimmer.ShimmerFrameLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 

@@ -13,7 +13,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -302,6 +304,7 @@ fun SettingScreen(
                 text = stringResource(R.string.free_gas_fee_desc),
                 fontSize = 12.sp,
                 color = colorResource(R.color.text_2),
+                style = TextStyle(lineBreak = LineBreak.Paragraph),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 6.dp)

@@ -33,7 +33,9 @@ import com.flowfoundation.wallet.utils.updateChainNetworkPreference
 import com.flowfoundation.wallet.utils.getWatchCollectibleAddress
 import com.flowfoundation.wallet.utils.setWatchCollectibleAddress
 import com.flowfoundation.wallet.utils.clearWatchCollectibleAddress
+import com.flowfoundation.wallet.utils.isHideCOAWithZeroBalanceEnable
 import com.flowfoundation.wallet.utils.isWrapEOATxWithCadenceEnable
+import com.flowfoundation.wallet.utils.setHideCOAWithZeroBalanceEnable
 import com.flowfoundation.wallet.utils.setWrapEOATxWithCadenceEnable
 import com.flowfoundation.wallet.widgets.ProgressDialog
 import kotlinx.coroutines.delay
@@ -81,6 +83,7 @@ class DeveloperModePresenter(
                 // Initialize Watch Collectible Address
                 setupWatchCollectibleAddress()
                 setupWrapEOATxWithCadence()
+                setupHideCOAWithZeroBalance()
 
                 developerModePreference.setOnCheckedChangeListener {
                     setDevelopContentVisible(it)
@@ -173,6 +176,18 @@ class DeveloperModePresenter(
                 binding.wrapEoaTx.setChecked(isWrap)
                 binding.wrapEoaTx.setOnCheckedChangeListener {
                     setWrapEOATxWithCadenceEnable(it)
+                }
+            }
+        }
+    }
+
+    private fun setupHideCOAWithZeroBalance() {
+        ioScope {
+            val isHide = isHideCOAWithZeroBalanceEnable()
+            uiScope {
+                binding.hideCoaZeroBalance.setChecked(isHide)
+                binding.hideCoaZeroBalance.setOnCheckedChangeListener {
+                    setHideCOAWithZeroBalanceEnable(it)
                 }
             }
         }

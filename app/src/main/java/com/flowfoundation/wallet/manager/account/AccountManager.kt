@@ -22,9 +22,7 @@ import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.clearUserCache
 import com.flowfoundation.wallet.manager.key.HDWalletCryptoProvider
 import com.flowfoundation.wallet.network.model.AccountKey
-import com.flowfoundation.wallet.network.model.EvmAccountInfo
 import com.flowfoundation.wallet.network.model.FlowAccountInfo
-import com.flowfoundation.wallet.network.model.LoginRequest
 import com.flowfoundation.wallet.network.model.LoginV4Request
 import com.flowfoundation.wallet.network.model.UserInfoData
 import com.flowfoundation.wallet.network.model.WalletListData
@@ -572,7 +570,7 @@ object AccountManager {
             logd(TAG, "  Key Weight: ${cryptoProvider.getKeyWeight()}")
 
             // Get JWT with force refresh to avoid token expiration issues
-            val jwt = getFirebaseJwt(true)
+            val jwt = getFirebaseJwt()
             logd(TAG, "Retrieved JWT for account switch (length: ${jwt.length})")
 
             val publicKey = cryptoProvider.getPublicKey()
@@ -726,7 +724,7 @@ object AccountManager {
             logd(TAG, "  Key Weight: ${cryptoProvider.getKeyWeight()}")
 
             // Get JWT with force refresh to avoid token expiration issues
-            val jwt = getFirebaseJwt(true)
+            val jwt = getFirebaseJwt()
             logd(TAG, "Retrieved JWT for local account switch (length: ${jwt.length})")
 
             val publicKey = cryptoProvider.getPublicKey()
