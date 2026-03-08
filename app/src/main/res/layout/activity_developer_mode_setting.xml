@@ -196,7 +196,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         app:iconEnable="false"
-                        app:titleId="@string/debug_view"/>
+                        app:titleId="@string/wrap_eoa_tx_with_cadence"/>
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
             </com.google.android.material.card.MaterialCardView>

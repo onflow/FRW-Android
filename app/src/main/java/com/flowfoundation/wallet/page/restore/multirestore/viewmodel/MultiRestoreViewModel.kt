@@ -51,7 +51,7 @@ import com.flowfoundation.wallet.utils.setMultiBackupCreated
 import com.flowfoundation.wallet.utils.setRegistered
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
-import com.instabug.library.Instabug
+import ai.luciq.library.Luciq
 import com.flow.wallet.keys.SeedPhraseKey
 import com.flow.wallet.storage.FileSystemStorage
 import com.flowfoundation.wallet.manager.flowjvm.transaction.sendTransactionWithMultiSignature
@@ -527,7 +527,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
             reportCadenceErrorToDebugView(scriptId, e)
             if (e is InvalidKeyException) {
                 ErrorReporter.reportCriticalWithMixpanel(WalletError.QUERY_ACCOUNT_KEY_FAILED, e)
-                Instabug.show()
+                Luciq.show()
             }
             return null
         }

@@ -5,7 +5,7 @@ import com.flowfoundation.wallet.firebase.analytics.reportEvent
 import com.flowfoundation.wallet.network.interceptor.HeaderInterceptor
 import com.flowfoundation.wallet.network.interceptor.PayerServiceInterceptor
 import com.flowfoundation.wallet.utils.*
-import com.instabug.library.okhttplogger.InstabugOkhttpInterceptor
+import ai.luciq.library.okhttplogger.LuciqOkhttpInterceptor
 import kotlinx.coroutines.suspendCancellableCoroutine
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -45,7 +45,7 @@ private suspend fun executeHttp(host: String, functionName: String, data: Any? =
 
         addInterceptor(HeaderInterceptor())
         addInterceptor(PayerServiceInterceptor())  // Add payer service interceptor
-        addInterceptor(InstabugOkhttpInterceptor())
+        addInterceptor(LuciqOkhttpInterceptor())
         if (isTesting()) {
             addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY })
         }

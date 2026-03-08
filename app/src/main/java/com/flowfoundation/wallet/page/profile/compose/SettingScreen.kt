@@ -44,7 +44,7 @@ import com.flowfoundation.wallet.page.account.AccountListActivity
 import com.flowfoundation.wallet.page.security.SecuritySettingActivity
 import com.flowfoundation.wallet.utils.*
 import com.flowfoundation.wallet.utils.extensions.openInSystemBrowser
-import com.instabug.library.Instabug
+import ai.luciq.library.Luciq
 import kotlinx.coroutines.launch
 
 @Composable
@@ -255,7 +255,7 @@ fun SettingScreen(
                     titleRes = R.string.bug_report,
                     showDivider = true
                 ) {
-                    Instabug.show()
+                    Luciq.show()
                 }
 
                 if (isSignedIn) {

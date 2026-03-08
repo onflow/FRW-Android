@@ -234,12 +234,11 @@ object CryptoProviderManager {
             }
             // Handle wallet-specific mnemonic accounts
             else {
-                logd(TAG, "  Branch: Inactive account.")
-                val mnemonic = if (account.isActive) {
-                    Wallet.store().wallet().mnemonic()
-                } else {
-                    AccountWalletManager.getHDWalletMnemonicByUID(account.wallet?.id ?: "")
-                }
+                logd(TAG, "  Branch: Legacy mnemonic account.")
+                // Always look up the mnemonic by UID to avoid using the wrong account's mnemonic.
+                // Using Wallet.store().wallet().mnemonic() here would return the CURRENT account's
+                // mnemonic (the one being switched away from), not the target account's.
+                val mnemonic = AccountWalletManager.getHDWalletMnemonicByUID(account.wallet?.id ?: "")
 
                 if (mnemonic == null) {
                     loge(TAG, "  Inactive account: Failed to get existing HDWallet by UID: ${account.wallet?.id}")

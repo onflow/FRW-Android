@@ -448,6 +448,7 @@ object AccountManager {
         return accounts
     }
 
+    @Volatile
     private var isSwitching = false
 
     fun switch(account: Account, onFinish: () -> Unit) {
@@ -498,6 +499,11 @@ object AccountManager {
                     }
                     AccountCacheManager.cache(Accounts().apply { addAll(accounts) })
                     AccountEmojiManager.init()
+                    // Resume HD wallet state now that currentAccount is updated.
+                    // Only needed for mnemonic accounts (no prefix, no keyStoreInfo).
+                    if (account.prefix == null && account.keyStoreInfo == null) {
+                        Wallet.store().resume()
+                    }
                     uiScope {
                         clearUserCache()
                         MainActivity.relaunch(Env.getApp(), true)
@@ -612,9 +618,6 @@ object AccountManager {
                 firebaseLogin(resp.data.customToken) { isSuccess ->
                     if (isSuccess) {
                         setRegistered()
-                        if (account.prefix == null && account.keyStoreInfo == null) {
-                            Wallet.store().resume()
-                        }
                         callback.invoke(true)
                     } else {
                         loge(tag = "SWITCH_ACCOUNT", msg = "get firebase login failed :: ${resp.data.customToken}")

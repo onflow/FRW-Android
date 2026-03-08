@@ -5,7 +5,7 @@ plugins {
     id "org.jetbrains.kotlin.plugin.serialization" version "1.9.0"
     id 'com.google.gms.google-services'
     id 'com.google.firebase.crashlytics'
-//    id("instabug-apm")  // Disabled to fix ASM instrumentation issue
+//    id("luciq-apm")  // Disabled to fix ASM instrumentation issue
     id 'com.google.devtools.ksp'
     id 'com.google.firebase.appdistribution'
     // id 'jacoco'
@@ -462,8 +462,8 @@ dependencies {
     implementation 'com.google.firebase:firebase-appcheck-debug'
 
     /** Instabug **/
-    implementation 'com.instabug.library:instabug:15.0.1'
-    implementation 'com.instabug.library:instabug-with-okhttp-interceptor:15.0.1'
+    implementation 'ai.luciq.library:luciq:19.3.0'
+    implementation 'ai.luciq.library:luciq-with-okhttp-interceptor:19.3.0'
     /** firebase **/
 
     implementation "dev.chrisbanes:insetter-ktx:0.3.1"

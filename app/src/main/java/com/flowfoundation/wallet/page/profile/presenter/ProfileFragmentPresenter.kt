@@ -2,7 +2,7 @@ package com.flowfoundation.wallet.page.profile.presenter
 
 import android.annotation.SuppressLint
 import androidx.lifecycle.ViewModelProvider
-import com.instabug.library.Instabug
+import ai.luciq.library.Luciq
 import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
@@ -105,7 +105,7 @@ class ProfileFragmentPresenter(
             )
         }
 
-        binding.group3.bugReport.setOnClickListener { Instabug.show() }
+        binding.group3.bugReport.setOnClickListener { Luciq.show() }
         binding.group3.aboutPreference.setOnClickListener { AboutActivity.launch(context) }
         binding.group4.switchAccountPreference.setOnClickListener {
             logd("ProfileFragmentPresenter", "switchAccountPreference clicked")

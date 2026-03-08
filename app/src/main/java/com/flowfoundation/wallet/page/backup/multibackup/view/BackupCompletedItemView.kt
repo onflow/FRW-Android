@@ -17,7 +17,7 @@ import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.textToClipboard
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.widgets.itemdecoration.GridSpaceItemDecoration
-import com.instabug.library.Instabug
+import ai.luciq.library.Luciq
 
 
 class BackupCompletedItemView @JvmOverloads constructor(
@@ -62,7 +62,7 @@ class BackupCompletedItemView @JvmOverloads constructor(
                     adapter = this@BackupCompletedItemView.adapter
                     layoutManager = GridLayoutManager(context, 2, GridLayoutManager.VERTICAL, false)
                     addItemDecoration(GridSpaceItemDecoration(vertical = 16.0))
-                    Instabug.addPrivateViews(this)
+                    Luciq.addPrivateViews(this)
                 }
                 binding.clMnemonic.visible()
                 binding.mnemonicContainer.visible()

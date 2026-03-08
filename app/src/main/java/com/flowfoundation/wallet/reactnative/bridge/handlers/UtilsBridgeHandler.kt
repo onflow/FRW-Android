@@ -210,7 +210,7 @@ class UtilsBridgeHandler(private val reactContext: ReactApplicationContext) {
                 args.getString(i) ?: ""
             }
 
-            // Delegate to the centralized Instabug logging system in Log.kt
+            // Delegate to the centralized Luciq logging system in Log.kt
             logToInstabug(level, message, *stringArgs)
         } catch (e: Exception) {
             // Fallback with just the message if args conversion fails

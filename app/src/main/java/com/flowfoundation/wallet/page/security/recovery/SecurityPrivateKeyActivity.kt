@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
-import com.instabug.library.Instabug
+import ai.luciq.library.Luciq
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.databinding.ActivitySecurityPrivateKeyBinding
@@ -57,7 +57,7 @@ class SecurityPrivateKeyActivity : BaseActivity() {
             publicKeyCopyButton.setOnClickListener { copyToClipboard(cryptoProvider.getPublicKey()) }
             hashAlgorithm.text = getString(R.string.hash_algorithm, cryptoProvider.getHashAlgorithm().algorithm)
             signAlgorithm.text = getString(R.string.sign_algorithm, cryptoProvider.getSignatureAlgorithm().value)
-            Instabug.addPrivateViews(privateKeyView)
+            Luciq.addPrivateViews(privateKeyView)
         }
     }
 

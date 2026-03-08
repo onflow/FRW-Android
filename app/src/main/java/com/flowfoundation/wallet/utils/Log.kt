@@ -5,7 +5,7 @@ import com.flowfoundation.wallet.BuildConfig
 import com.flowfoundation.wallet.firebase.analytics.reportErrorToDebugView
 import com.flowfoundation.wallet.firebase.analytics.reportException
 import com.flowfoundation.wallet.utils.debug.fragments.debugViewer.DebugViewerDataSource
-import com.instabug.library.logging.InstabugLog
+import ai.luciq.library.logging.LuciqLog
 import com.nftco.flow.sdk.FlowException
 import retrofit2.HttpException
 
@@ -13,19 +13,19 @@ private const val MAX_LOG_LENGTH = 3500
 private const val LOG_PREFIX = "["
 private const val LOG_SUFFIX = "]"
 
-fun logv(tag: String?, msg: Any?) = logWithLevel(tag, msg, Log.VERBOSE, InstabugLog::v)
-fun logd(tag: String?, msg: Any?) = logWithLevel(tag, msg, Log.DEBUG, InstabugLog::d)
-fun logi(tag: String?, msg: Any?) = logWithLevel(tag, msg, Log.INFO, InstabugLog::i)
-fun logw(tag: String?, msg: Any?) = logWithLevel(tag, msg, Log.WARN, InstabugLog::w)
+fun logv(tag: String?, msg: Any?) = logWithLevel(tag, msg, Log.VERBOSE, LuciqLog::v)
+fun logd(tag: String?, msg: Any?) = logWithLevel(tag, msg, Log.DEBUG, LuciqLog::d)
+fun logi(tag: String?, msg: Any?) = logWithLevel(tag, msg, Log.INFO, LuciqLog::i)
+fun logw(tag: String?, msg: Any?) = logWithLevel(tag, msg, Log.WARN, LuciqLog::w)
 fun loge(tag: String?, msg: Any?) {
-    logWithLevel(tag, msg, Log.ERROR, InstabugLog::e)
+    logWithLevel(tag, msg, Log.ERROR, LuciqLog::e)
     reportErrorToDebugView(tag, mapOf("errorInfo" to (msg?.toString() ?: "")))
 }
 
 fun loge(throwable: Throwable?, printStackTrace: Boolean = true, report: Boolean = true) {
     val message = throwable?.message ?: ""
     log("Exception", message, Log.ERROR)
-    InstabugLog.e("Exception: $message : ${throwable?.cause ?: ""}")
+    LuciqLog.e("Exception: $message : ${throwable?.cause ?: ""}")
 
     if (printLog() && printStackTrace) {
         throwable?.printStackTrace()
@@ -102,7 +102,7 @@ private fun printLog() = BuildConfig.DEBUG || isDev()
 
 /**
  * Native logging method for React Native bridge callback
- * Directly reports to Instabug for reliable logging
+ * Directly reports to Luciq for reliable logging
  */
 fun logToInstabug(level: String, message: String, vararg args: String) {
     try {
@@ -119,23 +119,23 @@ fun logToInstabug(level: String, message: String, vararg args: String) {
         // Convert string level to Android Log level constant for DebugViewerDataSource
         val logLevel = when (level.lowercase()) {
             "debug" -> {
-                InstabugLog.d(taggedMessage)
+                LuciqLog.d(taggedMessage)
                 Log.DEBUG
             }
             "info" -> {
-                InstabugLog.i(taggedMessage)
+                LuciqLog.i(taggedMessage)
                 Log.INFO
             }
             "warn" -> {
-                InstabugLog.w(taggedMessage)
+                LuciqLog.w(taggedMessage)
                 Log.WARN
             }
             "error" -> {
-                InstabugLog.e(taggedMessage)
+                LuciqLog.e(taggedMessage)
                 Log.ERROR
             }
             else -> {
-                InstabugLog.i(taggedMessage)
+                LuciqLog.i(taggedMessage)
                 Log.INFO
             }
         }
@@ -143,7 +143,7 @@ fun logToInstabug(level: String, message: String, vararg args: String) {
         // Also log to DebugViewer with correct level type
         DebugViewerDataSource.log(logLevel, "FRW-Native", taggedMessage)
     } catch (e: Exception) {
-        // Fallback to direct Instabug error report to avoid recursion
-        InstabugLog.e("[FRW-Native] Error in logToNative: ${e.message}")
+        // Fallback to direct Luciq error report to avoid recursion
+        LuciqLog.e("[FRW-Native] Error in logToNative: ${e.message}")
     }
 }

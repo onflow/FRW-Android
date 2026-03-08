@@ -15,6 +15,8 @@ import com.flowfoundation.wallet.manager.cadence.CadenceApiManager
 import com.flowfoundation.wallet.page.profile.subpage.developer.DeveloperModeViewModel
 import com.flowfoundation.wallet.page.profile.subpage.developer.LocalAccountKeyActivity
 import com.flowfoundation.wallet.page.profile.subpage.developer.model.DeveloperPageModel
+import com.flowfoundation.wallet.utils.isDev
+import com.flowfoundation.wallet.utils.isTesting
 import com.flowfoundation.wallet.utils.NETWORK_MAINNET
 import com.flowfoundation.wallet.utils.NETWORK_TESTNET
 import com.flowfoundation.wallet.utils.debug.DebugLogManager
@@ -85,6 +87,8 @@ class DeveloperModePresenter(
                     setDeveloperModeEnable(it)
                     if (!it) {
                         changeNetwork(NETWORK_MAINNET)
+                    } else {
+                        ioScope { refreshChainNetworkSync() }
                     }
                 }
 
@@ -128,7 +132,7 @@ class DeveloperModePresenter(
     private fun setDevelopContentVisible(visible: Boolean) {
         binding.group2.setVisible(visible)
         binding.group3.setVisible(visible)
-        binding.cvDebug.setVisible(visible)
+        binding.cvDebug.setVisible(visible && (isDev() || isTesting()))
         binding.cvAccountKey.setVisible(visible && showLocalAccountKeys)
         binding.cvReloadConfig.setVisible(visible)
     }

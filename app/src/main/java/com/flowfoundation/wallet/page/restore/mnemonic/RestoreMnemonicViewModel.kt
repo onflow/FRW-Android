@@ -99,16 +99,15 @@ class RestoreMnemonicViewModel : ViewModel() {
                             val newKeystoreAddress = keystoreAddress.copy(encryptedMnemonic = encryptedMnemonic)
                             account.copy(keyStoreInfo = Gson().toJson(newKeystoreAddress))
                         } else {
-                            // This case should ideally not happen if keyStoreInfo was set initially.
-                            // But if it does, we return the original account or handle it as an error.
                             account
                         }
                     }
-                    // Clear wallet cache and re-initialize
-                    WalletManager.clear()
-                    WalletDataManager.updateCurrentAccount()
 
-                    // Sync mnemonic to independent key storage and remove redundant private key entry
+                    // Sync to KeyStorageManager BEFORE clearing wallet cache.
+                    // This ensures createWalletFromAccount() finds the seed phrase (not the
+                    // old private key) when updateCurrentAccount() triggers wallet re-creation,
+                    // preventing a spurious ACTION_RESTORE_MNEMONIC broadcast and ensuring
+                    // setEoaDisabled(false) is called correctly.
                     try {
                         KeyStorageManager.saveSeedPhrase(uid, mnemonic)
                         KeyStorageManager.deletePrivateKey(uid)
@@ -119,6 +118,11 @@ class RestoreMnemonicViewModel : ViewModel() {
                     } catch (e: Exception) {
                         loge(TAG, "KeyStorageManager sync failed: ${e.message}")
                     }
+
+                    // Clear wallet cache and re-initialize — now finds seed phrase path,
+                    // sets EOA enabled and does NOT re-trigger the restore broadcast.
+                    WalletManager.clear()
+                    WalletDataManager.updateCurrentAccount()
 
                     _restoreSuccess.value = true
                 } catch (e: Exception) {

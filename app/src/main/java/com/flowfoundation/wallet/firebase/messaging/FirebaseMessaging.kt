@@ -13,7 +13,7 @@ import com.flowfoundation.wallet.utils.isDev
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.updatePushToken
-import com.instabug.chat.Replies
+import ai.luciq.chat.Replies
 
 private const val TAG = "FirebaseMessaging"
 

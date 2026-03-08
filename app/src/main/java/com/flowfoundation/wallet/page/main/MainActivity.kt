@@ -29,8 +29,8 @@ import com.flowfoundation.wallet.utils.isNotificationPermissionChecked
 import com.flowfoundation.wallet.utils.isNotificationPermissionGrand
 import com.flowfoundation.wallet.utils.isRegistered
 import com.flowfoundation.wallet.utils.uiScope
-import com.instabug.bug.BugReporting
-import com.instabug.library.Instabug
+import ai.luciq.bug.BugReporting
+import ai.luciq.library.Luciq
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 
 class MainActivity : BaseActivity() {
@@ -73,7 +73,7 @@ class MainActivity : BaseActivity() {
 
             // Navigate to target tab if specified
             if (targetTabIndex >= 0) {
-                val targetTab = HomeTab.values().find { it.index == targetTabIndex }
+                val targetTab = HomeTab.entries.find { it.index == targetTabIndex }
                 targetTab?.let { viewModel.changeTab(it) }
             }
         }
@@ -91,10 +91,10 @@ class MainActivity : BaseActivity() {
     private fun configurationInstabugBugReport() {
         BugReporting.setOnInvokeCallback {
             DebugViewerDataSource.generateDebugZipFile(this)?.let {
-                Instabug.addFileAttachment(it, "log.zip")
+                Luciq.addFileAttachment(it, "log.zip")
             }
             BugReporting.setOnDismissCallback { _, _ ->
-                Instabug.clearFileAttachment()
+                Luciq.clearFileAttachment()
                 BugReporting.setOnDismissCallback(null)
             }
         }

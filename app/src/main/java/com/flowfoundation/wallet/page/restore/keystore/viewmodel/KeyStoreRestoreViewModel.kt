@@ -647,6 +647,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
             return
         }
         if (WalletManager.getCurrentFlowWalletAddress() == currentKeyStoreAddress?.address) {
+            loadingLiveData.postValue(false)
             toast(msgRes = R.string.wallet_already_logged_in, duration = Toast.LENGTH_LONG)
             val activity = BaseActivity.getCurrentActivity() ?: return
             activity.finish()
@@ -668,6 +669,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
 
                 val activity = BaseActivity.getCurrentActivity() ?: run {
                     logd("KeyStoreRestoreViewModel", "ERROR: No current activity found")
+                    loadingLiveData.postValue(false)
                     return@ioScope
                 }
 
@@ -697,6 +699,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
                     }
                 } ?: run {
                     logd("KeyStoreRestoreViewModel", "ERROR: Could not find matching key on-chain for public key: ${currentKeyStoreAddress?.publicKey}")
+                    loadingLiveData.postValue(false)
                     toast(msgRes = R.string.login_failure)
                     activity.finish()
                     return@ioScope
@@ -706,12 +709,14 @@ class KeyStoreRestoreViewModel : ViewModel() {
 
                 if (currentKey.weight.toInt() < 1000) {
                     logd("KeyStoreRestoreViewModel", "ERROR: Key weight insufficient: ${currentKey.weight}")
+                    loadingLiveData.postValue(false)
                     toast(msgRes = R.string.restore_failure_insufficient_weight)
                     activity.finish()
                     return@ioScope
                 }
                 if (currentKey.revoked) {
                     logd("KeyStoreRestoreViewModel", "ERROR: Key is revoked")
+                    loadingLiveData.postValue(false)
                     toast(msgRes = R.string.restore_failure_key_revoked)
                     activity.finish()
                     return@ioScope
@@ -863,6 +868,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
             getFirebaseUid { uid ->
                 if (uid.isNullOrBlank()) {
                     logd("KeyStoreRestoreViewModel", "No Firebase UID found")
+                    loadingLiveData.postValue(false)
                     loginProcessCallback.invoke(false)
                     return@getFirebaseUid
                 }
@@ -889,6 +895,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
 
                         if (resp.data?.customToken.isNullOrBlank()) {
                             logd("KeyStoreRestoreViewModel", "No custom token in response")
+                            loadingLiveData.postValue(false)
                             loginProcessCallback.invoke(false)
                             return@runCatching
                         }
@@ -929,6 +936,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                             logd("KeyStoreRestoreViewModel", "ERROR: No wallet address found in key indexer after login")
                                             logd("KeyStoreRestoreViewModel", "Public key used for lookup: $publicKey")
                                             logd("KeyStoreRestoreViewModel", "Chain ID used: $chainId")
+                                            loadingLiveData.postValue(false)
                                             loginProcessCallback.invoke(false)
                                             return@ioScope
                                         }
@@ -1036,6 +1044,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
 
     private fun loginWithKeyStoreAddress(flowAccountKey: AccountPublicKey, keystoreAddress: KeystoreAddress) {
         if (WalletManager.getCurrentFlowWalletAddress() == keystoreAddress.address) {
+            loadingLiveData.postValue(false)
             toast(msgRes = R.string.wallet_already_logged_in, duration = Toast.LENGTH_LONG)
             val activity = BaseActivity.getCurrentActivity() ?: return
             activity.finish()
@@ -1050,13 +1059,18 @@ class KeyStoreRestoreViewModel : ViewModel() {
         }
         ioScope {
             val cryptoProvider = PrivateKeyStoreCryptoProvider(Gson().toJson(keystoreAddress))
-            val activity = BaseActivity.getCurrentActivity() ?: return@ioScope
+            val activity = BaseActivity.getCurrentActivity() ?: run {
+                loadingLiveData.postValue(false)
+                return@ioScope
+            }
             if (flowAccountKey.weight.toInt() < 1000) {
+                loadingLiveData.postValue(false)
                 toast(msgRes = R.string.restore_failure_insufficient_weight)
                 activity.finish()
                 return@ioScope
             }
             if (flowAccountKey.revoked) {
+                loadingLiveData.postValue(false)
                 toast(msgRes = R.string.restore_failure_key_revoked)
                 activity.finish()
                 return@ioScope
@@ -1213,7 +1227,10 @@ class KeyStoreRestoreViewModel : ViewModel() {
         logd("KeyStoreRestoreViewModel", "Starting create account with username: $username")
         ioScope {
             val cryptoProvider = PrivateKeyStoreCryptoProvider(Gson().toJson(currentKeyStoreAddress))
-            val activity = BaseActivity.getCurrentActivity() ?: return@ioScope
+            val activity = BaseActivity.getCurrentActivity() ?: run {
+                loadingLiveData.postValue(false)
+                return@ioScope
+            }
             createAccount(username, cryptoProvider) { isSuccess ->
                 uiScope {
                     loadingLiveData.postValue(false)
@@ -1365,11 +1382,15 @@ class KeyStoreRestoreViewModel : ViewModel() {
                         }
                     }
                 }
-            } catch (e: HttpException) {
-                val errorBody = e.response()?.errorBody()?.string()
-                logd("KeyStoreRestoreViewModel", "HTTP Error: ${e.code()}, Response: $errorBody")
+            } catch (e: Exception) {
+                if (e is HttpException) {
+                    val errorBody = e.response()?.errorBody()?.string()
+                    logd("KeyStoreRestoreViewModel", "HTTP Error: ${e.code()}, Response: $errorBody")
+                } else {
+                    logd("KeyStoreRestoreViewModel", "Error creating account: ${e.message}")
+                }
                 callback.invoke(false)
-                throw e
+                // Don't rethrow to avoid crashing the coroutine if not handled
             }
         }
     }

@@ -5,7 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.recyclerview.widget.GridLayoutManager
-import com.instabug.library.Instabug
+import ai.luciq.library.Luciq
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.databinding.ActivitySecurityRecoveryBinding
@@ -63,7 +63,7 @@ class SecurityRecoveryActivity : BaseActivity() {
             adapter = this@SecurityRecoveryActivity.adapter
             layoutManager = GridLayoutManager(context, 2, GridLayoutManager.VERTICAL, false)
             addItemDecoration(GridSpaceItemDecoration(vertical = 16.0))
-            Instabug.addPrivateViews(this)
+            Luciq.addPrivateViews(this)
         }
         loadMnemonic()
     }

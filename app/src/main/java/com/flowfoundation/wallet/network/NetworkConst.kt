@@ -6,7 +6,7 @@ import com.flowfoundation.wallet.network.interceptor.HeaderInterceptor
 import com.flowfoundation.wallet.network.interceptor.PayerServiceInterceptor
 import com.flowfoundation.wallet.utils.isDev
 import com.flowfoundation.wallet.utils.isTesting
-import com.instabug.library.okhttplogger.InstabugOkhttpInterceptor
+import ai.luciq.library.okhttplogger.LuciqOkhttpInterceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -24,7 +24,7 @@ fun retrofit(
 ): Retrofit {
     val client = OkHttpClient.Builder().apply {
         addInterceptor(HeaderInterceptor(network = network))
-        addInterceptor(InstabugOkhttpInterceptor())
+        addInterceptor(LuciqOkhttpInterceptor())
 
         callTimeout(20, TimeUnit.SECONDS)
         connectTimeout(20, TimeUnit.SECONDS)
@@ -53,7 +53,7 @@ fun cadenceScriptApi(): Retrofit {
     val client = OkHttpClient.Builder().apply {
         addInterceptor(HeaderInterceptor(false))
         addInterceptor(PayerServiceInterceptor())  // Add payer service interceptor
-        addInterceptor(InstabugOkhttpInterceptor())
+        addInterceptor(LuciqOkhttpInterceptor())
         addInterceptor(GzipRequestInterceptor())
         addInterceptor(GzipResponseInterceptor())
         callTimeout(20, TimeUnit.SECONDS)
@@ -74,7 +74,7 @@ fun cadenceScriptApi(): Retrofit {
 fun retrofitWithHost(host: String, disableConverter: Boolean = false, ignoreAuthorization: Boolean = true): Retrofit {
     val client = OkHttpClient.Builder().apply {
         addInterceptor(HeaderInterceptor(ignoreAuthorization))
-        addInterceptor(InstabugOkhttpInterceptor())
+        addInterceptor(LuciqOkhttpInterceptor())
         callTimeout(20, TimeUnit.SECONDS)
         connectTimeout(20, TimeUnit.SECONDS)
         readTimeout(20, TimeUnit.SECONDS)
