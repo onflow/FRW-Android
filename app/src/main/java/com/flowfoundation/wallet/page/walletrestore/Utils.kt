@@ -17,7 +17,6 @@ import com.flowfoundation.wallet.network.clearUserCache
 import com.flowfoundation.wallet.network.model.AccountKey
 import com.flowfoundation.wallet.network.model.WalletListData
 import com.flowfoundation.wallet.network.model.FlowAccountInfo
-import com.flowfoundation.wallet.network.model.LoginRequest
 import com.flowfoundation.wallet.network.model.LoginV4Request
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.utils.ioScope
@@ -30,7 +29,6 @@ import com.flow.wallet.storage.FileSystemStorage
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.wallet.DERIVATION_PATH
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import java.io.File
 
@@ -245,9 +243,6 @@ suspend fun firebaseLogin(customToken: String, callback: (isSuccess: Boolean) ->
     }
 
     if (isSuccess) {
-        logd(TAG, "Auth cleanup successful, waiting 1 second before custom login")
-        // Add a delay to ensure Firebase auth state is cleared
-        delay(1000)
         logd(TAG, "Starting Firebase custom login with token")
         firebaseCustomLogin(customToken) { isSuccessful, errorMsg ->
             logd(TAG, "Firebase custom login completed - success: $isSuccessful, error: $errorMsg")

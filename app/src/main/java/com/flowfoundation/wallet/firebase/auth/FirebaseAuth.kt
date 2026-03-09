@@ -42,6 +42,12 @@ fun firebaseCustomLogin(token: String, onComplete: FirebaseAuthCallback) {
     logd(TAG, "Attempting to sign in with custom token (length: ${token.length})")
     auth.signInWithCustomToken(token).addOnCompleteListener { task ->
         logd(TAG, "signInWithCustomToken completed - success: ${task.isSuccessful}")
+        // Capture currentUser immediately on the main thread before launching ioScope.
+        // Reading auth.currentUser inside ioScope is a race: a concurrent signInAnonymously()
+        // callback (triggered by HeaderInterceptor during auth transitions) can fire on the
+        // main thread between signInWithCustomToken completing and the IO coroutine reading
+        // currentUser, causing the anonymous user to overwrite the just-signed-in user.
+        val signedInUser = if (task.isSuccessful) auth.currentUser else null
         if (!task.isSuccessful) {
             logd(TAG, "ERROR: signInWithCustomToken failed - ${task.exception?.message}")
         }
@@ -49,20 +55,19 @@ fun firebaseCustomLogin(token: String, onComplete: FirebaseAuthCallback) {
         ioScope {
             clearUserCache()
             if (task.isSuccessful) {
-                val newUser = auth.currentUser
-                logd(TAG, "Sign in successful, new user UID: ${newUser?.uid}")
+                logd(TAG, "Sign in successful, new user UID: ${signedInUser?.uid}")
                 logd(TAG, "Requesting ID token refresh")
 
-                newUser?.getIdToken(true)?.addOnSuccessListener { _ ->
+                signedInUser?.getIdToken(true)?.addOnSuccessListener { _ ->
                     logd(TAG, "ID token obtained successfully")
                     uiScope {
                         onComplete.invoke(true, null)
                     }
                     getFirebaseMessagingToken()
-                }?.addOnFailureListener { e ->
-                    logd(TAG, "ERROR: Failed to get ID token - ${e.message}")
-                    uiScope { onComplete.invoke(false, e) }
-                }
+                    }?.addOnFailureListener { e ->
+                        logd(TAG, "ERROR: Failed to get ID token - ${e.message}")
+                        uiScope { onComplete.invoke(false, e) }
+                    }
             } else {
                 logd(TAG, "ERROR: Task unsuccessful, calling failure callback")
                 val exception = task.exception

@@ -569,8 +569,9 @@ object AccountManager {
             logd(TAG, "  Sign Algorithm: ${cryptoProvider.getSignatureAlgorithm()}")
             logd(TAG, "  Key Weight: ${cryptoProvider.getKeyWeight()}")
 
-            // Get JWT with force refresh to avoid token expiration issues
-            val jwt = getFirebaseJwt()
+            // Get JWT with force refresh to ensure the newly-created anonymous user's token
+            // is propagated to Firebase backend before the server verifies it.
+            val jwt = getFirebaseJwt(forceRefresh = true)
             logd(TAG, "Retrieved JWT for account switch (length: ${jwt.length})")
 
             val publicKey = cryptoProvider.getPublicKey()
@@ -723,8 +724,9 @@ object AccountManager {
             logd(TAG, "  Sign Algorithm: ${cryptoProvider.getSignatureAlgorithm()}")
             logd(TAG, "  Key Weight: ${cryptoProvider.getKeyWeight()}")
 
-            // Get JWT with force refresh to avoid token expiration issues
-            val jwt = getFirebaseJwt()
+            // Get JWT with force refresh to ensure the newly-created anonymous user's token
+            // is propagated to Firebase backend before the server verifies it.
+            val jwt = getFirebaseJwt(forceRefresh = true)
             logd(TAG, "Retrieved JWT for local account switch (length: ${jwt.length})")
 
             val publicKey = cryptoProvider.getPublicKey()
