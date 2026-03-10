@@ -569,9 +569,10 @@ object AccountManager {
             logd(TAG, "  Sign Algorithm: ${cryptoProvider.getSignatureAlgorithm()}")
             logd(TAG, "  Key Weight: ${cryptoProvider.getKeyWeight()}")
 
-            // Get JWT with force refresh to ensure the newly-created anonymous user's token
-            // is propagated to Firebase backend before the server verifies it.
-            val jwt = getFirebaseJwt(forceRefresh = true)
+            // Use the cached token from the anonymous sign-in done in setToAnonymous().
+            // forceRefresh=true would cause two separate network fetches (here and in HeaderInterceptor),
+            // returning tokens with different iat values, making signature verification fail on the server.
+            val jwt = getFirebaseJwt()
             logd(TAG, "Retrieved JWT for account switch (length: ${jwt.length})")
 
             val publicKey = cryptoProvider.getPublicKey()
@@ -724,9 +725,10 @@ object AccountManager {
             logd(TAG, "  Sign Algorithm: ${cryptoProvider.getSignatureAlgorithm()}")
             logd(TAG, "  Key Weight: ${cryptoProvider.getKeyWeight()}")
 
-            // Get JWT with force refresh to ensure the newly-created anonymous user's token
-            // is propagated to Firebase backend before the server verifies it.
-            val jwt = getFirebaseJwt(forceRefresh = true)
+            // Use the cached token from the anonymous sign-in done in setToAnonymous().
+            // forceRefresh=true would cause two separate network fetches (here and in HeaderInterceptor),
+            // returning tokens with different iat values, making signature verification fail on the server.
+            val jwt = getFirebaseJwt()
             logd(TAG, "Retrieved JWT for local account switch (length: ${jwt.length})")
 
             val publicKey = cryptoProvider.getPublicKey()
