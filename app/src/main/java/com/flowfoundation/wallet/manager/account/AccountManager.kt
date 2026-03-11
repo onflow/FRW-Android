@@ -8,8 +8,7 @@ import com.flowfoundation.wallet.cache.AccountCacheManager
 import com.flowfoundation.wallet.cache.UserPrefixCacheManager
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
-import com.flowfoundation.wallet.firebase.auth.isAnonymousSignIn
-import com.flowfoundation.wallet.firebase.auth.signInAnonymously
+import com.flowfoundation.wallet.firebase.auth.setToAnonymous
 import com.flowfoundation.wallet.firebase.messaging.uploadPushToken
 import com.flowfoundation.wallet.manager.account.model.LocalSwitchAccount
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
@@ -40,8 +39,6 @@ import com.flowfoundation.wallet.utils.setRegistered
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.wallet.Wallet
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.serialization.Serializable
@@ -652,14 +649,6 @@ object AccountManager {
             logd(TAG, "Account switch exception: ${e.stackTraceToString()}")
             callback.invoke(false)
         }
-    }
-
-    private suspend fun setToAnonymous(): Boolean {
-        if (!isAnonymousSignIn()) {
-            Firebase.auth.signOut()
-            return signInAnonymously()
-        }
-        return true
     }
 
     private fun dispatchListeners(account: Account) {

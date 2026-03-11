@@ -21,6 +21,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.ui.draw.rotate
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -115,6 +117,8 @@ fun DrawerLayoutCompose(drawer: DrawerLayout) {
     val showEvmLayout by viewModel.showEvmLayout.collectAsStateWithLifecycle()
     val accounts by viewModel.accounts.collectAsStateWithLifecycle()
     val balanceMap by viewModel.balanceMap.collectAsStateWithLifecycle()
+    val isAddingAccount by viewModel.isAddingAccount.collectAsStateWithLifecycle()
+    val canAddAccount by viewModel.canAddAccount.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         viewModel.loadData()
@@ -169,6 +173,7 @@ fun DrawerLayoutCompose(drawer: DrawerLayout) {
         AccountListSection(
             accounts = accounts,
             balanceMap = balanceMap,
+            isAddingAccount = isAddingAccount,
             onCopyClick = onCopyClick@{ address ->
                 if (EVMWalletManager.isEVMWalletAddress(address)) {
                     CopyCOAAddressDialog(context, address).show()
@@ -208,13 +213,8 @@ fun DrawerLayoutCompose(drawer: DrawerLayout) {
             onImportWalletClick = {
                 WalletRestoreActivity.launch(activity)
             },
-            onAddProfileClick = {
-                if (isTestnet()) {
-                    SwitchNetworkDialog(context, DialogType.CREATE).show()
-                } else {
-                    ReactNativeActivity.launchWithRoute(context, RNBridge.ScreenType.ONBOARDING, RNBridge.InitialRoute.PROFILE_TYPE_SELECTION)
-                }
-            }
+            onAddAccountClick = { viewModel.addAccount() },
+            canAddAccount = canAddAccount
         )
     }
 }
@@ -695,6 +695,7 @@ fun AccountListSection(
     balanceMap: Map<String, String>,
     onCopyClick: (String) -> Unit,
     onAccountClick: (String) -> Unit,
+    isAddingAccount: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
@@ -728,6 +729,10 @@ fun AccountListSection(
             fontSize = 14.sp,
         )
 
+        if (isAddingAccount) {
+            LoadingWalletAccountRow()
+        }
+
         if (accounts.isEmpty()) {
             repeat(2) {
                 ShimmerWalletAccountRow()
@@ -756,37 +761,120 @@ fun AccountListSection(
 @Composable
 fun BottomSection(
     onImportWalletClick: () -> Unit,
-    onAddProfileClick: () -> Unit
+    onAddAccountClick: () -> Unit = {},
+    canAddAccount: Boolean = false
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(modifier = Modifier
-            .size(40.dp)
-            .background(
-                color = colorResource(id = R.color.bg_card),
-                shape = CircleShape
-            )
-            .clickable(onClick = onAddProfileClick),
-            contentAlignment = Alignment.Center
+    Column {
+        if (canAddAccount) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp)
+                    .clickable(onClick = onAddAccountClick),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(
+                            color = colorResource(id = R.color.bg_card),
+                            shape = CircleShape
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_baseline_add_24),
+                        contentDescription = "Add Account",
+                        tint = colorResource(id = R.color.text_1)
+                    )
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                Text(
+                    text = stringResource(id = R.string.add_account),
+                    color = colorResource(id = R.color.text_2),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp)
+                .clickable(onClick = onImportWalletClick),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_baseline_add_24),
-                contentDescription = "Add Account",
-                tint = colorResource(id = R.color.text_1)
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(
+                        color = colorResource(id = R.color.bg_card),
+                        shape = CircleShape
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_import_wallet),
+                    contentDescription = "Recover Profile",
+                    tint = colorResource(id = R.color.text_1)
+                )
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(
+                text = stringResource(id = R.string.recover_profile),
+                color = colorResource(id = R.color.text_2),
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold
             )
         }
-        Spacer(modifier = Modifier.width(16.dp))
-        Text(
-            text = stringResource(id = R.string.recover_profile),
-            color = colorResource(id = R.color.text_2),
-            fontSize = 16.sp,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.clickable(onClick = onImportWalletClick)
-        )
+
+    }
+}
+
+@Composable
+private fun LoadingWalletAccountRow() {
+    val infiniteTransition = rememberInfiniteTransition(label = "loading")
+    val rotation by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 2400, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "loading_rotation"
+    )
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp)
+    ) {
+        Box(
+            modifier = Modifier.size(45.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(
+                progress = { 0.25f },
+                modifier = Modifier.size(45.dp).rotate(rotation),
+                color = colorResource(id = R.color.accent_green),
+                trackColor = colorResource(id = R.color.accent_green_8),
+                strokeWidth = 7.dp
+            )
+            Icon(
+                painter = painterResource(id = R.drawable.ic_coin_flow),
+                contentDescription = null,
+                modifier = Modifier.size(30.dp),
+                tint = Color.Unspecified
+            )
+        }
+        Spacer(modifier = Modifier.width(9.dp))
+        Column {
+            ShimmerBox(modifier = Modifier.width(60.dp).height(14.dp))
+            Spacer(modifier = Modifier.height(2.dp))
+            ShimmerBox(modifier = Modifier.width(100.dp).height(12.dp))
+            Spacer(modifier = Modifier.height(2.dp))
+            ShimmerBox(modifier = Modifier.width(80.dp).height(12.dp))
+        }
     }
 }
 
@@ -825,11 +913,11 @@ private fun ShimmerWalletAccountRow() {
         )
         Spacer(modifier = Modifier.width(9.dp))
         Column {
-            ShimmerBox(modifier = Modifier.width(100.dp).height(14.dp))
+            ShimmerBox(modifier = Modifier.width(60.dp).height(14.dp))
             Spacer(modifier = Modifier.height(2.dp))
-            ShimmerBox(modifier = Modifier.width(70.dp).height(12.dp))
+            ShimmerBox(modifier = Modifier.width(100.dp).height(12.dp))
             Spacer(modifier = Modifier.height(2.dp))
-            ShimmerBox(modifier = Modifier.width(50.dp).height(12.dp))
+            ShimmerBox(modifier = Modifier.width(80.dp).height(12.dp))
         }
     }
 }

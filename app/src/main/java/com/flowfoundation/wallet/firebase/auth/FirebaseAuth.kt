@@ -10,8 +10,31 @@ import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 private const val TAG = "FirebaseAuth"
+
+// Serialises all "currentUser == null → sign in" operations to prevent
+// a concurrent getFirebaseJwt() from racing with setToAnonymous().
+private val authStateMutex = Mutex()
+
+/**
+ * Signs out the current non-anonymous user and signs in anonymously.
+ * Holds [authStateMutex] during signOut + signInAnonymously so that any
+ * concurrent [getFirebaseJwt] call waits instead of submitting a second
+ * signInAnonymously task that could later overwrite the custom-token user.
+ */
+suspend fun setToAnonymous(): Boolean {
+    if (!isAnonymousSignIn()) {
+        authStateMutex.withLock {
+            Firebase.auth.signOut()
+            signInAnonymously()
+        }
+        return isAnonymousSignIn()
+    }
+    return true
+}
 
 typealias FirebaseAuthCallback = (isSuccessful: Boolean, exception: Exception?) -> Unit
 
@@ -28,55 +51,20 @@ fun isUserSignIn(): Boolean {
 fun firebaseCustomLogin(token: String, onComplete: FirebaseAuthCallback) {
     logd(TAG, "=== firebaseCustomLogin START ===")
     val auth = Firebase.auth
-    val currentUser = auth.currentUser
-    logd(TAG, "Current Firebase user: ${currentUser?.uid ?: "null"}")
+    logd(TAG, "Current Firebase user: ${auth.currentUser?.uid ?: "null"}")
 
-    // Always sign in with the new custom token, even if there's already a user
-    // This ensures we switch to the newly registered user
-    // Note: signInWithCustomToken automatically replaces the current user, no need to sign out first
-    if (currentUser != null) {
-        logd(TAG, "User already signed in, UID: ${currentUser.uid}, isAnonymous: ${currentUser.isAnonymous}")
-        logd(TAG, "Will replace with new user from custom token...")
-    }
-
-    logd(TAG, "Attempting to sign in with custom token (length: ${token.length})")
     auth.signInWithCustomToken(token).addOnCompleteListener { task ->
-        logd(TAG, "signInWithCustomToken completed - success: ${task.isSuccessful}")
-        // Capture currentUser immediately on the main thread before launching ioScope.
-        // Reading auth.currentUser inside ioScope is a race: a concurrent signInAnonymously()
-        // callback (triggered by HeaderInterceptor during auth transitions) can fire on the
-        // main thread between signInWithCustomToken completing and the IO coroutine reading
-        // currentUser, causing the anonymous user to overwrite the just-signed-in user.
-        val signedInUser = if (task.isSuccessful) auth.currentUser else null
-        if (!task.isSuccessful) {
-            logd(TAG, "ERROR: signInWithCustomToken failed - ${task.exception?.message}")
-        }
-
-        ioScope {
-            clearUserCache()
-            if (task.isSuccessful) {
-                logd(TAG, "Sign in successful, new user UID: ${signedInUser?.uid}")
-                logd(TAG, "Requesting ID token refresh")
-
-                signedInUser?.getIdToken(true)?.addOnSuccessListener { _ ->
-                    logd(TAG, "ID token obtained successfully")
-                    uiScope {
-                        onComplete.invoke(true, null)
-                    }
-                    getFirebaseMessagingToken()
-                    }?.addOnFailureListener { e ->
-                        logd(TAG, "ERROR: Failed to get ID token - ${e.message}")
-                        uiScope { onComplete.invoke(false, e) }
-                    }
-            } else {
-                logd(TAG, "ERROR: Task unsuccessful, calling failure callback")
-                val exception = task.exception
-                logd(TAG, "Exception type: ${exception?.javaClass?.simpleName}")
-                logd(TAG, "Exception message: ${exception?.message}")
-                uiScope {
-                    onComplete.invoke(false, exception)
-                }
+        if (task.isSuccessful) {
+            logd(TAG, "Sign in successful, new user UID: ${auth.currentUser?.uid}")
+            onComplete.invoke(true, null)
+            // Background cleanup — runs after the caller's callback has already returned.
+            ioScope {
+                clearUserCache()
+                getFirebaseMessagingToken()
             }
+        } else {
+            logd(TAG, "ERROR: signInWithCustomToken failed - ${task.exception?.message}")
+            onComplete.invoke(false, task.exception)
         }
     }
 }
@@ -91,7 +79,13 @@ suspend fun getFirebaseJwt(forceRefresh: Boolean = false) = suspendCoroutine { c
     ioScope {
         val auth = Firebase.auth
         if (auth.currentUser == null) {
-            signInAnonymously()
+            authStateMutex.withLock {
+                // Re-check after acquiring lock: setToAnonymous() may have already
+                // completed and set currentUser while we were waiting.
+                if (Firebase.auth.currentUser == null) {
+                    signInAnonymously()
+                }
+            }
         }
 
         val user = auth.currentUser

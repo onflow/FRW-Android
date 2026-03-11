@@ -1,6 +1,7 @@
 package com.flowfoundation.wallet.page.account
 
 import androidx.lifecycle.ViewModel
+import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.AccountVisibilityManager
@@ -13,13 +14,18 @@ import com.flowfoundation.wallet.manager.walletdata.COAWallet
 import com.flowfoundation.wallet.manager.walletdata.ChildWallet
 import com.flowfoundation.wallet.manager.walletdata.EOAWallet
 import com.flowfoundation.wallet.manager.walletdata.FlowWallet
+import com.flowfoundation.wallet.manager.config.AppConfig
+import com.flowfoundation.wallet.manager.key.AndroidKeystoreCryptoProvider
+import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.network.ApiService
+import com.flowfoundation.wallet.network.addNewFlowAccount
 import com.flowfoundation.wallet.network.retrofitApi
 import com.flowfoundation.wallet.page.main.model.WalletAccountData
 import com.flowfoundation.wallet.page.main.model.LinkedAccountData
 import com.flowfoundation.wallet.utils.formatLargeBalanceNumber
 import com.flowfoundation.wallet.utils.isHideCOAWithZeroBalanceEnable
 import com.flowfoundation.wallet.utils.ioScope
+import com.flowfoundation.wallet.utils.toast
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -35,6 +41,12 @@ class AccountListViewModel : ViewModel(), OnEmojiUpdate {
 
     private val _hiddenAccounts = MutableStateFlow<Set<String>>(emptySet())
     val hiddenAccounts: StateFlow<Set<String>> = _hiddenAccounts.asStateFlow()
+
+    private val _isAddingAccount = MutableStateFlow(false)
+    val isAddingAccount: StateFlow<Boolean> = _isAddingAccount.asStateFlow()
+
+    private val _canAddAccount = MutableStateFlow(false)
+    val canAddAccount: StateFlow<Boolean> = _canAddAccount.asStateFlow()
 
     private val service by lazy { retrofitApi().create(ApiService::class.java) }
 
@@ -145,8 +157,33 @@ class AccountListViewModel : ViewModel(), OnEmojiUpdate {
                 _hiddenAccounts.value = hiddenAccountsSet
             }
 
+            val flowWalletCount = walletNodes.filterIsInstance<FlowWallet>()
+                .count { it.chainIdString == currentNetwork }
+            val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
+            _canAddAccount.value = AppConfig.canCreateNewAccount()
+                && flowWalletCount < 5
+                && cryptoProvider != null
+                && cryptoProvider !is AndroidKeystoreCryptoProvider
+
             if (refreshBalance) {
                 fetchAllBalances(addressList, pendingEvmAddresses)
+            }
+        }
+    }
+
+    fun addAccount() {
+        ioScope {
+            _isAddingAccount.value = true
+            try {
+                val result = addNewFlowAccount()
+                if (result == null) {
+                    _isAddingAccount.value = false
+                    toast(msgRes = R.string.common_error_hint)
+                } else {
+                    refreshWalletList(false)
+                }
+            } finally {
+                _isAddingAccount.value = false
             }
         }
     }

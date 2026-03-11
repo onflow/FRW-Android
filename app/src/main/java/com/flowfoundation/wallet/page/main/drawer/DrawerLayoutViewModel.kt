@@ -1,7 +1,7 @@
 package com.flowfoundation.wallet.page.main.drawer
 
 import androidx.lifecycle.ViewModel
-import com.flowfoundation.wallet.firebase.auth.firebaseUid
+import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
@@ -14,7 +14,11 @@ import com.flowfoundation.wallet.manager.walletdata.EOAWallet
 import com.flowfoundation.wallet.manager.walletdata.ChildWallet
 import com.flowfoundation.wallet.manager.walletdata.COAWallet
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.config.AppConfig
+import com.flowfoundation.wallet.manager.key.AndroidKeystoreCryptoProvider
+import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.network.ApiService
+import com.flowfoundation.wallet.network.addNewFlowAccount
 import com.flowfoundation.wallet.network.retrofitApi
 import com.flowfoundation.wallet.utils.formatLargeBalanceNumber
 import com.flowfoundation.wallet.utils.isHideCOAWithZeroBalanceEnable
@@ -24,6 +28,7 @@ import com.flowfoundation.wallet.manager.account.AccountVisibilityManager
 import com.flowfoundation.wallet.manager.account.OnAccountUpdate
 import com.flowfoundation.wallet.page.main.model.LinkedAccountData
 import com.flowfoundation.wallet.page.main.model.WalletAccountData
+import com.flowfoundation.wallet.utils.toast
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -42,6 +47,12 @@ class DrawerLayoutViewModel : ViewModel(), OnAccountUpdate, OnEmojiUpdate {
 
     private val _balanceMap = MutableStateFlow<Map<String, String>>(emptyMap())
     val balanceMap: StateFlow<Map<String, String>> = _balanceMap.asStateFlow()
+
+    private val _isAddingAccount = MutableStateFlow(false)
+    val isAddingAccount: StateFlow<Boolean> = _isAddingAccount.asStateFlow()
+
+    private val _canAddAccount = MutableStateFlow(false)
+    val canAddAccount: StateFlow<Boolean> = _canAddAccount.asStateFlow()
 
     private val service by lazy { retrofitApi().create(ApiService::class.java) }
 
@@ -143,8 +154,11 @@ class DrawerLayoutViewModel : ViewModel(), OnAccountUpdate, OnEmojiUpdate {
                 }
             }
 
-            // Filter out hidden accounts for the current user
-            val userId = firebaseUid()
+            // Filter out hidden accounts for the current user.
+            // Use AccountManager (already updated before listeners fire) rather than
+            // firebaseUid() (reads Firebase.auth.currentUser which can still be anonymous
+            // during the auth transition window of an account switch).
+            val userId = AccountManager.get()?.wallet?.id
             val filteredAccounts = if (userId != null) {
                 AccountVisibilityManager.filterVisibleAccounts(
                     userId,
@@ -156,8 +170,34 @@ class DrawerLayoutViewModel : ViewModel(), OnAccountUpdate, OnEmojiUpdate {
 
             _accounts.value = filteredAccounts
             loadEvmStatus()
+
+            val flowWalletCount = walletNodes.filterIsInstance<FlowWallet>()
+                .count { it.chainIdString == currentNetwork }
+            val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
+            _canAddAccount.value = AppConfig.canCreateNewAccount()
+                && flowWalletCount < 5
+                && cryptoProvider != null
+                && cryptoProvider !is AndroidKeystoreCryptoProvider
+
             if (refreshBalance) {
                 fetchAllBalances(addressList, pendingEvmAddresses)
+            }
+        }
+    }
+
+    fun addAccount() {
+        ioScope {
+            _isAddingAccount.value = true
+            try {
+                val result = addNewFlowAccount()
+                if (result == null) {
+                    _isAddingAccount.value = false
+                    toast(msgRes = R.string.common_error_hint)
+                } else {
+                    refreshWalletList(false)
+                }
+            } finally {
+                _isAddingAccount.value = false
             }
         }
     }
