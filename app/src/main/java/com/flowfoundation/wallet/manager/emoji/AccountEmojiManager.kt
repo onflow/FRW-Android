@@ -38,6 +38,7 @@ object AccountEmojiManager {
         )
     }
 
+    @Synchronized
     fun getEmojiByAddress(address: String?): WalletEmojiInfo {
         val currentUserName = AccountManager.userInfo()?.username
         val randomEmoji = getRandomEmoji(currentUserName, address)
@@ -121,6 +122,31 @@ object AccountEmojiManager {
             listeners.removeAll { it.get() == null }
             listeners.forEach { it.get()?.onEmojiUpdate(userName, address, emojiId, emojiName) }
         }
+    }
+
+    /**
+     * Get or assign an emoji for [address] within a specific account's own emoji list.
+     * Used for non-current accounts to avoid polluting the current account's emoji state.
+     *
+     * [emojiList] is mutated in-place when a new address is encountered and the result
+     * is persisted to the correct account via [AccountManager.updateWalletEmojiInfo].
+     */
+    @Synchronized
+    fun getEmojiByAddressForAccount(
+        address: String,
+        username: String,
+        emojiList: MutableList<WalletEmojiInfo>
+    ): WalletEmojiInfo {
+        val existing = emojiList.firstOrNull { it.address == address }
+        if (existing != null) return existing
+
+        val usedIds = emojiList.map { it.emojiId }
+        val available = getEmojiList().filter { it.id !in usedIds }
+        val emoji = if (available.isEmpty()) Emoji.PENGUIN else available.random()
+        val info = WalletEmojiInfo(address, emoji.id, emoji.defaultName)
+        emojiList.add(info)
+        AccountManager.updateWalletEmojiInfo(username, emojiList.toMutableList())
+        return info
     }
 
     fun clear() {

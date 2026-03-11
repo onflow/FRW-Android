@@ -85,13 +85,12 @@ class DrawerLayoutViewModel : ViewModel(), OnAccountUpdate, OnEmojiUpdate {
             walletNodes.forEach { mainNode ->
                 when (mainNode) {
                     is EOAWallet -> {
-                        val emojiInfo = AccountEmojiManager.getEmojiByAddress(mainNode.address)
                         addressList.add(mainNode.address)
                         accounts.add(
                             WalletAccountData(
                                 address = mainNode.address,
-                                name = emojiInfo.emojiName,
-                                emojiId = emojiInfo.emojiId,
+                                name = mainNode.name,
+                                emojiId = mainNode.emojiId,
                                 isSelected = WalletManager.selectedWalletAddress().equals(mainNode.address, ignoreCase = true),
                                 isEOAAccount = true
                             )
@@ -99,7 +98,6 @@ class DrawerLayoutViewModel : ViewModel(), OnAccountUpdate, OnEmojiUpdate {
                     }
                     is FlowWallet -> {
                         if (mainNode.chainIdString == currentNetwork) {
-                            val emojiInfo = AccountEmojiManager.getEmojiByAddress(mainNode.address)
                             val linkedAccounts = mutableListOf<LinkedAccountData>()
 
                             mainNode.linkedWallets.forEach { linkedWallet ->
@@ -111,7 +109,7 @@ class DrawerLayoutViewModel : ViewModel(), OnAccountUpdate, OnEmojiUpdate {
                                                 address = linkedWallet.address,
                                                 name = linkedWallet.name,
                                                 icon = linkedWallet.icon,
-                                                emojiId = AccountEmojiManager.getEmojiByAddress(linkedWallet.address).emojiId,
+                                                emojiId = linkedWallet.emojiId,
                                                 isSelected = WalletManager.selectedWalletAddress().equals(linkedWallet.address, ignoreCase = true),
                                                 isCOAAccount = false
                                             )
@@ -123,13 +121,12 @@ class DrawerLayoutViewModel : ViewModel(), OnAccountUpdate, OnEmojiUpdate {
                                         if (evmAddress !in verifiedEvmAddresses) {
                                             pendingEvmAddresses.add(Pair(evmAddress, mainNode.address))
                                         } else {
-                                            val linkedEmojiInfo = AccountEmojiManager.getEmojiByAddress(evmAddress)
                                             linkedAccounts.add(
                                                 LinkedAccountData(
                                                     address = evmAddress,
-                                                    name = linkedEmojiInfo.emojiName,
+                                                    name = linkedWallet.name,
                                                     icon = null,
-                                                    emojiId = linkedEmojiInfo.emojiId,
+                                                    emojiId = linkedWallet.emojiId,
                                                     isSelected = WalletManager.selectedWalletAddress().equals(evmAddress, ignoreCase = true),
                                                     isCOAAccount = true
                                                 )
@@ -142,8 +139,8 @@ class DrawerLayoutViewModel : ViewModel(), OnAccountUpdate, OnEmojiUpdate {
                             accounts.add(
                                 WalletAccountData(
                                     address = mainNode.address,
-                                    name = emojiInfo.emojiName,
-                                    emojiId = emojiInfo.emojiId,
+                                    name = mainNode.name,
+                                    emojiId = mainNode.emojiId,
                                     isSelected = WalletManager.selectedWalletAddress().equals(mainNode.address, ignoreCase = true),
                                     linkedAccounts = linkedAccounts
                                 )
@@ -194,6 +191,8 @@ class DrawerLayoutViewModel : ViewModel(), OnAccountUpdate, OnEmojiUpdate {
                     _isAddingAccount.value = false
                     toast(msgRes = R.string.common_error_hint)
                 } else {
+                    // New accounts always have 0 balance; inject immediately for instant UI feedback
+                    _balanceMap.value = _balanceMap.value + (result to "0 FLOW")
                     refreshWalletList(false)
                 }
             } finally {

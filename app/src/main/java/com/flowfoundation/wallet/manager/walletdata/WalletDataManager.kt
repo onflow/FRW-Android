@@ -375,7 +375,11 @@ object WalletDataManager {
 
                 // Build Wallet Nodes
                 val nodes = mutableListOf<MainWallet>()
-                fun getEmojiInfo(address: String) = AccountEmojiManager.getEmojiByAddress(address)
+                val accountUsername = account.userInfo.username
+                val accountEmojiList = (account.walletEmojiList ?: emptyList()).toMutableList()
+                fun getEmojiInfo(address: String) = AccountEmojiManager.getEmojiByAddressForAccount(
+                    address, accountUsername, accountEmojiList
+                )
 
                 // EOA - WalletCreationHelper.createWalletFromAccount() sets isEoaDisabled
                 // based on key type (Secure Enclave = disabled, others = enabled)
