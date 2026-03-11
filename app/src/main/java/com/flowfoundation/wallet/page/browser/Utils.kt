@@ -29,6 +29,70 @@ import com.flowfoundation.wallet.utils.saveToFile
 import org.apache.commons.validator.routines.UrlValidator
 import java.io.File
 import java.net.URL
+import java.net.URI
+
+/**
+ * Security utility to extract the actual host from a URL.
+ * Handles URL spoofing attempts like "https://trusted.com@malicious.com"
+ * where the "@" symbol makes "trusted.com" appear as the username, not the host.
+ *
+ * @return The actual host being accessed, or the full URL if parsing fails
+ */
+fun String.extractActualHost(): String {
+    if (this.isBlank()) return this
+    return try {
+        val uri = URI(this)
+        uri.host ?: this
+    } catch (e: Exception) {
+        this
+    }
+}
+
+/**
+ * Security check to detect if a URL contains a potentially deceptive "@" symbol
+ * in the authority component (e.g., "https://trusted.com@malicious.com").
+ * This is a common URL spoofing technique.
+ *
+ * @return true if the URL contains a suspicious "@" pattern that could be used for spoofing
+ */
+fun String.hasDeceptiveAtSymbol(): Boolean {
+    if (this.isBlank()) return false
+    return try {
+        val uri = URI(this)
+        // Check if there's a userInfo component (part before @)
+        // that looks like a domain (contains a dot)
+        val userInfo = uri.userInfo
+        userInfo != null && userInfo.contains(".")
+    } catch (e: Exception) {
+        // Fallback: check if there's an @ between :// and the next /
+        val protocolEnd = this.indexOf("://")
+        if (protocolEnd == -1) return false
+        val pathStart = this.indexOf("/", protocolEnd + 3)
+        val authority = if (pathStart == -1) this.substring(protocolEnd + 3) else this.substring(protocolEnd + 3, pathStart)
+        authority.contains("@") && authority.substringBefore("@").contains(".")
+    }
+}
+
+/**
+ * Returns a safe display string for the URL to show in the address bar.
+ * Shows the full URL but highlights potential security issues.
+ * For deceptive URLs with @, returns the actual host being accessed.
+ *
+ * @return Safe display string showing the actual destination
+ */
+fun String.toSafeDisplayUrl(): String {
+    if (this.isBlank()) return this
+    return try {
+        val uri = URI(this)
+        val host = uri.host ?: return this
+        val scheme = uri.scheme ?: "https"
+        val port = if (uri.port != -1 && uri.port != 80 && uri.port != 443) ":${uri.port}" else ""
+        val path = uri.path ?: ""
+        "$scheme://$host$port$path"
+    } catch (e: Exception) {
+        this
+    }
+}
 
 fun openBrowser(
     activity: Activity,

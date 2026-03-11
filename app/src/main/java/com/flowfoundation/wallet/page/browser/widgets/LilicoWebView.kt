@@ -1,6 +1,7 @@
 package com.flowfoundation.wallet.page.browser.widgets
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -13,13 +14,18 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.CookieManager
+import android.webkit.JsPromptResult
+import android.webkit.JsResult
 import android.webkit.ValueCallback
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
+import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.annotation.ColorInt
+import com.flowfoundation.wallet.page.browser.extractActualHost
+import com.flowfoundation.wallet.page.browser.hasDeceptiveAtSymbol
 import com.crowdin.platform.Crowdin
 import com.flowfoundation.wallet.BuildConfig
 import com.flowfoundation.wallet.R
@@ -183,6 +189,38 @@ class LilicoWebView : WebView {
         blockedViewLayout.visibility = View.GONE
     }
 
+    /**
+     * Shows a security warning dialog for URLs that contain deceptive patterns
+     * like "@" symbols that could be used for URL spoofing attacks.
+     *
+     * @param url The potentially deceptive URL
+     * @param actualHost The actual host that will be accessed
+     * @param onProceed Callback when user chooses to proceed anyway
+     * @param onCancel Callback when user cancels navigation
+     */
+    private fun showDeceptiveUrlWarning(
+        url: String,
+        actualHost: String,
+        onProceed: () -> Unit,
+        onCancel: () -> Unit
+    ) {
+        uiScope {
+            AlertDialog.Builder(context)
+                .setTitle(R.string.security_warning)
+                .setMessage(context.getString(R.string.deceptive_url_warning, actualHost))
+                .setPositiveButton(R.string.proceed_anyway) { dialog, _ ->
+                    dialog.dismiss()
+                    onProceed()
+                }
+                .setNegativeButton(R.string.cancel) { dialog, _ ->
+                    dialog.dismiss()
+                    onCancel()
+                }
+                .setCancelable(false)
+                .show()
+        }
+    }
+
     fun setWebViewCallback(callback: WebviewCallback?) {
         this.callback = callback
     }
@@ -215,6 +253,112 @@ class LilicoWebView : WebView {
             fileChooserParams: FileChooserParams?
         ): Boolean {
             uiScope { showWebviewFilePicker(context, filePathCallback, fileChooserParams) }
+            return true
+        }
+
+        /**
+         * SECURITY FIX: Override JavaScript alert dialogs to clearly indicate
+         * they are from a webpage, not from Flow Wallet app itself.
+         * This prevents phishing attacks via fake app dialogs.
+         */
+        override fun onJsAlert(
+            view: WebView?,
+            url: String?,
+            message: String?,
+            result: JsResult?
+        ): Boolean {
+            val host = url?.extractActualHost() ?: "Unknown"
+            logd(TAG, "SECURITY: JS Alert intercepted from: $host")
+
+            AlertDialog.Builder(context)
+                .setTitle(context.getString(R.string.js_dialog_title, host))
+                .setMessage(message)
+                .setPositiveButton(R.string.ok) { dialog, _ ->
+                    result?.confirm()
+                    dialog.dismiss()
+                }
+                .setOnCancelListener {
+                    result?.cancel()
+                }
+                .setCancelable(true)
+                .show()
+            return true
+        }
+
+        /**
+         * SECURITY FIX: Override JavaScript confirm dialogs to clearly indicate
+         * they are from a webpage, not from Flow Wallet app itself.
+         */
+        override fun onJsConfirm(
+            view: WebView?,
+            url: String?,
+            message: String?,
+            result: JsResult?
+        ): Boolean {
+            val host = url?.extractActualHost() ?: "Unknown"
+            logd(TAG, "SECURITY: JS Confirm intercepted from: $host")
+
+            AlertDialog.Builder(context)
+                .setTitle(context.getString(R.string.js_dialog_title, host))
+                .setMessage(message)
+                .setPositiveButton(R.string.ok) { dialog, _ ->
+                    result?.confirm()
+                    dialog.dismiss()
+                }
+                .setNegativeButton(R.string.cancel) { dialog, _ ->
+                    result?.cancel()
+                    dialog.dismiss()
+                }
+                .setOnCancelListener {
+                    result?.cancel()
+                }
+                .setCancelable(true)
+                .show()
+            return true
+        }
+
+        /**
+         * SECURITY FIX: Override JavaScript prompt dialogs to clearly indicate
+         * they are from a webpage and NOT from Flow Wallet app.
+         * This is critical to prevent phishing attacks that display fake login prompts.
+         *
+         * The dialog clearly shows which website is requesting input, making it
+         * obvious to users that this is NOT a Flow Wallet system dialog.
+         */
+        override fun onJsPrompt(
+            view: WebView?,
+            url: String?,
+            message: String?,
+            defaultValue: String?,
+            result: JsPromptResult?
+        ): Boolean {
+            val host = url?.extractActualHost() ?: "Unknown"
+            logd(TAG, "SECURITY: JS Prompt intercepted from: $host - Message: $message")
+
+            // Create an EditText for user input
+            val inputView = EditText(context).apply {
+                setText(defaultValue)
+                hint = context.getString(R.string.js_prompt_hint)
+                setPadding(48, 32, 48, 32)
+            }
+
+            AlertDialog.Builder(context)
+                .setTitle(context.getString(R.string.js_dialog_title, host))
+                .setMessage(message)
+                .setView(inputView)
+                .setPositiveButton(R.string.ok) { dialog, _ ->
+                    result?.confirm(inputView.text.toString())
+                    dialog.dismiss()
+                }
+                .setNegativeButton(R.string.cancel) { dialog, _ ->
+                    result?.cancel()
+                    dialog.dismiss()
+                }
+                .setOnCancelListener {
+                    result?.cancel()
+                }
+                .setCancelable(true)
+                .show()
             return true
         }
     }
@@ -284,18 +428,54 @@ class LilicoWebView : WebView {
             }
 
             val uri = request.url
+            val urlString = uri.toString()
             logd(TAG, "shouldOverrideUrlLoading URL: $uri, scheme: ${uri.scheme}")
 
             // Check if it's an about:blank#blocked URL (internal for blocked pages)
-            if (uri.toString() == "about:blank#blocked") {
+            if (urlString == "about:blank#blocked") {
+                return true
+            }
+
+            // SECURITY FIX: Block javascript: URL scheme to prevent UXSS attacks
+            // Attackers can use javascript: URLs in iframes to execute arbitrary JS
+            // and display fake UI elements (like login prompts) that look like app dialogs
+            if (uri.scheme?.lowercase() == "javascript") {
+                logd(TAG, "SECURITY: Blocked javascript: URL scheme - $urlString")
+                return true
+            }
+
+            // SECURITY CHECK: Detect deceptive URLs with @ symbol
+            // URLs like "https://trusted.com@malicious.com" are spoofing attempts
+            if (urlString.hasDeceptiveAtSymbol()) {
+                val actualHost = urlString.extractActualHost()
+                logd(TAG, "SECURITY: Deceptive URL detected. URL: $urlString, Actual host: $actualHost")
+
+                // Stop loading and show warning
+                view?.stopLoading()
+                isLoading = false
+
+                showDeceptiveUrlWarning(
+                    url = urlString,
+                    actualHost = actualHost,
+                    onProceed = {
+                        // User chose to proceed despite warning
+                        logd(TAG, "User proceeded to deceptive URL: $urlString")
+                        isLoading = true
+                        view?.loadUrl(urlString)
+                    },
+                    onCancel = {
+                        // User cancelled navigation
+                        logd(TAG, "User cancelled navigation to deceptive URL: $urlString")
+                    }
+                )
                 return true
             }
 
             // Check if URL is blocked - this must be done on UI thread
             uiScope {
-                if (BlockManager.isBlocked(uri.toString())) {
+                if (BlockManager.isBlocked(urlString)) {
                     logd(TAG, "URL blocked: $uri")
-                    showBlockedViewLayout(uri.toString())
+                    showBlockedViewLayout(urlString)
                     loadUrl("about:blank#blocked")
                     isLoading = false
                 }
