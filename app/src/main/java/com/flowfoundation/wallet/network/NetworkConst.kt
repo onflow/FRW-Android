@@ -6,7 +6,8 @@ import com.flowfoundation.wallet.network.interceptor.HeaderInterceptor
 import com.flowfoundation.wallet.network.interceptor.PayerServiceInterceptor
 import com.flowfoundation.wallet.utils.isDev
 import com.flowfoundation.wallet.utils.isTesting
-import ai.luciq.library.okhttplogger.LuciqOkhttpInterceptor
+import ai.luciq.library.okhttp.v2.LuciqOkHttpInterceptor
+import ai.luciq.library.okhttp.v2.LuciqOkHttpEventListener
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -24,7 +25,8 @@ fun retrofit(
 ): Retrofit {
     val client = OkHttpClient.Builder().apply {
         addInterceptor(HeaderInterceptor(network = network))
-        addInterceptor(LuciqOkhttpInterceptor())
+        addInterceptor(LuciqOkHttpInterceptor())
+        eventListenerFactory(LuciqOkHttpEventListener.Factory())
 
         callTimeout(20, TimeUnit.SECONDS)
         connectTimeout(20, TimeUnit.SECONDS)
@@ -52,8 +54,9 @@ fun retrofitApi(): Retrofit {
 fun cadenceScriptApi(): Retrofit {
     val client = OkHttpClient.Builder().apply {
         addInterceptor(HeaderInterceptor(false))
-        addInterceptor(PayerServiceInterceptor())  // Add payer service interceptor
-        addInterceptor(LuciqOkhttpInterceptor())
+        addInterceptor(PayerServiceInterceptor())
+        addInterceptor(LuciqOkHttpInterceptor())
+        eventListenerFactory(LuciqOkHttpEventListener.Factory())
         addInterceptor(GzipRequestInterceptor())
         addInterceptor(GzipResponseInterceptor())
         callTimeout(20, TimeUnit.SECONDS)
@@ -74,7 +77,8 @@ fun cadenceScriptApi(): Retrofit {
 fun retrofitWithHost(host: String, disableConverter: Boolean = false, ignoreAuthorization: Boolean = true): Retrofit {
     val client = OkHttpClient.Builder().apply {
         addInterceptor(HeaderInterceptor(ignoreAuthorization))
-        addInterceptor(LuciqOkhttpInterceptor())
+        addInterceptor(LuciqOkHttpInterceptor())
+        eventListenerFactory(LuciqOkHttpEventListener.Factory())
         callTimeout(20, TimeUnit.SECONDS)
         connectTimeout(20, TimeUnit.SECONDS)
         readTimeout(20, TimeUnit.SECONDS)
