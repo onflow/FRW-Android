@@ -1,6 +1,7 @@
 package com.flowfoundation.wallet.page.account
 
 import androidx.lifecycle.ViewModel
+import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.AccountVisibilityManager
@@ -13,12 +14,18 @@ import com.flowfoundation.wallet.manager.walletdata.COAWallet
 import com.flowfoundation.wallet.manager.walletdata.ChildWallet
 import com.flowfoundation.wallet.manager.walletdata.EOAWallet
 import com.flowfoundation.wallet.manager.walletdata.FlowWallet
+import com.flowfoundation.wallet.manager.config.AppConfig
+import com.flowfoundation.wallet.manager.key.AndroidKeystoreCryptoProvider
+import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.network.ApiService
+import com.flowfoundation.wallet.network.addNewFlowAccount
 import com.flowfoundation.wallet.network.retrofitApi
 import com.flowfoundation.wallet.page.main.model.WalletAccountData
 import com.flowfoundation.wallet.page.main.model.LinkedAccountData
 import com.flowfoundation.wallet.utils.formatLargeBalanceNumber
+import com.flowfoundation.wallet.utils.isHideCOAWithZeroBalanceEnable
 import com.flowfoundation.wallet.utils.ioScope
+import com.flowfoundation.wallet.utils.toast
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -34,6 +41,12 @@ class AccountListViewModel : ViewModel(), OnEmojiUpdate {
 
     private val _hiddenAccounts = MutableStateFlow<Set<String>>(emptySet())
     val hiddenAccounts: StateFlow<Set<String>> = _hiddenAccounts.asStateFlow()
+
+    private val _isAddingAccount = MutableStateFlow(false)
+    val isAddingAccount: StateFlow<Boolean> = _isAddingAccount.asStateFlow()
+
+    private val _canAddAccount = MutableStateFlow(false)
+    val canAddAccount: StateFlow<Boolean> = _canAddAccount.asStateFlow()
 
     private val service by lazy { retrofitApi().create(ApiService::class.java) }
 
@@ -60,13 +73,12 @@ class AccountListViewModel : ViewModel(), OnEmojiUpdate {
             walletNodes.forEach { mainNode ->
                 when (mainNode) {
                     is EOAWallet -> {
-                        val emojiInfo = AccountEmojiManager.getEmojiByAddress(mainNode.address)
                         addressList.add(mainNode.address)
                         accounts.add(
                             WalletAccountData(
                                 address = mainNode.address,
-                                name = emojiInfo.emojiName,
-                                emojiId = emojiInfo.emojiId,
+                                name = mainNode.name,
+                                emojiId = mainNode.emojiId,
                                 isSelected = WalletManager.selectedWalletAddress().equals(mainNode.address, ignoreCase = true),
                                 isEOAAccount = true
                             )
@@ -74,7 +86,6 @@ class AccountListViewModel : ViewModel(), OnEmojiUpdate {
                     }
                     is FlowWallet -> {
                         if (mainNode.chainIdString == currentNetwork) {
-                            val emojiInfo = AccountEmojiManager.getEmojiByAddress(mainNode.address)
                             val linkedAccounts = mutableListOf<LinkedAccountData>()
 
                             mainNode.linkedWallets.forEach { linkedWallet ->
@@ -86,7 +97,7 @@ class AccountListViewModel : ViewModel(), OnEmojiUpdate {
                                                 address = linkedWallet.address,
                                                 name = linkedWallet.name,
                                                 icon = linkedWallet.icon,
-                                                emojiId = AccountEmojiManager.getEmojiByAddress(linkedWallet.address).emojiId,
+                                                emojiId = linkedWallet.emojiId,
                                                 isSelected = WalletManager.selectedWalletAddress().equals(linkedWallet.address, ignoreCase = true),
                                                 isCOAAccount = false
                                             )
@@ -99,13 +110,12 @@ class AccountListViewModel : ViewModel(), OnEmojiUpdate {
                                         if (evmAddress !in verifiedEvmAddresses) {
                                             pendingEvmAddresses.add(Pair(evmAddress, mainNode.address))
                                         } else {
-                                            val linkedEmojiInfo = AccountEmojiManager.getEmojiByAddress(evmAddress)
                                             linkedAccounts.add(
                                                 LinkedAccountData(
                                                     address = evmAddress,
-                                                    name = linkedEmojiInfo.emojiName,
+                                                    name = linkedWallet.name,
                                                     icon = null,
-                                                    emojiId = linkedEmojiInfo.emojiId,
+                                                    emojiId = linkedWallet.emojiId,
                                                     isSelected = WalletManager.selectedWalletAddress().equals(evmAddress, ignoreCase = true),
                                                     isCOAAccount = true
                                                 )
@@ -118,8 +128,8 @@ class AccountListViewModel : ViewModel(), OnEmojiUpdate {
                             accounts.add(
                                 WalletAccountData(
                                     address = mainNode.address,
-                                    name = emojiInfo.emojiName,
-                                    emojiId = emojiInfo.emojiId,
+                                    name = mainNode.name,
+                                    emojiId = mainNode.emojiId,
                                     isSelected = WalletManager.selectedWalletAddress().equals(mainNode.address, ignoreCase = true),
                                     linkedAccounts = linkedAccounts,
                                     isEOAAccount = false
@@ -144,8 +154,35 @@ class AccountListViewModel : ViewModel(), OnEmojiUpdate {
                 _hiddenAccounts.value = hiddenAccountsSet
             }
 
+            val flowWalletCount = walletNodes.filterIsInstance<FlowWallet>()
+                .count { it.chainIdString == currentNetwork }
+            val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
+            _canAddAccount.value = AppConfig.canCreateNewAccount()
+                && flowWalletCount < 5
+                && cryptoProvider != null
+                && cryptoProvider !is AndroidKeystoreCryptoProvider
+
             if (refreshBalance) {
                 fetchAllBalances(addressList, pendingEvmAddresses)
+            }
+        }
+    }
+
+    fun addAccount() {
+        ioScope {
+            _isAddingAccount.value = true
+            try {
+                val result = addNewFlowAccount()
+                if (result == null) {
+                    _isAddingAccount.value = false
+                    toast(msgRes = R.string.common_error_hint)
+                } else {
+                    // New accounts always have 0 balance; inject immediately for instant UI feedback
+                    _balanceMap.value = _balanceMap.value + (result to "0 FLOW")
+                    refreshWalletList(false)
+                }
+            } finally {
+                _isAddingAccount.value = false
             }
         }
     }
@@ -158,23 +195,31 @@ class AccountListViewModel : ViewModel(), OnEmojiUpdate {
             }
             _balanceMap.value = formattedBalanceMap
 
+            val hideCOAWithZeroBalance = isHideCOAWithZeroBalanceEnable()
+
             // Check each pending EVM address
             pendingEvmAddresses.forEach { (evmAddress, walletAddress) ->
-                val evmBalance = balanceMap[evmAddress]
-                val hasBalance = evmBalance != null && evmBalance > BigDecimal.ZERO
-                var hasNFTs = false
+                val shouldShow = if (!hideCOAWithZeroBalance) {
+                    true
+                } else {
+                    val evmBalance = balanceMap[evmAddress]
+                    val hasBalance = evmBalance != null && evmBalance > BigDecimal.ZERO
+                    var hasNFTs = false
 
-                if (!hasBalance) {
-                    try {
-                        val nftResponse = service.getEVMNFTCollections(evmAddress)
-                        val totalNftCount = nftResponse.data?.sumOf { it.count ?: 0 } ?: 0
-                        hasNFTs = nftResponse.data?.isNotEmpty() == true && totalNftCount > 0
-                    } catch (e: Exception) {
-                        // Ignore NFT API errors
+                    if (!hasBalance) {
+                        try {
+                            val nftResponse = service.getEVMNFTCollections(evmAddress)
+                            val totalNftCount = nftResponse.data?.sumOf { it.count ?: 0 } ?: 0
+                            hasNFTs = nftResponse.data?.isNotEmpty() == true && totalNftCount > 0
+                        } catch (_: Exception) {
+                            // Ignore NFT API errors
+                        }
                     }
+
+                    hasBalance || hasNFTs
                 }
 
-                if (hasBalance || hasNFTs) {
+                if (shouldShow) {
                     // Add EVM address to linked accounts
                     val currentAccounts = _accounts.value.toMutableList()
                     val walletAccount = currentAccounts.find { it.address == walletAddress }

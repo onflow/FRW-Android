@@ -145,17 +145,23 @@ object WalletDataManager {
         logd(TAG, "Updating current account data: ${currentAccount.userInfo.username}")
 
         // Try to reuse the singleton Wallet instance from WalletManager
-        var wallet = WalletManager.wallet()
+        val existingWallet = WalletManager.wallet()
+        val wallet: Wallet?
+        val canDeriveEoa: Boolean
 
-        if (wallet == null) {
+        if (existingWallet == null) {
             logd(TAG, "WalletManager.wallet() is null, attempting to create temporary instance")
-            wallet = WalletCreationHelper.createWalletFromAccount(currentAccount)
+            val result = WalletCreationHelper.createWalletFromAccount(currentAccount)
+            wallet = result?.wallet
+            canDeriveEoa = result?.canDeriveEoa ?: false
         } else {
             logd(TAG, "Reusing WalletManager instance: ${WalletManager.getCurrentFlowWalletAddress()}")
+            wallet = existingWallet
+            canDeriveEoa = WalletManager.canDeriveEoa()
         }
 
         if (wallet != null) {
-            updateCurrentAccountData(currentAccount, wallet)
+            updateCurrentAccountData(currentAccount, wallet, canDeriveEoa)
         } else {
             logd(TAG, "Failed to obtain wallet instance for current account")
         }
@@ -232,7 +238,7 @@ object WalletDataManager {
     /**
      * Update data for the current account using provided Wallet
      */
-    private suspend fun updateCurrentAccountData(account: Account, wallet: Wallet) {
+    private suspend fun updateCurrentAccountData(account: Account, wallet: Wallet, canDeriveEoa: Boolean) {
         try {
             logd(TAG, "Refreshing wallet accounts for ${account.userInfo.username}...")
             wallet.refreshAccounts()
@@ -263,9 +269,9 @@ object WalletDataManager {
             logd(TAG, "Fetching data for ${allBlockchainData.size} BlockchainData entries for node construction")
             fun getEmojiInfo(address: String) = AccountEmojiManager.getEmojiByAddress(address)
 
-            // EOA Wallet - WalletCreationHelper.createWalletFromAccount() sets isEoaDisabled
-            // based on key type (Secure Enclave = disabled, others = enabled)
-            if (!WalletManager.isEoaDisabled()) {
+            // EOA Wallet - canDeriveEoa is determined per-wallet by WalletCreationHelper
+            // based on key type (Secure Enclave / private key = false, seed phrase = true)
+            if (canDeriveEoa) {
                 val eoa = deriveEoaAddress(wallet)
                 logd(TAG, "Generated EOA address: $eoa")
                 if (eoa.isNotEmpty()) {
@@ -366,7 +372,9 @@ object WalletDataManager {
         return try {
             logd(TAG, "Updating non-current account: ${account.userInfo.username}")
 
-            val wallet = WalletCreationHelper.createWalletFromAccount(account, false)
+            val result = WalletCreationHelper.createWalletFromAccount(account, false)
+            val wallet = result?.wallet
+            val canDeriveEoa = result?.canDeriveEoa ?: false
             if (wallet != null) {
                 logd(TAG, "Refreshing wallet accounts for non-current account ${account.userInfo.username}...")
                 wallet.refreshAccounts()
@@ -375,11 +383,15 @@ object WalletDataManager {
 
                 // Build Wallet Nodes
                 val nodes = mutableListOf<MainWallet>()
-                fun getEmojiInfo(address: String) = AccountEmojiManager.getEmojiByAddress(address)
+                val accountUsername = account.userInfo.username
+                val accountEmojiList = (account.walletEmojiList ?: emptyList()).toMutableList()
+                fun getEmojiInfo(address: String) = AccountEmojiManager.getEmojiByAddressForAccount(
+                    address, accountUsername, accountEmojiList
+                )
 
-                // EOA - WalletCreationHelper.createWalletFromAccount() sets isEoaDisabled
-                // based on key type (Secure Enclave = disabled, others = enabled)
-                if (!WalletManager.isEoaDisabled()) {
+                // EOA - canDeriveEoa is determined per-wallet by WalletCreationHelper
+                // based on key type (Secure Enclave / private key = false, seed phrase = true)
+                if (canDeriveEoa) {
                     val eoa = deriveEoaAddress(wallet)
                     if (eoa.isNotEmpty()) {
                         logd(TAG, "Adding EOA for non-current account: $eoa")
@@ -391,7 +403,7 @@ object WalletDataManager {
                         ))
                     }
                 } else {
-                    logd(TAG, "Skipping EOA for non-current account (isEoaDisabled=${WalletManager.isEoaDisabled()})")
+                    logd(TAG, "Skipping EOA for non-current account (canDeriveEoa=false)")
                 }
 
                 kotlinx.coroutines.supervisorScope {

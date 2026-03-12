@@ -135,7 +135,7 @@ object KeyStorageManager {
     fun hasSeedPhrase(uid: String): Boolean = spStorage.get(uid) != null
 
     /** Returns all UIDs that have a stored seed phrase. */
-    fun getAllSeedPhraseUids(): List<String> = spStorage.allKeys
+    fun getAllSeedPhraseUids(): List<String> = spStorage.allKeys.filter { !it.endsWith("_metadata") }
 
     // ─── Private Key  (filesDir/frw_pk_storage/{uid}) ────────────────────────
 
@@ -167,8 +167,18 @@ object KeyStorageManager {
 
     fun hasPrivateKey(uid: String): Boolean = pkStorage.get(uid) != null
 
+    /** Removes the private key entry for [uid] from pkStorage. No-op if not present. */
+    fun deletePrivateKey(uid: String) {
+        try {
+            pkStorage.remove(uid)
+            logd(TAG, "Deleted private key for uid: $uid")
+        } catch (e: Exception) {
+            loge(TAG, "Failed to delete private key for uid $uid: ${e.message}")
+        }
+    }
+
     /** Returns all UIDs that have a stored private key. */
-    fun getAllPrivateKeyUids(): List<String> = pkStorage.allKeys
+    fun getAllPrivateKeyUids(): List<String> = pkStorage.allKeys.filter { !it.endsWith("_metadata") }
 
     // ─── Android Keystore Prefix  (filesDir/frw_akp_storage/{uid}) ───────────
 
@@ -192,5 +202,24 @@ object KeyStorageManager {
         CryptoProviderKey.hasProviderIdentifier(uid, akpStorage)
 
     /** Returns all UIDs that have a stored Android Keystore prefix. */
-    fun getAllAndroidKeystoreUids(): List<String> = akpStorage.allKeys
+    fun getAllAndroidKeystoreUids(): List<String> = akpStorage.allKeys.filter { !it.endsWith("_metadata") }
+
+    // ─── Wallet Address index (plain SharedPreferences, no encryption) ────────────
+    // Stores uid → primary Flow wallet address for display in LocalSwitchAccount.
+    // Intentionally separate from key material — no master password, no ChaCha20.
+
+    private const val ADDR_PREFS_NAME = "frw_uid_address_map"
+
+    private val addrPrefs: SharedPreferences by lazy {
+        Env.getApp().getSharedPreferences(ADDR_PREFS_NAME, Context.MODE_PRIVATE)
+    }
+
+    fun saveWalletAddress(uid: String, address: String) {
+        addrPrefs.edit { putString(uid, address) }
+        logd(TAG, "Saved wallet address for uid: $uid")
+    }
+
+    fun getWalletAddress(uid: String): String? = addrPrefs.getString(uid, null)
+
+    fun hasWalletAddress(uid: String): Boolean = addrPrefs.contains(uid)
 }

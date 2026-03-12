@@ -14,7 +14,7 @@ import com.flowfoundation.wallet.page.walletcreate.fragments.mnemonic.MnemonicAd
 import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.saveBackupMnemonicToPreference
 import com.flowfoundation.wallet.widgets.itemdecoration.GridSpaceItemDecoration
-import com.instabug.library.Instabug
+import ai.luciq.library.Luciq
 
 
 class BackupSeedPhraseInfoFragment: Fragment() {
@@ -47,7 +47,7 @@ class BackupSeedPhraseInfoFragment: Fragment() {
             adapter = this@BackupSeedPhraseInfoFragment.adapter
             layoutManager = GridLayoutManager(context, 2, GridLayoutManager.VERTICAL, false)
             addItemDecoration(GridSpaceItemDecoration(vertical = 16.0))
-            Instabug.addPrivateViews(this)
+            Luciq.addPrivateViews(this)
             visible()
         }
         with(binding.copyButton) {

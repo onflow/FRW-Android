@@ -21,10 +21,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.ui.draw.rotate
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -32,8 +40,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
@@ -107,6 +117,8 @@ fun DrawerLayoutCompose(drawer: DrawerLayout) {
     val showEvmLayout by viewModel.showEvmLayout.collectAsStateWithLifecycle()
     val accounts by viewModel.accounts.collectAsStateWithLifecycle()
     val balanceMap by viewModel.balanceMap.collectAsStateWithLifecycle()
+    val isAddingAccount by viewModel.isAddingAccount.collectAsStateWithLifecycle()
+    val canAddAccount by viewModel.canAddAccount.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         viewModel.loadData()
@@ -134,18 +146,16 @@ fun DrawerLayoutCompose(drawer: DrawerLayout) {
             .background(colorResource(id = R.color.deep_bg))
             .padding(horizontal = 18.dp, vertical = 24.dp)
     ) {
-        userInfo?.let {
-            HeaderSection(
-                userInfo = it,
-                onAccountSwitchClick = { ProfileSwitchDialog.show(activity.supportFragmentManager) }
-            )
-            HorizontalDivider(
-                color = colorResource(id = R.color.border_line_stroke),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 14.dp)
-            )
-        }
+        HeaderSection(
+            userInfo = userInfo,
+            onAccountSwitchClick = { ProfileSwitchDialog.show(activity.supportFragmentManager) }
+        )
+        HorizontalDivider(
+            color = colorResource(id = R.color.border_line_stroke),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 14.dp)
+        )
 
         if (showEvmLayout) {
             Spacer(modifier = Modifier.height(24.dp))
@@ -163,6 +173,7 @@ fun DrawerLayoutCompose(drawer: DrawerLayout) {
         AccountListSection(
             accounts = accounts,
             balanceMap = balanceMap,
+            isAddingAccount = isAddingAccount,
             onCopyClick = onCopyClick@{ address ->
                 if (EVMWalletManager.isEVMWalletAddress(address)) {
                     CopyCOAAddressDialog(context, address).show()
@@ -202,65 +213,85 @@ fun DrawerLayoutCompose(drawer: DrawerLayout) {
             onImportWalletClick = {
                 WalletRestoreActivity.launch(activity)
             },
-            onAddProfileClick = {
-                if (isTestnet()) {
-                    SwitchNetworkDialog(context, DialogType.CREATE).show()
-                } else {
-                    ReactNativeActivity.launchWithRoute(context, RNBridge.ScreenType.ONBOARDING, RNBridge.InitialRoute.PROFILE_TYPE_SELECTION)
-                }
-            }
+            onAddAccountClick = { viewModel.addAccount() },
+            canAddAccount = canAddAccount
         )
     }
 }
 
 @Composable
 fun HeaderSection(
-    userInfo: UserInfoData,
+    userInfo: UserInfoData?,
     onAccountSwitchClick: () -> Unit
 ) {
-    val avatarUrl = userInfo.avatar.parseAvatarUrl()
-    val avatar = if (avatarUrl.contains("flovatar.com")) {
-        avatarUrl.svgToPng()
-    } else {
-        avatarUrl
-    }
     ConstraintLayout(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 40.dp)
     ) {
         val (icon, name, switch) = createRefs()
-        AsyncImage(
-            model = avatar,
-            contentDescription = "User Avatar",
-            contentScale = ContentScale.Crop,
-            placeholder = painterResource(id = R.drawable.ic_placeholder),
-            error = painterResource(id = R.drawable.ic_placeholder),
-            modifier = Modifier
-                .constrainAs(icon) {
-                    top.linkTo(parent.top)
-                    bottom.linkTo(parent.bottom)
-                    start.linkTo(parent.start)
-                    end.linkTo(name.start)
-                }
-                .size(40.dp)
-                .clip(RoundedCornerShape(8.dp))
-        )
 
-        Text(
-            text = userInfo.nickname,
-            color = colorResource(id = R.color.text_1),
-            fontSize = 14.sp,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier
-                .constrainAs(name) {
-                    top.linkTo(parent.top)
-                    bottom.linkTo(parent.bottom)
-                    start.linkTo(icon.end, 16.dp)
-                    end.linkTo(switch.start, 16.dp)
-                    width = Dimension.fillToConstraints
-                }
-        )
+        if (userInfo == null) {
+            ShimmerBox(
+                modifier = Modifier
+                    .constrainAs(icon) {
+                        top.linkTo(parent.top)
+                        bottom.linkTo(parent.bottom)
+                        start.linkTo(parent.start)
+                    }
+                    .size(40.dp),
+                shape = RoundedCornerShape(8.dp)
+            )
+            ShimmerBox(
+                modifier = Modifier
+                    .constrainAs(name) {
+                        top.linkTo(parent.top)
+                        bottom.linkTo(parent.bottom)
+                        start.linkTo(icon.end, 16.dp)
+                        end.linkTo(switch.start, 16.dp)
+                        width = Dimension.fillToConstraints
+                    }
+                    .height(16.dp)
+                    .width(120.dp)
+            )
+        } else {
+            val avatarUrl = userInfo.avatar.parseAvatarUrl()
+            val avatar = if (avatarUrl.contains("flovatar.com")) {
+                avatarUrl.svgToPng()
+            } else {
+                avatarUrl
+            }
+            AsyncImage(
+                model = avatar,
+                contentDescription = "User Avatar",
+                contentScale = ContentScale.Crop,
+                placeholder = painterResource(id = R.drawable.ic_placeholder),
+                error = painterResource(id = R.drawable.ic_placeholder),
+                modifier = Modifier
+                    .constrainAs(icon) {
+                        top.linkTo(parent.top)
+                        bottom.linkTo(parent.bottom)
+                        start.linkTo(parent.start)
+                        end.linkTo(name.start)
+                    }
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(8.dp))
+            )
+            Text(
+                text = userInfo.nickname,
+                color = colorResource(id = R.color.text_1),
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier
+                    .constrainAs(name) {
+                        top.linkTo(parent.top)
+                        bottom.linkTo(parent.bottom)
+                        start.linkTo(icon.end, 16.dp)
+                        end.linkTo(switch.start, 16.dp)
+                        width = Dimension.fillToConstraints
+                    }
+            )
+        }
 
         IconButton(
             onClick = onAccountSwitchClick,
@@ -664,6 +695,7 @@ fun AccountListSection(
     balanceMap: Map<String, String>,
     onCopyClick: (String) -> Unit,
     onAccountClick: (String) -> Unit,
+    isAddingAccount: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
@@ -679,13 +711,16 @@ fun AccountListSection(
             color = colorResource(id = R.color.text_2),
             fontSize = 14.sp
         )
-        activeAccount?.let {
+        if (activeAccount != null) {
             Spacer(modifier = Modifier.height(16.dp))
             ActiveAccountSection(
-                item = it,
+                item = activeAccount,
                 balanceMap = balanceMap,
                 onCopyClick = onCopyClick
             )
+        } else if (accounts.isEmpty()) {
+            Spacer(modifier = Modifier.height(16.dp))
+            ShimmerWalletAccountRow()
         }
         Spacer(modifier = Modifier.height(16.dp))
         Text(
@@ -694,20 +729,30 @@ fun AccountListSection(
             fontSize = 14.sp,
         )
 
-        accounts.forEach { account ->
-            WalletAccountSection(
-                item = account,
-                balance = balanceMap[account.address.toAddress()] ?: "",
-                onCopyClick = onCopyClick,
-                onAccountClick = { onAccountClick(account.address) }
-            )
-            account.linkedAccounts.forEach { linkedAccount ->
-                LinkedAccountSection(
-                    item = linkedAccount,
-                    balance = balanceMap[linkedAccount.address.toAddress()] ?: "",
+        if (isAddingAccount) {
+            LoadingWalletAccountRow()
+        }
+
+        if (accounts.isEmpty()) {
+            repeat(2) {
+                ShimmerWalletAccountRow()
+            }
+        } else {
+            accounts.forEach { account ->
+                WalletAccountSection(
+                    item = account,
+                    balance = balanceMap[account.address.toAddress()] ?: "",
                     onCopyClick = onCopyClick,
-                    onAccountClick = { onAccountClick(linkedAccount.address) }
+                    onAccountClick = { onAccountClick(account.address) }
                 )
+                account.linkedAccounts.forEach { linkedAccount ->
+                    LinkedAccountSection(
+                        item = linkedAccount,
+                        balance = balanceMap[linkedAccount.address.toAddress()] ?: "",
+                        onCopyClick = onCopyClick,
+                        onAccountClick = { onAccountClick(linkedAccount.address) }
+                    )
+                }
             }
         }
     }
@@ -716,37 +761,164 @@ fun AccountListSection(
 @Composable
 fun BottomSection(
     onImportWalletClick: () -> Unit,
-    onAddProfileClick: () -> Unit
+    onAddAccountClick: () -> Unit = {},
+    canAddAccount: Boolean = false
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(modifier = Modifier
-            .size(40.dp)
-            .background(
-                color = colorResource(id = R.color.bg_card),
-                shape = CircleShape
-            )
-            .clickable(onClick = onAddProfileClick),
-            contentAlignment = Alignment.Center
+    Column {
+        if (canAddAccount) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp)
+                    .clickable(onClick = onAddAccountClick),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(
+                            color = colorResource(id = R.color.bg_card),
+                            shape = CircleShape
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_baseline_add_24),
+                        contentDescription = "Add Account",
+                        tint = colorResource(id = R.color.text_1)
+                    )
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                Text(
+                    text = stringResource(id = R.string.add_account),
+                    color = colorResource(id = R.color.text_2),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp)
+                .clickable(onClick = onImportWalletClick),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_baseline_add_24),
-                contentDescription = "Add Account",
-                tint = colorResource(id = R.color.text_1)
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(
+                        color = colorResource(id = R.color.bg_card),
+                        shape = CircleShape
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_import_wallet),
+                    contentDescription = "Recover Profile",
+                    tint = colorResource(id = R.color.text_1)
+                )
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(
+                text = stringResource(id = R.string.recover_profile),
+                color = colorResource(id = R.color.text_2),
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold
             )
         }
-        Spacer(modifier = Modifier.width(16.dp))
-        Text(
-            text = stringResource(id = R.string.recover_profile),
-            color = colorResource(id = R.color.text_2),
-            fontSize = 16.sp,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.clickable(onClick = onImportWalletClick)
+
+    }
+}
+
+@Composable
+private fun LoadingWalletAccountRow() {
+    val infiniteTransition = rememberInfiniteTransition(label = "loading")
+    val rotation by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 2400, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "loading_rotation"
+    )
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp)
+    ) {
+        Box(
+            modifier = Modifier.size(45.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(
+                progress = { 0.25f },
+                modifier = Modifier.size(45.dp).rotate(rotation),
+                color = colorResource(id = R.color.accent_green),
+                trackColor = colorResource(id = R.color.accent_green_8),
+                strokeWidth = 7.dp
+            )
+            Icon(
+                painter = painterResource(id = R.drawable.ic_coin_flow),
+                contentDescription = null,
+                modifier = Modifier.size(30.dp),
+                tint = Color.Unspecified
+            )
+        }
+        Spacer(modifier = Modifier.width(9.dp))
+        Column {
+            ShimmerBox(modifier = Modifier.width(60.dp).height(14.dp))
+            Spacer(modifier = Modifier.height(2.dp))
+            ShimmerBox(modifier = Modifier.width(100.dp).height(12.dp))
+            Spacer(modifier = Modifier.height(2.dp))
+            ShimmerBox(modifier = Modifier.width(80.dp).height(12.dp))
+        }
+    }
+}
+
+@Composable
+private fun ShimmerBox(
+    modifier: Modifier,
+    shape: Shape = RoundedCornerShape(4.dp)
+) {
+    val alpha by rememberInfiniteTransition(label = "shimmer").animateFloat(
+        initialValue = 0.3f,
+        targetValue = 1.0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 900, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "shimmer_alpha"
+    )
+    Box(
+        modifier = modifier
+            .alpha(alpha)
+            .background(colorResource(id = R.color.bg_card), shape)
+    )
+}
+
+@Composable
+private fun ShimmerWalletAccountRow() {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp)
+    ) {
+        ShimmerBox(
+            modifier = Modifier.size(42.dp),
+            shape = CircleShape
         )
+        Spacer(modifier = Modifier.width(9.dp))
+        Column {
+            ShimmerBox(modifier = Modifier.width(60.dp).height(14.dp))
+            Spacer(modifier = Modifier.height(2.dp))
+            ShimmerBox(modifier = Modifier.width(100.dp).height(12.dp))
+            Spacer(modifier = Modifier.height(2.dp))
+            ShimmerBox(modifier = Modifier.width(80.dp).height(12.dp))
+        }
     }
 }
 

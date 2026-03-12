@@ -1,8 +1,10 @@
 package com.flowfoundation.wallet.page.browser.presenter
 
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
-import com.zackratos.ultimatebarx.ultimatebarx.navigationBarHeight
 import com.zackratos.ultimatebarx.ultimatebarx.statusBarHeight
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.LayoutBrowserBinding
@@ -35,10 +37,14 @@ class BrowserPresenter(
         with(binding) {
             contentWrapper.post {
                 statusBarHolder.layoutParams.height = statusBarHeight
-                with(root) {
-                    val navBarHeight = if (navigationBarHeight < 50) 0 else navigationBarHeight
-                    setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom + navBarHeight)
-                }
+            }
+            // Use dynamic insets instead of static navigationBarHeight with a threshold.
+            // The FloatWindow is added directly to activity.window.decorView, so it participates
+            // in the normal insets dispatch chain and this listener will fire correctly.
+            ViewCompat.setOnApplyWindowInsetsListener(root) { view, insets ->
+                val navBar = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
+                view.updatePadding(bottom = navBar.bottom)
+                insets
             }
             with(binding) {
                 refreshButton.setOnClickListener { webview()?.reload() }

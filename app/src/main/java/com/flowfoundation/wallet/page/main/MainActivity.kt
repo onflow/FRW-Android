@@ -7,10 +7,6 @@ import android.content.BroadcastReceiver
 import android.content.IntentFilter
 import android.os.Bundle
 import androidx.core.view.GravityCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.updatePadding
 import androidx.lifecycle.ViewModelProvider
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.flowfoundation.wallet.base.activity.BaseActivity
@@ -33,8 +29,8 @@ import com.flowfoundation.wallet.utils.isNotificationPermissionChecked
 import com.flowfoundation.wallet.utils.isNotificationPermissionGrand
 import com.flowfoundation.wallet.utils.isRegistered
 import com.flowfoundation.wallet.utils.uiScope
-import com.instabug.bug.BugReporting
-import com.instabug.library.Instabug
+import ai.luciq.bug.BugReporting
+import ai.luciq.library.Luciq
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 
 class MainActivity : BaseActivity() {
@@ -61,13 +57,6 @@ class MainActivity : BaseActivity() {
 
         UltimateBarX.with(this).fitWindow(false).light(!isNightMode(this)).applyStatusBar()
 
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, windowInsets ->
-            val systemBarsInsets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
-            binding.navigationView.updatePadding(bottom = systemBarsInsets.bottom)
-            windowInsets
-        }
         contentPresenter = MainContentPresenter(this, binding)
         setupDrawerLayoutCompose(binding.drawerLayout)
         binding.drawerLayout.close()
@@ -84,7 +73,7 @@ class MainActivity : BaseActivity() {
 
             // Navigate to target tab if specified
             if (targetTabIndex >= 0) {
-                val targetTab = HomeTab.values().find { it.index == targetTabIndex }
+                val targetTab = HomeTab.entries.find { it.index == targetTabIndex }
                 targetTab?.let { viewModel.changeTab(it) }
             }
         }
@@ -102,10 +91,10 @@ class MainActivity : BaseActivity() {
     private fun configurationInstabugBugReport() {
         BugReporting.setOnInvokeCallback {
             DebugViewerDataSource.generateDebugZipFile(this)?.let {
-                Instabug.addFileAttachment(it, "log.zip")
+                Luciq.addFileAttachment(it, "log.zip")
             }
             BugReporting.setOnDismissCallback { _, _ ->
-                Instabug.clearFileAttachment()
+                Luciq.clearFileAttachment()
                 BugReporting.setOnDismissCallback(null)
             }
         }

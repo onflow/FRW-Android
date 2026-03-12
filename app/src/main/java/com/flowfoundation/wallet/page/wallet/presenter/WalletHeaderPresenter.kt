@@ -3,7 +3,6 @@ package com.flowfoundation.wallet.page.wallet.presenter
 import android.annotation.SuppressLint
 import android.view.View
 import android.widget.TextView
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
@@ -68,6 +67,8 @@ class WalletHeaderPresenter(
                     ).ifEmpty { "0" }
                 )
                 ivHide.setImageResource(if (isHideBalance) R.drawable.ic_eye_off else R.drawable.ic_eye_on)
+                shimmerBalance.stopShimmer()
+                shimmerBalance.gone()
             }
 
             val count = if (model.coinCount > 0 ) model.coinCount else FungibleTokenListManager.getCurrentDisplayTokenListSnapshot().size
@@ -80,6 +81,8 @@ class WalletHeaderPresenter(
             cvReceive.setOnClickListener { ReactNativeActivity.launch(view.context, RNBridge.ScreenType.RECEIVE) }
             val address = shortenEVMString(WalletManager.selectedWalletAddress().toAddress())
             tvAddress.text = address
+            shimmerAddress.stopShimmer()
+            shimmerAddress.gone()
             ivCopy.setVisible(address.isNotBlank())
             ivCopy.setOnClickListener {
                 copyAddress(

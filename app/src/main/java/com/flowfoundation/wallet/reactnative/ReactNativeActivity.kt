@@ -2,6 +2,11 @@ package com.flowfoundation.wallet.reactnative
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultReactActivityDelegate
@@ -86,8 +91,20 @@ class ReactNativeActivity : ReactActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Opt into edge-to-edge. On API 35+ this is enforced by the system; on older APIs
+        // we set it explicitly so the behavior is consistent across all versions.
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         logd(TAG, "onCreate called")
         super.onCreate(savedInstanceState)
+
+        // ReactActivity doesn't extend BaseActivity, so we apply nav bar insets here directly.
+        // This pads android.R.id.content so the React Native root view doesn't go behind the nav bar.
+        val contentView = window.decorView.findViewById<View>(android.R.id.content)
+        ViewCompat.setOnApplyWindowInsetsListener(window.decorView) { _, insets ->
+            val navBar = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
+            contentView?.updatePadding(bottom = navBar.bottom)
+            insets
+        }
 
         // Log the intent extras for debugging
         intent?.let {
@@ -104,6 +121,14 @@ class ReactNativeActivity : ReactActivity() {
         super.onNewIntent(intent)
         // When activity is reused with SINGLE_TOP, update the intent so getLaunchOptions() uses new data
         setIntent(intent)
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        // Re-trigger insets dispatch once the window is visible and has valid insets.
+        if (hasFocus) {
+            ViewCompat.requestApplyInsets(window.decorView)
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

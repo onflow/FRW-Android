@@ -15,6 +15,8 @@ import com.flowfoundation.wallet.manager.cadence.CadenceApiManager
 import com.flowfoundation.wallet.page.profile.subpage.developer.DeveloperModeViewModel
 import com.flowfoundation.wallet.page.profile.subpage.developer.LocalAccountKeyActivity
 import com.flowfoundation.wallet.page.profile.subpage.developer.model.DeveloperPageModel
+import com.flowfoundation.wallet.utils.isDev
+import com.flowfoundation.wallet.utils.isTesting
 import com.flowfoundation.wallet.utils.NETWORK_MAINNET
 import com.flowfoundation.wallet.utils.NETWORK_TESTNET
 import com.flowfoundation.wallet.utils.debug.DebugLogManager
@@ -31,7 +33,9 @@ import com.flowfoundation.wallet.utils.updateChainNetworkPreference
 import com.flowfoundation.wallet.utils.getWatchCollectibleAddress
 import com.flowfoundation.wallet.utils.setWatchCollectibleAddress
 import com.flowfoundation.wallet.utils.clearWatchCollectibleAddress
+import com.flowfoundation.wallet.utils.isHideCOAWithZeroBalanceEnable
 import com.flowfoundation.wallet.utils.isWrapEOATxWithCadenceEnable
+import com.flowfoundation.wallet.utils.setHideCOAWithZeroBalanceEnable
 import com.flowfoundation.wallet.utils.setWrapEOATxWithCadenceEnable
 import com.flowfoundation.wallet.widgets.ProgressDialog
 import kotlinx.coroutines.delay
@@ -79,12 +83,15 @@ class DeveloperModePresenter(
                 // Initialize Watch Collectible Address
                 setupWatchCollectibleAddress()
                 setupWrapEOATxWithCadence()
+                setupHideCOAWithZeroBalance()
 
                 developerModePreference.setOnCheckedChangeListener {
                     setDevelopContentVisible(it)
                     setDeveloperModeEnable(it)
                     if (!it) {
                         changeNetwork(NETWORK_MAINNET)
+                    } else {
+                        ioScope { refreshChainNetworkSync() }
                     }
                 }
 
@@ -128,7 +135,7 @@ class DeveloperModePresenter(
     private fun setDevelopContentVisible(visible: Boolean) {
         binding.group2.setVisible(visible)
         binding.group3.setVisible(visible)
-        binding.cvDebug.setVisible(visible)
+        binding.cvDebug.setVisible(visible && (isDev() || isTesting()))
         binding.cvAccountKey.setVisible(visible && showLocalAccountKeys)
         binding.cvReloadConfig.setVisible(visible)
     }
@@ -169,6 +176,18 @@ class DeveloperModePresenter(
                 binding.wrapEoaTx.setChecked(isWrap)
                 binding.wrapEoaTx.setOnCheckedChangeListener {
                     setWrapEOATxWithCadenceEnable(it)
+                }
+            }
+        }
+    }
+
+    private fun setupHideCOAWithZeroBalance() {
+        ioScope {
+            val isHide = isHideCOAWithZeroBalanceEnable()
+            uiScope {
+                binding.hideCoaZeroBalance.setChecked(isHide)
+                binding.hideCoaZeroBalance.setOnCheckedChangeListener {
+                    setHideCOAWithZeroBalanceEnable(it)
                 }
             }
         }

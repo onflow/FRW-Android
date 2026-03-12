@@ -84,6 +84,7 @@
         created your previous wallet.</string>
     <string name="restore_with_mnemonic">Sign in with \nRecovery Phrase</string>
     <string name="restore_mnemonic_hint">Enter the Recovery Phrase</string>
+    <string name="restore_mnemonic_mismatch">Recovery phrase does not match this account</string>
     <string name="account_not_found">Account not Found</string>
     <string name="account_not_found_desc">No account found with the recovery phrase. Do you want to create a new account with your phrase?</string>
     <string name="your_phrase">your phrase</string>
@@ -653,6 +654,7 @@
     <string name="restore_failed_desc">Please try again later.</string>
     <string name="debug_view">Debug View</string>
     <string name="wrap_eoa_tx_with_cadence">Wrap EOA TX with Cadence</string>
+    <string name="hide_coa_with_zero_balance">Hide COA With Zero Balance</string>
     <string name="export_log">Export Log</string>
     <string name="view_recovery_phrase">View Recovery Phrase</string>
     <string name="clear">Clear</string>

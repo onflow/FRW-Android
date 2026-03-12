@@ -20,7 +20,7 @@ import com.flowfoundation.wallet.utils.reportCadenceErrorToDebugView
 import com.flowfoundation.wallet.utils.safeRunSuspend
 import com.flowfoundation.wallet.utils.vibrateTransaction
 import com.flowfoundation.wallet.wallet.toAddress
-import com.instabug.library.Instabug
+import ai.luciq.library.Luciq
 import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
 import org.onflow.flow.models.*
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
@@ -132,7 +132,7 @@ suspend fun sendTransaction(
     }
     if (e is InvalidKeyException) {
       ErrorReporter.reportCriticalWithMixpanel(WalletError.QUERY_ACCOUNT_KEY_FAILED, e)
-      Instabug.show()
+      Luciq.show()
     }
     return null
   }
@@ -211,7 +211,7 @@ suspend fun sendBridgeTransaction(
     }
     if (e is InvalidKeyException) {
       ErrorReporter.reportCriticalWithMixpanel(WalletError.QUERY_ACCOUNT_KEY_FAILED, e)
-      Instabug.show()
+      Luciq.show()
     }
     return null
   }

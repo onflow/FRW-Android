@@ -33,12 +33,11 @@ object WalletManager {
     private const val ADDRESS_CACHE_DURATION = 100L // Cache duration in milliseconds
     private val initializationLock = Object()
 
-    private var _isEoaDisabled = false
+    private var _canDeriveEoa = false
     private var lastRotationCheckTime = 0L
     private const val ROTATION_CHECK_COOLDOWN = 2000L
 
-    fun isEoaDisabled() = _isEoaDisabled
-    fun setEoaDisabled(disabled: Boolean) { _isEoaDisabled = disabled }
+    fun canDeriveEoa() = _canDeriveEoa
 
     /**
      * Get EOA address
@@ -66,14 +65,15 @@ object WalletManager {
         }
 
         // Use WalletCreationHelper to create wallet from account
-        val newWallet = runBlocking {
+        val result = runBlocking {
             WalletCreationHelper.createWalletFromAccount(account)
         } ?: run {
             logd(TAG, "Failed to create wallet from account")
             return false
         }
 
-        currentWallet = newWallet
+        currentWallet = result.wallet
+        _canDeriveEoa = result.canDeriveEoa
         logd(TAG, "Wallet created successfully: ${getCurrentFlowWalletAddress()}")
 
         val address = getCurrentFlowWalletAddress() ?: run {
@@ -463,6 +463,7 @@ object WalletManager {
             selectedWalletAddressRef.set("")
             currentWallet = null
             lastAddressCheck = 0
+            _canDeriveEoa = false
         }
     }
 }

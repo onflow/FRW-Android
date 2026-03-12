@@ -13,7 +13,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -44,7 +46,7 @@ import com.flowfoundation.wallet.page.account.AccountListActivity
 import com.flowfoundation.wallet.page.security.SecuritySettingActivity
 import com.flowfoundation.wallet.utils.*
 import com.flowfoundation.wallet.utils.extensions.openInSystemBrowser
-import com.instabug.library.Instabug
+import ai.luciq.library.Luciq
 import kotlinx.coroutines.launch
 
 @Composable
@@ -255,7 +257,7 @@ fun SettingScreen(
                     titleRes = R.string.bug_report,
                     showDivider = true
                 ) {
-                    Instabug.show()
+                    Luciq.show()
                 }
 
                 if (isSignedIn) {
@@ -302,6 +304,7 @@ fun SettingScreen(
                 text = stringResource(R.string.free_gas_fee_desc),
                 fontSize = 12.sp,
                 color = colorResource(R.color.text_2),
+                style = TextStyle(lineBreak = LineBreak.Paragraph),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 6.dp)

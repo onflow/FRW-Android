@@ -11,8 +11,7 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.firebase.auth.firebaseCustomLogin
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
-import com.flowfoundation.wallet.firebase.auth.isAnonymousSignIn
-import com.flowfoundation.wallet.firebase.auth.signInAnonymously
+import com.flowfoundation.wallet.firebase.auth.setToAnonymous
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
@@ -58,9 +57,6 @@ import com.flowfoundation.wallet.utils.storeWalletPassword
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.updateChainNetworkPreference
 import com.flowfoundation.wallet.wallet.Wallet
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
-import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.nftco.flow.sdk.HashAlgorithm
@@ -527,16 +523,13 @@ private suspend fun registerOutblockUserInternal(
 }
 
 private fun registerFirebase(user: RegisterResponse, callback: (isSuccess: Boolean) -> Unit) {
-    FirebaseMessaging.getInstance().deleteToken()
-    Firebase.auth.currentUser?.delete()?.addOnCompleteListener {
-        logd(TAG, "delete user finish exception:${it.exception}")
-        if (it.isSuccessful) {
-            firebaseCustomLogin(user.data.customToken) { isSuccessful, _ ->
-                if (isSuccessful) {
-                    MixpanelManager.identifyUserProfile()
-                    callback(true)
-                } else callback(false)
-            }
+    // signInWithCustomToken atomically replaces the current anonymous user without going through
+    // null. The prior delete() call created a null window that raced with background
+    // getFirebaseJwt() → signInAnonymously() calls. FCM token is refreshed by firebaseCustomLogin.
+    firebaseCustomLogin(user.data.customToken) { isSuccessful, _ ->
+        if (isSuccessful) {
+            MixpanelManager.identifyUserProfile()
+            callback(true)
         } else callback(false)
     }
 }
@@ -596,14 +589,6 @@ fun generatePrefix(text: String): String {
     val bytes = MessageDigest.getInstance(HashAlgorithm.SHA2_256.algorithm)
         .digest(combinedInput.toByteArray())
     return bytes.joinToString("") { "%02x".format(it) }
-}
-
-private suspend fun setToAnonymous(): Boolean {
-    if (!isAnonymousSignIn()) {
-        Firebase.auth.signOut()
-        return signInAnonymously()
-    }
-    return true
 }
 
 // create user failed, resume account

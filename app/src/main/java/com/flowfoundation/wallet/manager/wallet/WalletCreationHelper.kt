@@ -26,6 +26,11 @@ import org.onflow.flow.ChainId
 import org.onflow.flow.models.SigningAlgorithm
 import org.onflow.flow.models.hexToBytes
 
+data class WalletCreationResult(
+    val wallet: Wallet,
+    val canDeriveEoa: Boolean
+)
+
 /**
  * Helper class for creating Wallet objects from Account information
  * Provides reusable wallet creation logic for WalletManager and WalletDataManager
@@ -42,8 +47,7 @@ object WalletCreationHelper {
      * 2. Prefix-based (legacy/hardware): Has prefix for hardware-backed or legacy keys
      * 3. Mnemonic-based: Fallback to HD wallet mnemonic via AccountWalletManager
      */
-    suspend fun createWalletFromAccount(account: Account, isCurrentAccount: Boolean = true):
-      Wallet? {
+    suspend fun createWalletFromAccount(account: Account, isCurrentAccount: Boolean = true): WalletCreationResult? {
         return try {
             logd(TAG, "Creating wallet from account: ${account.userInfo.username}")
             val userId = account.wallet?.id
@@ -54,24 +58,26 @@ object WalletCreationHelper {
                 val seedPhraseKey = KeyStorageManager.getSeedPhraseKey(userId)
                 if (seedPhraseKey != null) {
                     logd(TAG, "New storage: seed phrase key found for uid: $userId")
-                    return createWalletFromSeedPhraseKey(seedPhraseKey, isCurrentAccount)
+                    return createWalletFromSeedPhraseKey(seedPhraseKey)
                 }
                 // PrivateKey object retrieved directly → no intermediate string reconstruction
                 val privateKey = KeyStorageManager.getPrivateKeyObject(userId)
                 if (privateKey != null) {
                     logd(TAG, "New storage: private key object found for uid: $userId")
-                    return createWalletFromPrivateKey(privateKey, isCurrentAccount)
+                    val result = createWalletFromPrivateKey(privateKey)
+                    checkAndNotifyMnemonicRestoreIfNeeded(isCurrentAccount)
+                    return result
                 }
                 // Android Keystore prefix → reconstruct provider at app layer
                 val akPrefix = KeyStorageManager.getAndroidKeystorePrefix(userId)
                 if (!akPrefix.isNullOrBlank()) {
                     logd(TAG, "New storage: AK prefix found for uid: $userId")
-                    return createWalletFromPrefix(akPrefix, isCurrentAccount)
+                    return createWalletFromPrefix(akPrefix)
                 }
             }
 
             // Create wallet based on account's key information only
-            val wallet = when {
+            val result = when {
                 // Handle keystore-based accounts
                 !account.keyStoreInfo.isNullOrBlank() -> {
                     logd(TAG, "Creating keystore-based wallet for account: ${account.userInfo.username}")
@@ -81,23 +87,23 @@ object WalletCreationHelper {
                 // Handle prefix-based accounts (hardware-backed or legacy)
                 !account.prefix.isNullOrBlank() -> {
                     logd(TAG, "Creating prefix-based wallet for account: ${account.userInfo.username}")
-                    createWalletFromPrefix(account.prefix!!, isCurrentAccount)
+                    createWalletFromPrefix(account.prefix!!)
                 }
 
                 // Handle mnemonic-based accounts (including cleaner architecture RN seed phrase accounts)
                 else -> {
                     logd(TAG, "Creating HD wallet from mnemonic for account: ${account.userInfo.username}")
-                    createWalletFromHDMnemonic(userId ?: "", isCurrentAccount)
+                    createWalletFromHDMnemonic(userId ?: "")
                 }
             }
 
-            if (wallet != null) {
+            if (result != null) {
                 logd(TAG, "Successfully created wallet for account: ${account.userInfo.username}")
             } else {
                 logd(TAG, "Failed to create wallet for account: ${account.userInfo.username}")
             }
 
-            wallet
+            result
         } catch (e: Exception) {
             logd(TAG, "Error creating wallet for account ${account.userInfo.username}: ${e.message}")
             null
@@ -107,7 +113,7 @@ object WalletCreationHelper {
     /**
      * Create wallet from keystore information
      */
-    private suspend fun createWalletFromKeystore(keyStoreInfo: String, userId: String?, isCurrentAccount: Boolean): Wallet {
+    private suspend fun createWalletFromKeystore(keyStoreInfo: String, userId: String?, isCurrentAccount: Boolean): WalletCreationResult {
         val ks = Gson().fromJson(keyStoreInfo, KeystoreAddress::class.java)
         val storage = getStorage()
         // Check if we have an encrypted mnemonic (HD Wallet restore)
@@ -116,7 +122,6 @@ object WalletCreationHelper {
             val uid = if (isCurrentAccount) firebaseUid() else userId
             if (!uid.isNullOrBlank()) {
                 val decryptedMnemonic = EncryptedMnemonicUtils.decrypt(ks.encryptedMnemonic, uid)
-                logd(TAG, "Decrypted mnemonic: $decryptedMnemonic")
                 if (!decryptedMnemonic.isNullOrBlank()) {
                     // Create HD Wallet using the decrypted mnemonic
                     val seedPhraseKey = SeedPhraseKey(
@@ -125,14 +130,12 @@ object WalletCreationHelper {
                         derivationPath = DERIVATION_PATH,
                         storage = storage
                     )
-                    if (isCurrentAccount) {
-                        WalletManager.setEoaDisabled(false)
-                    }
-                    return WalletFactory.createKeyWallet(
+                    val wallet = WalletFactory.createKeyWallet(
                         seedPhraseKey,
                         setOf(ChainId.Mainnet, ChainId.Testnet),
                         storage
                     )
+                    return WalletCreationResult(wallet, canDeriveEoa = true)
                 } else {
                     logd(TAG, "Failed to decrypt mnemonic, using private key mode")
                 }
@@ -141,25 +144,11 @@ object WalletCreationHelper {
             }
         } else {
             logd(TAG, "No encrypted mnemonic found, using private key mode")
-            try {
-                val service = retrofitApi().create(ApiService::class.java)
-                val response = service.checkUserMnemonicStatus()
-                logd(TAG, "Checked user mnemonic status: ${response.data}")
-                if (response.data?.isExist == true) {
-                    logd(TAG, "Mnemonic restore required. Disabling EOA and notifying UI.")
-                    if (isCurrentAccount) {
-                        WalletManager.setEoaDisabled(true)
-                        LocalBroadcastManager.getInstance(com.flowfoundation.wallet.utils.Env.getApp())
-                            .sendBroadcast(android.content.Intent("ACTION_RESTORE_MNEMONIC"))
-                    }
-                }
-            } catch (e: Exception) {
-                logd(TAG, "Error checking mnemonic status: ${e.message}")
-            }
+            checkAndNotifyMnemonicRestoreIfNeeded(isCurrentAccount)
         }
 
         // Fallback to private key mode
-        return createWalletFromKeystorePrivateKey(ks, storage, isCurrentAccount)
+        return createWalletFromKeystorePrivateKey(ks, storage)
     }
 
     /**
@@ -172,7 +161,7 @@ object WalletCreationHelper {
      * Note: Mnemonic-only accounts (cleaner architecture) are handled separately by createWalletFromHDMnemonic
      * and should not reach this function.
      */
-    private fun createWalletFromPrefix(prefix: String, isCurrentAccount: Boolean): Wallet? {
+    private fun createWalletFromPrefix(prefix: String): WalletCreationResult? {
         val storage = getStorage()
 
         return try {
@@ -180,14 +169,12 @@ object WalletCreationHelper {
             if (privateKey != null) {
                 // Prefix-based key - cannot derive EOA (no mnemonic)
                 logd(TAG, "Prefix-based key found for prefix: $prefix - EOA disabled")
-                if (isCurrentAccount) {
-                    WalletManager.setEoaDisabled(true)
-                }
-                WalletFactory.createKeyWallet(
+                val wallet = WalletFactory.createKeyWallet(
                     privateKey,
                     setOf(ChainId.Mainnet, ChainId.Testnet),
                     storage
                 )
+                WalletCreationResult(wallet, canDeriveEoa = false)
             } else {
                 logd(TAG, "Private key not found for prefix: $prefix")
                 null
@@ -195,16 +182,14 @@ object WalletCreationHelper {
         } catch (e: HardwareBackedKeyException) {
             // Secure Enclave (hardware-backed) key - cannot derive EOA
             logd(TAG, "Hardware-backed key detected for prefix: $prefix - EOA disabled")
-            if (isCurrentAccount) {
-                WalletManager.setEoaDisabled(true)
-            }
             if (e.prefix != null) {
                 val provider = AndroidKeystoreCryptoProvider(e.prefix)
-                WalletFactory.createProxyWallet(
+                val wallet = WalletFactory.createProxyWallet(
                     provider,
                     setOf(ChainId.Mainnet, ChainId.Testnet),
                     storage
                 )
+                WalletCreationResult(wallet, canDeriveEoa = false)
             } else {
                 logd(TAG, "Hardware-backed key prefix is null")
                 null
@@ -216,7 +201,7 @@ object WalletCreationHelper {
      * Create wallet from HD wallet mnemonic
      * HD wallets can derive EOA addresses.
      */
-    private fun createWalletFromHDMnemonic(accountId: String, isCurrentAccount: Boolean): Wallet? {
+    private fun createWalletFromHDMnemonic(accountId: String): WalletCreationResult? {
         val storage = getStorage()
         val mnemonic = AccountWalletManager.getHDWalletMnemonicByUID(accountId)
         if (mnemonic != null) {
@@ -226,16 +211,13 @@ object WalletCreationHelper {
                 derivationPath = DERIVATION_PATH,
                 storage = storage
             )
-            // HD wallet (mnemonic-based) - can derive EOA
-            if (isCurrentAccount) {
-                WalletManager.setEoaDisabled(false)
-            }
             logd(TAG, "HD wallet from mnemonic - EOA enabled")
-            return WalletFactory.createKeyWallet(
+            val wallet = WalletFactory.createKeyWallet(
                 seedPhraseKey,
                 setOf(ChainId.Mainnet, ChainId.Testnet),
                 storage
             )
+            return WalletCreationResult(wallet, canDeriveEoa = true)
         } else {
             logd(TAG, "HD wallet key not found for account ID: $accountId")
             return null
@@ -246,27 +228,47 @@ object WalletCreationHelper {
      * Create wallet from a [SeedPhraseKey] object loaded directly from key storage.
      * Avoids reconstructing the key from a mnemonic string.
      */
-    private fun createWalletFromSeedPhraseKey(seedPhraseKey: SeedPhraseKey, isCurrentAccount: Boolean): Wallet {
+    private fun createWalletFromSeedPhraseKey(seedPhraseKey: SeedPhraseKey): WalletCreationResult {
         val storage = getStorage()
-        if (isCurrentAccount) WalletManager.setEoaDisabled(false)
-        return WalletFactory.createKeyWallet(seedPhraseKey, setOf(ChainId.Mainnet, ChainId.Testnet), storage)
+        val wallet = WalletFactory.createKeyWallet(seedPhraseKey, setOf(ChainId.Mainnet, ChainId.Testnet), storage)
+        return WalletCreationResult(wallet, canDeriveEoa = true)
     }
 
     /**
      * Create wallet from a [PrivateKey] object loaded directly from key storage.
      * Cannot derive EOA addresses (no mnemonic available).
      */
-    private fun createWalletFromPrivateKey(privateKey: PrivateKey, isCurrentAccount: Boolean): Wallet {
+    private fun createWalletFromPrivateKey(privateKey: PrivateKey): WalletCreationResult {
         val storage = getStorage()
-        if (isCurrentAccount) WalletManager.setEoaDisabled(true)
-        return WalletFactory.createKeyWallet(privateKey, setOf(ChainId.Mainnet, ChainId.Testnet), storage)
+        val wallet = WalletFactory.createKeyWallet(privateKey, setOf(ChainId.Mainnet, ChainId.Testnet), storage)
+        return WalletCreationResult(wallet, canDeriveEoa = false)
+    }
+
+    /**
+     * Checks the server-side mnemonic status and fires ACTION_RESTORE_MNEMONIC if the user
+     * has no mnemonic backup yet. Only runs for the current account to avoid spurious prompts.
+     */
+    private suspend fun checkAndNotifyMnemonicRestoreIfNeeded(isCurrentAccount: Boolean) {
+        if (!isCurrentAccount) return
+        try {
+            val service = retrofitApi().create(ApiService::class.java)
+            val response = service.checkUserMnemonicStatus()
+            logd(TAG, "Checked user mnemonic status: ${response.data}")
+            if (response.data?.isExist == true) {
+                logd(TAG, "Mnemonic restore required. Notifying UI.")
+                LocalBroadcastManager.getInstance(com.flowfoundation.wallet.utils.Env.getApp())
+                    .sendBroadcast(android.content.Intent("ACTION_RESTORE_MNEMONIC"))
+            }
+        } catch (e: Exception) {
+            logd(TAG, "Error checking mnemonic status: ${e.message}")
+        }
     }
 
     /**
      * Create wallet from keystore private key
      * Private key imports cannot derive EOA addresses (no mnemonic available).
      */
-    private fun createWalletFromKeystorePrivateKey(ks: KeystoreAddress, storage: StorageProtocol, isCurrentAccount: Boolean): Wallet {
+    private fun createWalletFromKeystorePrivateKey(ks: KeystoreAddress, storage: StorageProtocol): WalletCreationResult {
         val keyHex = ks.privateKey.removePrefix("0x")
         require(keyHex.length == 64) { "Private key must be 32-byte hex" }
 
@@ -274,16 +276,13 @@ object WalletCreationHelper {
             importPrivateKey(keyHex.hexToBytes(), KeyFormat.RAW)
         }
 
-        // Keystore private key import - cannot derive EOA (no mnemonic available)
-        if (isCurrentAccount) {
-            WalletManager.setEoaDisabled(true)
-        }
         logd(TAG, "Keystore private key import - EOA disabled")
 
-        return WalletFactory.createKeyWallet(
+        val wallet = WalletFactory.createKeyWallet(
             key,
             setOf(ChainId.Mainnet, ChainId.Testnet),
             storage
         )
+        return WalletCreationResult(wallet, canDeriveEoa = false)
     }
 }

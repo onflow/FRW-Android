@@ -355,53 +355,35 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
             try {
                 com.flowfoundation.wallet.firebase.auth.firebaseCustomLogin(customToken) { isSuccessful, exception ->
                     if (isSuccessful) {
-                        logd(TAG, "signInWithCustomToken() - Custom token authentication successful, waiting for JWT...")
-                        // Wait for JWT to be available after sign-in
-                        // This prevents race conditions where API calls happen before token propagates
+                        // firebaseCustomLogin already calls getIdToken(true) internally before invoking this callback,
+                        // so the Firebase ID token is already refreshed at this point.
+                        // Calling getFirebaseJwt(forceRefresh=true) repeatedly here would trigger App Check rate limiting.
+                        logd(TAG, "signInWithCustomToken() - Custom token authentication successful, validating with backend...")
                         ioScope {
-                            var tokenReady = false
                             var backendValidated = false
                             var attempts = 0
-                            val maxAttempts = 15
+                            val maxAttempts = 5
 
-                            while (!tokenReady && attempts < maxAttempts) {
+                            while (!backendValidated && attempts < maxAttempts) {
                                 attempts++
                                 try {
-                                    val jwt = getFirebaseJwt(forceRefresh = true)
-                                    val firebaseUid = com.flowfoundation.wallet.firebase.auth.firebaseUid()
-
-                                    if (jwt.isNotBlank() && firebaseUid != null) {
-                                        logd(TAG, "signInWithCustomToken() - JWT ready after $attempts attempt(s), Firebase UID: $firebaseUid")
-
-                                        // Validate with backend - make sure the user is recognized
-                                        try {
-                                            val service = com.flowfoundation.wallet.network.retrofit()
-                                                .create(com.flowfoundation.wallet.network.ApiService::class.java)
-                                            val userInfo = service.userInfo().data
-                                            logd(TAG, "signInWithCustomToken() - Backend validated, username: ${userInfo.username}")
-                                            tokenReady = true
-                                            backendValidated = true
-                                        } catch (apiError: Exception) {
-                                            logd(TAG, "signInWithCustomToken() - Backend validation failed on attempt $attempts: ${apiError.message}")
-                                            // Backend might not be ready yet, continue waiting
-                                            kotlinx.coroutines.delay(500)
-                                        }
-                                    } else {
-                                        logd(TAG, "signInWithCustomToken() - JWT not ready, attempt $attempts/$maxAttempts")
-                                        kotlinx.coroutines.delay(300)
-                                    }
-                                } catch (e: Exception) {
-                                    logd(TAG, "signInWithCustomToken() - JWT check error on attempt $attempts: ${e.message}")
-                                    kotlinx.coroutines.delay(300)
+                                    val service = com.flowfoundation.wallet.network.retrofit()
+                                        .create(com.flowfoundation.wallet.network.ApiService::class.java)
+                                    val userInfo = service.userInfo().data
+                                    logd(TAG, "signInWithCustomToken() - Backend validated on attempt $attempts, username: ${userInfo.username}")
+                                    backendValidated = true
+                                } catch (apiError: Exception) {
+                                    logd(TAG, "signInWithCustomToken() - Backend validation failed on attempt $attempts: ${apiError.message}")
+                                    kotlinx.coroutines.delay(1000)
                                 }
                             }
 
-                            if (tokenReady && backendValidated) {
+                            if (backendValidated) {
                                 uiScope {
                                     promise.resolve(null)
                                 }
                             } else {
-                                loge(TAG, "signInWithCustomToken() - Auth not ready after $maxAttempts attempts (tokenReady=$tokenReady, backendValidated=$backendValidated)")
+                                loge(TAG, "signInWithCustomToken() - Backend validation failed after $maxAttempts attempts")
                                 uiScope {
                                     promise.reject("CUSTOM_TOKEN_AUTH_ERROR", "Authentication succeeded but backend validation failed", null)
                                 }
@@ -447,57 +429,15 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                     onSuccess = {
                         ioScope {
                             try {
-                                // Force Firebase ID token refresh to get the new account's JWT
-                                // This ensures API requests use the new account's credentials
-                                logd(TAG, "saveMnemonic() - Forcing Firebase ID token refresh...")
-                                var tokenRefreshed = false
-                                var refreshAttempts = 0
-                                val maxRefreshAttempts = 10
-
-                                while (!tokenRefreshed && refreshAttempts < maxRefreshAttempts) {
-                                    kotlinx.coroutines.delay(500) // Wait 500ms between checks
-                                    refreshAttempts++
-                                    try {
-                                        // Force refresh the token
-                                        val jwt = getFirebaseJwt(forceRefresh = true)
-                                        val currentUid = com.flowfoundation.wallet.firebase.auth.firebaseUid()
-
-                                        if (jwt.isNotBlank() && currentUid != null) {
-                                            tokenRefreshed = true
-                                            logd(TAG, "saveMnemonic() - Firebase ID token refreshed after $refreshAttempts attempt(s), UID: $currentUid")
-
-                                            // Verify the username matches by making a test API call
-                                            try {
-                                                val testService = com.flowfoundation.wallet.network.retrofit()
-                                                    .create(com.flowfoundation.wallet.network.ApiService::class.java)
-                                                val testUserInfo = testService.userInfo().data
-                                                logd(TAG, "saveMnemonic() - Token validated, backend returned username: ${testUserInfo.username}")
-
-                                                // Check if username matches (case-insensitive, ignoring numeric suffix)
-                                                // Backend normalizes to lowercase and adds suffix: "FancyRiverVolcano" -> "fancyrivervolcano_476"
-                                                val backendUsernameBase = testUserInfo.username.substringBefore("_").lowercase()
-                                                val expectedUsernameBase = username.lowercase()
-
-                                                if (backendUsernameBase != expectedUsernameBase) {
-                                                    logw(TAG, "saveMnemonic() - Username mismatch! Expected: $expectedUsernameBase, Got: $backendUsernameBase. Retrying...")
-                                                    tokenRefreshed = false // Retry
-                                                } else {
-                                                    logd(TAG, "saveMnemonic() - Username validated: $expectedUsernameBase matches $backendUsernameBase")
-                                                }
-                                            } catch (e: Exception) {
-                                                logw(TAG, "saveMnemonic() - Could not validate token with backend, continuing: ${e.message}")
-                                            }
-                                        } else {
-                                            logd(TAG, "saveMnemonic() - Waiting for token refresh (attempt $refreshAttempts/$maxRefreshAttempts)")
-                                        }
-                                    } catch (e: Exception) {
-                                        logd(TAG, "saveMnemonic() - Error during token refresh (attempt $refreshAttempts): ${e.message}")
-                                    }
+                                // authenticateWithFirebase -> firebaseCustomLogin already calls getIdToken(true) before
+                                // invoking this callback, so the token is already refreshed. Calling
+                                // getFirebaseJwt(forceRefresh=true) in a loop here would trigger App Check rate limiting.
+                                val currentFirebaseUser = Firebase.auth.currentUser
+                                val currentUid = currentFirebaseUser?.uid
+                                if (currentFirebaseUser == null || currentFirebaseUser.isAnonymous) {
+                                    throw IllegalStateException("Firebase auth failed: user is still anonymous after custom token login")
                                 }
-
-                                if (!tokenRefreshed) {
-                                    logw(TAG, "saveMnemonic() - Warning: Token may not be for correct user, proceeding anyway")
-                                }
+                                logd(TAG, "saveMnemonic() - Firebase authenticated, UID: $currentUid")
 
                                 // Fetch user info from backend
                                 val service = com.flowfoundation.wallet.network.retrofit()
@@ -677,45 +617,45 @@ private fun authenticateWithFirebase(
     ) {
         logd(TAG, "authenticateWithFirebase() - Checking current Firebase auth state...")
 
+        // getV4RegistrationSignatures() ensures anonymous sign-in before saveMnemonic() is called,
+        // so currentUser is always non-null here. Mirror the registerFirebase() pattern in UserRegisterUtils.
         val currentUser = Firebase.auth.currentUser
-        val currentUid = currentUser?.uid
-        val isAnonymous = currentUser?.isAnonymous ?: true
+        logd(TAG, "authenticateWithFirebase() - Current user: UID=${currentUser?.uid}, isAnonymous=${currentUser?.isAnonymous}")
 
-        if (currentUser != null) {
-            logd(TAG, "authenticateWithFirebase() - Current user: UID=$currentUid, isAnonymous=$isAnonymous")
-        }
-
-        // If already authenticated with a non-anonymous user, we MUST sign out first
-        // to switch to the new account. Firebase won't switch users without signing out.
-        if (currentUser != null && !isAnonymous) {
-            logd(TAG, "authenticateWithFirebase() - Signing out current user to switch accounts...")
-
-            // Sign out the current user
-            Firebase.auth.signOut()
-            logd(TAG, "authenticateWithFirebase() - User signed out successfully")
-
-            // Delete Firebase messaging token for the old user
-            com.google.firebase.messaging.FirebaseMessaging.getInstance().deleteToken()
-        } else if (isAnonymous) {
-            // Delete anonymous user
-            com.google.firebase.messaging.FirebaseMessaging.getInstance().deleteToken()
-            currentUser?.delete()?.addOnCompleteListener {
-                logd(TAG, "authenticateWithFirebase() - Previous anonymous user deleted")
+        fun doLogin() {
+            logd(TAG, "authenticateWithFirebase() - Signing in with new custom token...")
+            com.flowfoundation.wallet.firebase.auth.firebaseCustomLogin(customToken) { isSuccessful, exception ->
+                if (isSuccessful) {
+                    logd(TAG, "authenticateWithFirebase() - Firebase authentication successful, new UID: ${Firebase.auth.currentUser?.uid}")
+                    onSuccess()
+                } else {
+                    val errorMessage = exception?.message ?: "Firebase authentication failed"
+                    loge(TAG, "authenticateWithFirebase() - Failed: $errorMessage")
+                    onFailure(errorMessage)
+                }
             }
         }
 
-        logd(TAG, "authenticateWithFirebase() - Signing in with new custom token...")
-
-        // Sign in with the new account's custom token
-        com.flowfoundation.wallet.firebase.auth.firebaseCustomLogin(customToken) { isSuccessful, exception ->
-            if (isSuccessful) {
-                val newUid = Firebase.auth.currentUser?.uid
-                logd(TAG, "authenticateWithFirebase() - Firebase authentication successful, new UID: $newUid")
-                onSuccess()
-            } else {
-                val errorMessage = exception?.message ?: "Firebase authentication failed"
-                loge(TAG, "authenticateWithFirebase() - Failed: $errorMessage")
-                onFailure(errorMessage)
+        if (currentUser == null || !currentUser.isAnonymous) {
+            // No user, or non-anonymous user: signOut() is synchronous, safe to call directly before login
+            if (currentUser != null) {
+                logd(TAG, "authenticateWithFirebase() - Signing out non-anonymous user before login...")
+                Firebase.auth.signOut()
+            }
+            com.google.firebase.messaging.FirebaseMessaging.getInstance().deleteToken()
+            doLogin()
+        } else {
+            // Anonymous user: await delete() before signing in - same pattern as registerFirebase()
+            // delete() is async; calling signInWithCustomToken without waiting would race with it
+            logd(TAG, "authenticateWithFirebase() - Deleting anonymous user before login...")
+            com.google.firebase.messaging.FirebaseMessaging.getInstance().deleteToken()
+            currentUser.delete().addOnCompleteListener { task ->
+                logd(TAG, "authenticateWithFirebase() - Anonymous user delete finished, exception: ${task.exception}")
+                if (task.isSuccessful) {
+                    doLogin()
+                } else {
+                    onFailure("Failed to delete anonymous user: ${task.exception?.message}")
+                }
             }
         }
     }

@@ -117,7 +117,8 @@ object CryptoProviderManager {
                 if (privateKey != null) {
                     logd(TAG, "New storage: found private key object for uid: $uid")
                     val keyWallet = WalletFactory.createKeyWallet(privateKey, setOf(ChainId.Mainnet, ChainId.Testnet), storage) as KeyWallet
-                    return PrivateKeyCryptoProvider(privateKey, keyWallet)
+                    val address = account.firstFlowWalletAddress() ?: ""
+                    return runBlocking { createPrivateKeyCryptoProvider(privateKey, keyWallet, address) }
                 }
                 // AKP prefix from new storage falls through to prefix-based branch below
             }
@@ -233,12 +234,11 @@ object CryptoProviderManager {
             }
             // Handle wallet-specific mnemonic accounts
             else {
-                logd(TAG, "  Branch: Inactive account.")
-                val mnemonic = if (account.isActive) {
-                    Wallet.store().wallet().mnemonic()
-                } else {
-                    AccountWalletManager.getHDWalletMnemonicByUID(account.wallet?.id ?: "")
-                }
+                logd(TAG, "  Branch: Legacy mnemonic account.")
+                // Always look up the mnemonic by UID to avoid using the wrong account's mnemonic.
+                // Using Wallet.store().wallet().mnemonic() here would return the CURRENT account's
+                // mnemonic (the one being switched away from), not the target account's.
+                val mnemonic = AccountWalletManager.getHDWalletMnemonicByUID(account.wallet?.id ?: "")
 
                 if (mnemonic == null) {
                     loge(TAG, "  Inactive account: Failed to get existing HDWallet by UID: ${account.wallet?.id}")
@@ -276,7 +276,8 @@ object CryptoProviderManager {
                 if (privateKey != null) {
                     logd("CryptoProviderManager", "Switch account new storage: private key object for uid: $switchUid")
                     val keyWallet = WalletFactory.createKeyWallet(privateKey, setOf(ChainId.Mainnet, ChainId.Testnet), storage) as KeyWallet
-                    return PrivateKeyCryptoProvider(privateKey, keyWallet)
+                    val address = account.firstFlowWalletAddress() ?: ""
+                    return runBlocking { createPrivateKeyCryptoProvider(privateKey, keyWallet, address) }
                 }
             }
 
@@ -427,7 +428,8 @@ object CryptoProviderManager {
                 if (privateKey != null) {
                     logd("CryptoProviderManager", "LocalSwitchAccount new storage: private key object for uid: $localUid")
                     val keyWallet = WalletFactory.createKeyWallet(privateKey, setOf(ChainId.Mainnet, ChainId.Testnet), storage) as KeyWallet
-                    return PrivateKeyCryptoProvider(privateKey, keyWallet)
+                    val address = switchAccount.address
+                    return runBlocking { createPrivateKeyCryptoProvider(privateKey, keyWallet, address) }
                 }
             }
 
@@ -461,7 +463,8 @@ object CryptoProviderManager {
                 ) as KeyWallet
 
                 // For prefix-based accounts, we use PrivateKeyCryptoProvider instead of BackupCryptoProvider
-                PrivateKeyCryptoProvider(privateKey, wallet)
+                val address = switchAccount.address
+                runBlocking { createPrivateKeyCryptoProvider(privateKey, wallet, address) }
             }
 
             // Handle other accounts
@@ -484,6 +487,37 @@ object CryptoProviderManager {
             ErrorReporter.reportWithMixpanel(AccountError.UNEXPECTED_ERROR, e)
             null
         }
+    }
+
+    /**
+     * Create a PrivateKeyCryptoProvider by resolving the correct signing and hashing algorithms
+     * from the on-chain account keys. Falls back to ECDSA_P256 defaults if the lookup fails.
+     */
+    @OptIn(ExperimentalStdlibApi::class)
+    private suspend fun createPrivateKeyCryptoProvider(
+        privateKey: PrivateKey,
+        keyWallet: KeyWallet,
+        address: String
+    ): PrivateKeyCryptoProvider {
+        if (address.isNotEmpty()) {
+            try {
+                val onChainAccount = FlowCadenceApi.getAccount(address)
+                val onChainKeys = onChainAccount.keys?.filter { !it.revoked } ?: emptyList()
+
+                for (sigAlgo in listOf(SigningAlgorithm.ECDSA_P256, SigningAlgorithm.ECDSA_secp256k1)) {
+                    val pubKey = privateKey.publicKey(sigAlgo)?.toHexString() ?: continue
+                    val matched = onChainKeys.find { isKeyMatchRobust(pubKey, it.publicKey) }
+                    if (matched != null) {
+                        logd(TAG, "createPrivateKeyCryptoProvider: matched on-chain key sigAlgo=$sigAlgo hashAlgo=${matched.hashingAlgorithm}")
+                        return PrivateKeyCryptoProvider(privateKey, keyWallet, sigAlgo, matched.hashingAlgorithm)
+                    }
+                }
+                logd(TAG, "createPrivateKeyCryptoProvider: no on-chain match for $address, using defaults")
+            } catch (e: Exception) {
+                logd(TAG, "createPrivateKeyCryptoProvider: on-chain lookup failed: ${e.message}, using defaults")
+            }
+        }
+        return PrivateKeyCryptoProvider(privateKey, keyWallet, SigningAlgorithm.ECDSA_P256)
     }
 
     fun clear() {

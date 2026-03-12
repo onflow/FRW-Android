@@ -5,7 +5,6 @@ import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.model.LocalSwitchAccount
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
-import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.flowjvm.cadenceGetAllFlowBalance
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofitApi
@@ -102,8 +101,7 @@ class ProfileSwitchViewModel : ViewModel() {
 
         flowWallets.forEach { flowWallet ->
             // Main account
-            val emojiInfo = AccountEmojiManager.getEmojiByAddress(flowWallet.address)
-            avatars.add(AvatarData.Emoji(emojiInfo.emojiId))
+            avatars.add(AvatarData.Emoji(flowWallet.emojiId))
 
             flowWallet.linkedWallets.forEach { linked ->
                 when (linked) {
@@ -111,8 +109,7 @@ class ProfileSwitchViewModel : ViewModel() {
                          if (linked.icon.isNotEmpty()) {
                             avatars.add(AvatarData.Icon(linked.icon))
                         } else {
-                            val childEmojiInfo = AccountEmojiManager.getEmojiByAddress(linked.address)
-                            avatars.add(AvatarData.Emoji(childEmojiInfo.emojiId))
+                            avatars.add(AvatarData.Emoji(linked.emojiId))
                         }
                     }
                     is COAWallet -> {
@@ -128,8 +125,7 @@ class ProfileSwitchViewModel : ViewModel() {
 
         // Add EOA address avatar
         profile.walletNodes.filterIsInstance<EOAWallet>().forEach { eoa ->
-            val emojiInfo = AccountEmojiManager.getEmojiByAddress(eoa.address)
-            avatars.add(AvatarData.Emoji(emojiInfo.emojiId))
+            avatars.add(AvatarData.Emoji(eoa.emojiId))
         }
 
         return ProfileItemData(profile, avatars, emptyMap())
@@ -196,8 +192,7 @@ class ProfileSwitchViewModel : ViewModel() {
                 if (shouldShowCoa) {
                     // Add if not present
                     if (!verifiedCoaAvatars.containsKey(coaAddress)) {
-                        val emojiInfo = AccountEmojiManager.getEmojiByAddress(coaAddress)
-                        val avatarData = AvatarData.Emoji(emojiInfo.emojiId)
+                        val avatarData = AvatarData.Emoji(coaWallet.emojiId)
                         verifiedCoaAvatars[coaAddress] = avatarData
                         currentAvatars.add(avatarData)
                     }

@@ -3,6 +3,7 @@ package com.flowfoundation.wallet.manager.key.storage
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.AccountWalletManager
+import com.flowfoundation.wallet.manager.account.firstFlowWalletAddress
 import com.flowfoundation.wallet.page.restore.keystore.model.KeystoreAddress
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
@@ -77,6 +78,15 @@ object KeyStorageMigration {
             // Case 4: plain HD-wallet mnemonic account
             else -> migrateFromAccountWalletManager(uid)
         }
+
+        // Save wallet address independently (idempotent, no master password needed)
+        if (!KeyStorageManager.hasWalletAddress(uid)) {
+            val address = account.firstFlowWalletAddress()
+            if (!address.isNullOrBlank()) {
+                KeyStorageManager.saveWalletAddress(uid, address)
+                logd(TAG, "Saved wallet address for uid: $uid")
+            }
+        }
     }
 
     private fun migrateFromKeyStoreInfo(uid: String, keyStoreInfo: String) {
@@ -104,7 +114,7 @@ object KeyStorageMigration {
             }
 
             // privateKey present → private-key import
-            !ks.privateKey.isNullOrBlank() -> {
+            ks.privateKey.isNotBlank() -> {
                 if (!KeyStorageManager.hasPrivateKey(uid)) {
                     val hex = ks.privateKey.removePrefix("0x")
                     KeyStorageManager.savePrivateKey(uid, hex)
