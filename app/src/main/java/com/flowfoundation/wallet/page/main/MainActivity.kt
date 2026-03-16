@@ -31,6 +31,7 @@ import com.flowfoundation.wallet.utils.isRegistered
 import com.flowfoundation.wallet.utils.uiScope
 import ai.luciq.bug.BugReporting
 import ai.luciq.library.Luciq
+import com.flowfoundation.wallet.manager.inbox.InboxManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 
 class MainActivity : BaseActivity() {
@@ -132,6 +133,7 @@ class MainActivity : BaseActivity() {
         RootDetectedDialog.show(supportFragmentManager)
         super.onResume()
         checkPendingAction()
+        InboxManager.refresh()
     }
 
     private fun checkPendingAction() {

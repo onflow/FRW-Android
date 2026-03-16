@@ -344,6 +344,41 @@
         </FrameLayout>
 
         <FrameLayout
+            android:id="@+id/fl_inbox"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="12dp"
+            android:visibility="gone"
+            android:background="@drawable/bg_round_corner"
+            android:backgroundTint="@color/text_4"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/fl_add_token"
+            app:layout_constraintTop_toTopOf="parent">
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:scaleType="centerCrop"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_inbox"
+                app:tint="@color/text_3"/>
+            <TextView
+                android:id="@+id/tv_inbox_badge"
+                android:layout_width="wrap_content"
+                android:layout_height="16dp"
+                android:minWidth="16dp"
+                android:layout_gravity="top|end"
+                android:background="@drawable/bg_inbox_badge"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:paddingHorizontal="4dp"
+                android:textColor="@android:color/white"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                tools:text="3"/>
+        </FrameLayout>
+
+        <FrameLayout
             android:id="@+id/fl_manage_token"
             android:layout_width="40dp"
             android:layout_height="40dp"
@@ -351,7 +386,7 @@
             android:background="@drawable/bg_round_corner"
             android:backgroundTint="@color/text_4"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/fl_add_token"
+            app:layout_constraintEnd_toStartOf="@id/fl_inbox"
             app:layout_constraintTop_toTopOf="parent">
             <ImageView
                 android:layout_width="wrap_content"

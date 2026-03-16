@@ -9,7 +9,10 @@ import com.zackratos.ultimatebarx.ultimatebarx.statusBarHeight
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.FragmentNftBinding
+import com.flowfoundation.wallet.manager.inbox.InboxManager
+import com.flowfoundation.wallet.manager.inbox.OnInboxCountUpdate
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.reactnative.ReactNativeActivity
 import com.flowfoundation.wallet.page.nft.collectionlist.NftCollectionListActivity
 import com.flowfoundation.wallet.page.nft.nftlist.NFTFragment
 import com.flowfoundation.wallet.page.nft.nftlist.NftViewModel
@@ -17,7 +20,9 @@ import com.flowfoundation.wallet.page.nft.nftlist.adapter.NftListPageAdapter
 import com.flowfoundation.wallet.page.nft.nftlist.model.NFTFragmentModel
 import com.flowfoundation.wallet.utils.ScreenUtils
 import com.flowfoundation.wallet.utils.extensions.res2color
+import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.setVisible
+import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.startShimmer
 import java.lang.Float.min
 import android.view.Gravity
@@ -26,7 +31,7 @@ import android.view.Gravity
 class NFTFragmentPresenter(
     private val fragment: NFTFragment,
     private val binding: FragmentNftBinding,
-) : BasePresenter<NFTFragmentModel> {
+) : BasePresenter<NFTFragmentModel>, OnInboxCountUpdate {
 
     private val viewModel by lazy { ViewModelProvider(fragment.requireActivity())[NftViewModel::class.java] }
 
@@ -47,6 +52,12 @@ class NFTFragmentPresenter(
             binding.viewToggleButton.setOnClickListener { view ->
                 showCustomPopupMenu(view)
             }
+
+            binding.flInboxNft.setOnClickListener {
+                ReactNativeActivity.launchClaimTokens(fragment.requireContext())
+            }
+            InboxManager.addListener(this@NFTFragmentPresenter)
+            updateInboxBadge(InboxManager.unclaimedCount)
         }
 
         startShimmer(binding.shimmerLayout.shimmerLayout)
@@ -127,4 +138,19 @@ class NFTFragmentPresenter(
     }
 
     private fun isGridTabSelected() = true
+
+    override fun onInboxCountUpdate(count: Int) {
+        updateInboxBadge(count)
+    }
+
+    private fun updateInboxBadge(count: Int) {
+        val show = count > 0 && !WalletManager.isEVMAccountSelected() && !WalletManager.isChildAccountSelected()
+        binding.flInboxNft.setVisible(show)
+        if (show) {
+            binding.tvInboxBadgeNft.visible()
+            binding.tvInboxBadgeNft.text = InboxManager.formatBadgeCount(count)
+        } else {
+            binding.tvInboxBadgeNft.gone()
+        }
+    }
 }
