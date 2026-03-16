@@ -192,7 +192,7 @@ class DrawerLayoutViewModel : ViewModel(), OnAccountUpdate, OnEmojiUpdate {
                     toast(msgRes = R.string.common_error_hint)
                 } else {
                     // New accounts always have 0 balance; inject immediately for instant UI feedback
-                    _balanceMap.value = _balanceMap.value + (result to "0 FLOW")
+                    _balanceMap.value += (result to "0 FLOW")
                     refreshWalletList(false)
                 }
             } finally {

@@ -87,8 +87,6 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
     }
 
     init {
-        logd(TAG, "NativeFRWBridge initialized with context: ${reactContext != null}")
-        logd(TAG, "React context is active: ${reactContext.hasActiveCatalystInstance()}")
         ActivityManager.setReactContext(reactContext)
         System.loadLibrary("TrustWalletCore")
     }
@@ -445,6 +443,8 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
 
     override fun closeRN(id: String?) = uiHandler.closeRN(id)
 
+    override fun closeRNWithNFT(id: String?) {}
+
     override fun getSignKeyIndex(): Double = accountHandler.getSignKeyIndex()
 
     override fun isFreeGasEnabled(promise: Promise) = utilsHandler.isFreeGasEnabled(promise)
@@ -452,6 +452,13 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
     override fun getEnv(): WritableMap = utilsHandler.getEnv(::bridgeModelToWritableMap)
 
     override fun getSelectedAccount(promise: Promise) = accountHandler.getSelectedAccount(promise, ::bridgeModelToWritableMap)
+
+    override fun getMigrationAssets(
+      sourceAddress: String?,
+      promise: Promise?
+    ) {}
+
+    override fun refreshCoaAfterMigration(promise: Promise?) {}
 
     override fun getCurrency(): WritableMap = utilsHandler.getCurrency(::bridgeModelToWritableMap)
 
@@ -477,8 +484,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         try {
             val jsonObject = JSONObject(jsonString)
             jsonObject.keys().forEach { key ->
-                val value = jsonObject.get(key)
-                when (value) {
+                when (val value = jsonObject.get(key)) {
                     is String -> map.putString(key, value)
                     is Boolean -> map.putBoolean(key, value)
                     is Int -> map.putInt(key, value)
@@ -506,8 +512,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         val array = WritableNativeArray()
         try {
             for (i in 0 until jsonArray.length()) {
-                val value = jsonArray.get(i)
-                when (value) {
+              when (val value = jsonArray.get(i)) {
                     is String -> array.pushString(value)
                     is Boolean -> array.pushBoolean(value)
                     is Int -> array.pushInt(value)

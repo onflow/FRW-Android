@@ -14,6 +14,8 @@ import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
 import com.flowfoundation.wallet.databinding.LayoutWalletCoordinatorHeaderBinding
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.config.AppConfig
+import com.flowfoundation.wallet.manager.inbox.InboxManager
+import com.flowfoundation.wallet.manager.inbox.OnInboxCountUpdate
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.notification.WalletNotificationManager
 import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
@@ -45,7 +47,7 @@ import java.util.Date
 class WalletHeaderPresenter(
     private val fragment: Fragment,
     private val view: View,
-) : BaseViewHolder(view), BasePresenter<WalletHeaderModel?> {
+) : BaseViewHolder(view), BasePresenter<WalletHeaderModel?>, OnInboxCountUpdate {
 
     private val binding by lazy { LayoutWalletCoordinatorHeaderBinding.bind(view) }
 
@@ -89,11 +91,16 @@ class WalletHeaderPresenter(
                     WalletManager.selectedWalletAddress().toAddress()
                 )
             }
+            InboxManager.addListener(this@WalletHeaderPresenter)
+            flInbox.setOnClickListener { ReactNativeActivity.launchClaimTokens(view.context) }
+            updateInboxBadge(InboxManager.unclaimedCount)
+
             if (WalletManager.isChildAccountSelected()) {
                 cvSwap.gone()
                 cvBuy.gone()
                 flManageToken.gone()
                 flAddToken.gone()
+                flInbox.gone()
             } else {
                 flAddToken.setOnClickListener {
                     if (WalletManager.isEVMAccountSelected()) {
@@ -191,6 +198,23 @@ class WalletHeaderPresenter(
                         pendingRequest = pendingRequestModel.request // Store the request directly
                     )
                 )
+            }
+        }
+    }
+
+    override fun onInboxCountUpdate(count: Int) {
+        updateInboxBadge(count)
+    }
+
+    private fun updateInboxBadge(count: Int) {
+        with(binding) {
+            val show = count > 0 && !WalletManager.isChildAccountSelected()
+            flInbox.setVisible(show)
+            if (show) {
+                tvInboxBadge.visible()
+                tvInboxBadge.text = InboxManager.formatBadgeCount(count)
+            } else {
+                tvInboxBadge.gone()
             }
         }
     }

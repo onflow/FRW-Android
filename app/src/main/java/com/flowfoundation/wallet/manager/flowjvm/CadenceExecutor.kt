@@ -27,6 +27,8 @@ import com.flowfoundation.wallet.utils.reportCadenceErrorToDebugView
 import com.flowfoundation.wallet.wallet.toAddress
 import org.onflow.flow.AddressRegistry
 import org.onflow.flow.infrastructure.Cadence
+import org.onflow.flow.infrastructure.Cadence.Companion.address
+import org.onflow.flow.infrastructure.Cadence.Companion.array
 import org.onflow.flow.infrastructure.Cadence.Companion.string
 import java.math.BigDecimal
 
@@ -58,10 +60,19 @@ suspend fun cadenceQueryAddressByDomainFind(domain: String): String? {
 suspend fun cadenceGetAllFlowBalance(list: List<String>): Map<String, BigDecimal>? {
     logd(TAG, "cadenceGetAllFlowBalance()")
     val result = CadenceScript.CADENCE_GET_ALL_FLOW_BALANCE.executeCadence {
-        arg { Cadence.array(list.map { string(it) }) }
+        arg { array(list.map { string(it) }) }
     }
     logd(TAG, "cadenceGetAllFlowBalance response:${result?.encode()}")
     return result?.decode<Map<String, String>>().parseBigDecimalMap()
+}
+
+suspend fun cadenceQueryInboxUnclaimedNumber(list: List<String>): Int? {
+    logd(TAG, "cadenceQueryInboxUnclaimedNumber()")
+    val result = CadenceScript.CADENCE_BATCH_QUERY_UNCLAIMED_NUMBER.executeCadence {
+        arg { array(list.map { address(it) }) }
+    }
+    logd(TAG, "cadenceQueryInboxUnclaimedNumber response:${result?.encode()}")
+    return result?.decode<Int>()
 }
 
 suspend fun cadenceQueryTokenBalanceWithAddress(token: FungibleToken?, address: String?): BigDecimal? {

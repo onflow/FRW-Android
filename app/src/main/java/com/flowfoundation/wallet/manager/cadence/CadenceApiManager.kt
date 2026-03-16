@@ -81,7 +81,7 @@ object CadenceApiManager {
                     }
                 } ?: ""
                 logd(TAG, "Response body length: ${responseBody.length}")
-                
+
                 val isSignatureValid = try {
                     verifySignature(signature, responseBody.toByteArray())
                 } catch (e: Exception) {
@@ -90,7 +90,7 @@ object CadenceApiManager {
                     ErrorReporter.reportWithMixpanel(CadenceError.SIGNATURE_VERIFICATION_ERROR, e)
                     false
                 }
-                
+
                 if (!isSignatureValid) {
                     loge(TAG, "Invalid script signature - continuing with cached scripts")
                     loge(TAG, "Response preview (first 200 chars): ${responseBody.take(200)}")
@@ -138,40 +138,40 @@ object CadenceApiManager {
                 loge(TAG, "Empty signature provided for verification")
                 return false
             }
-            
+
             // Clean the signature - remove any whitespace and non-hex characters
             val cleanSignature = signature.trim().replace(Regex("[^0-9a-fA-F]"), "")
-            
+
             if (cleanSignature.isBlank()) {
                 loge(TAG, "Signature contains no valid hex characters: ${signature.take(50)}...")
                 return false
             }
-            
+
             // Check if signature contains only valid hex characters
             val hexPattern = "^[0-9a-fA-F]+$".toRegex()
             if (!hexPattern.matches(cleanSignature)) {
                 loge(TAG, "Invalid signature format after cleaning - contains non-hex characters: ${cleanSignature.take(50)}...")
                 return false
             }
-            
+
             // Validate signature length (should be even number for hex)
             if (cleanSignature.length % 2 != 0) {
                 loge(TAG, "Invalid signature length - not even number of hex chars: ${cleanSignature.length}")
                 return false
             }
-            
+
             // Validate expected signature length for ECDSA (typically 64 bytes = 128 hex chars)
             if (cleanSignature.length != 128) {
                 logd(TAG, "Warning: Unexpected signature length: ${cleanSignature.length} (expected 128)")
             }
-            
+
             val hashedData = Hash.sha256(data)
             val pubKeyBytes = BuildConfig.X_SIGNATURE_KEY.decodeHex().toByteArray()
             val public = PublicKey(pubKeyBytes, PublicKeyType.NIST256P1EXTENDED)
-            
+
             val signatureBytes = cleanSignature.decodeHex().toByteArray()
             val isValid = public.verify(signatureBytes, hashedData)
-            
+
             logd(TAG, "Signature verification result: $isValid")
             isValid
         } catch (e: IllegalArgumentException) {
@@ -308,6 +308,16 @@ object CadenceApiManager {
         return script
     }
 
+    fun getCadenceLostAndFoundScript(method: String): String {
+        val script = getCadenceScript()?.lostAndFound?.get(method)?.decodeBase64()?.utf8()
+        if (script.isNullOrBlank()) {
+            loge(TAG, "Failed to get lostAndFound script for method: $method, falling back to " +
+              "assets")
+            return getFallbackScriptFromAssets(method, "lostAndFound")
+        }
+        return script
+    }
+
     private fun getFallbackScriptFromAssets(method: String, category: String): String {
         return try {
             val assetsData = Gson().fromJson(
@@ -318,7 +328,7 @@ object CadenceApiManager {
                 NETWORK_TESTNET -> assetsData.data?.scripts?.testnet
                 else -> assetsData.data?.scripts?.mainnet
             }
-            
+
             val scriptContent = when (category) {
                 "basic" -> script?.basic?.get(method)
                 "collection" -> script?.collection?.get(method)
@@ -331,9 +341,10 @@ object CadenceApiManager {
                 "nft" -> script?.nft?.get(method)
                 "swap" -> script?.swap?.get(method) as? String
                 "bridge" -> script?.bridge?.get(method)
+                "lostAndFound" -> script?.lostAndFound?.get(method)
                 else -> null
             }?.decodeBase64()?.utf8()
-            
+
             scriptContent ?: run {
                 loge(TAG, "No fallback script found for method: $method, category: $category")
                 ""

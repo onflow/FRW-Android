@@ -166,6 +166,8 @@ class ReactNativeActivity : ReactActivity() {
                 RNBridge.ScreenType.ONBOARDING -> RNBridge.InitialRoute.GET_STARTED.routeName
                 RNBridge.ScreenType.RECEIVE -> "Receive"
                 RNBridge.ScreenType.ACTIVITY -> RNBridge.InitialRoute.HOME.routeName
+                RNBridge.ScreenType.CLAIM_TOKENS -> "ClaimTokens"
+                else -> RNBridge.InitialRoute.HOME.routeName
             }
         }
 
@@ -306,6 +308,10 @@ class ReactNativeActivity : ReactActivity() {
          * @param fromAccount can be null - if null, will generate from selected wallet address
          * @param targetAddress can be null - if null, user will select target in RN
          */
+        fun launchClaimTokens(context: Context) {
+            launch(context, RNBridge.ScreenType.CLAIM_TOKENS)
+        }
+
         fun launchWalletSend(context: Context, fromAccount: RNBridge.WalletAccount?, targetAddress: String?) {
             val address = WalletManager.selectedWalletAddress().toAddress()
             val network = chainNetWorkString()

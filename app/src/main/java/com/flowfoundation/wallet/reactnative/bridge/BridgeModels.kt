@@ -24,7 +24,9 @@ class RNBridge {
         @SerializedName("onboarding") ONBOARDING,
         @SerializedName("receive") RECEIVE,
         @SerializedName("activity") ACTIVITY,
-        @SerializedName("keystore-migration") KEYSTORE_MIGRATION
+        @SerializedName("keystore-migration") KEYSTORE_MIGRATION,
+        @SerializedName("migration") MIGRATION,
+        @SerializedName("claimTokens") CLAIM_TOKENS
     }
 
     enum class AccountTypeType {
