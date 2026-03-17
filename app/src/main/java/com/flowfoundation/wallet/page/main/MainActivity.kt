@@ -32,9 +32,12 @@ import com.flowfoundation.wallet.utils.uiScope
 import ai.luciq.bug.BugReporting
 import ai.luciq.library.Luciq
 import com.flowfoundation.wallet.manager.inbox.InboxManager
+import com.flowfoundation.wallet.manager.transaction.OnTransactionStateChange
+import com.flowfoundation.wallet.manager.transaction.TransactionState
+import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 
-class MainActivity : BaseActivity() {
+class MainActivity : BaseActivity(), OnTransactionStateChange {
 
     private lateinit var contentPresenter: MainContentPresenter
 
@@ -85,6 +88,7 @@ class MainActivity : BaseActivity() {
         }
         configurationInstabugBugReport()
         LocalBroadcastManager.getInstance(this).registerReceiver(restoreMnemonicReceiver, IntentFilter("ACTION_RESTORE_MNEMONIC"))
+        TransactionStateManager.addOnTransactionStateChange(this)
         WalletManager.checkKeyRotation(this)
         WalletManager.checkKeystoreMigration(this)
     }
@@ -134,6 +138,14 @@ class MainActivity : BaseActivity() {
         super.onResume()
         checkPendingAction()
         InboxManager.refresh()
+    }
+
+    override fun onTransactionStateChange() {
+        val transactionList = TransactionStateManager.getTransactionStateList()
+        val transaction = transactionList.lastOrNull { it.type == TransactionState.TYPE_SEND }
+        if (transaction?.isSuccess() == true) {
+            InboxManager.refresh()
+        }
     }
 
     private fun checkPendingAction() {

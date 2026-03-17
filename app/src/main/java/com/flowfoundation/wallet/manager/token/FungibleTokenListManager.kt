@@ -136,16 +136,6 @@ object FungibleTokenListManager {
                 return@launch
             }
 
-            tokenListCache[address]?.let { cachedList ->
-                if (cachedList.displayTokenList.isNotEmpty()) {
-                    currentDisplayTokenList.clear()
-                    val filteredList = applyFilters(cachedList.displayTokenList.distinctBy { it.contractId() })
-                    currentDisplayTokenList.addAll(filteredList)
-                    dispatchListeners()
-                    logd(TAG, "Loaded token list from cache for address: $address")
-                }
-            }
-
             updateTokenList(address)
         }
     }
@@ -174,37 +164,14 @@ object FungibleTokenListManager {
             logd(TAG, "Fetching token list for address: $address, currency: ${currency.name}, network: $network")
 
             val freshList = provider.getTokenList(address, currency, network)
+            val hiddenIds = getHiddenTokenIds(address)
 
-            if (currentDisplayTokenList.isEmpty()) {
-                val filteredList = applyFilters(freshList.distinctBy { it.contractId() })
-                currentDisplayTokenList.addAll(filteredList)
-                updateDisplayTokenListCache(address)
-                dispatchListeners()
-                logd(TAG, "Initial load from provider for token list for address: $address. Count: ${currentDisplayTokenList.size}")
-                return
-            }
-            val freshTokensMap = freshList.associateBy { it.contractId() }
-
-            val updatedFinalTokens = mutableListOf<FungibleToken>()
-            for (existingToken in currentDisplayTokenList) {
-                freshTokensMap[existingToken.contractId()]?.let { updatedVersionOfExistingToken ->
-                    updatedFinalTokens.add(updatedVersionOfExistingToken)
-                }
-            }
-            contractId?.let { targetId ->
-                freshTokensMap[targetId]?.takeIf { freshToken ->
-                    currentDisplayTokenList.none { it.contractId() == targetId }
-                }?.let { newToken ->
-                    updatedFinalTokens.add(newToken)
-                    logd(TAG, "Added new token by contractId: $targetId")
-                }
-            }
+            val visibleTokens = freshList.filter { it.contractId() !in hiddenIds }
+            val filteredList = applyFilters(visibleTokens.distinctBy { it.contractId() })
 
             currentDisplayTokenList.clear()
-            val finalFilteredList = applyFilters(updatedFinalTokens.distinctBy { it.contractId() })
-            currentDisplayTokenList.addAll(finalFilteredList)
-            updateDisplayTokenListCache(address)
-            logd(TAG, "Successfully updated token list for address: $address. Count: ${currentDisplayTokenList.size}")
+            currentDisplayTokenList.addAll(filteredList)
+            logd(TAG, "Updated token list for address: $address. Count: ${currentDisplayTokenList.size}, hidden: ${hiddenIds.size}")
             dispatchListeners()
         } catch (e: Exception) {
             loge("Error reloading token list for address: $address", e)
@@ -212,13 +179,20 @@ object FungibleTokenListManager {
     }
 
     private fun updateDisplayTokenListCache(address: String) {
-        val oldItem = tokenListCache[address]
-        if (oldItem != null) {
-            tokenListCache[address] = oldItem.copy(displayTokenList = ArrayList(currentDisplayTokenList))
-        } else {
-            tokenListCache[address] = DisplayTokenListCache(displayTokenList = ArrayList(currentDisplayTokenList))
-        }
         DisplayTokenCacheManager.cache(tokenListCache)
+    }
+
+    private fun getHiddenTokenIds(address: String = WalletManager.selectedWalletAddress()): Set<String> {
+        return tokenListCache[address]?.hiddenTokenIds ?: emptySet()
+    }
+
+    private fun rebuildDisplayList(address: String) {
+        val allTokens = getCurrentTokenListSnapshot()
+        val hiddenIds = getHiddenTokenIds(address)
+        val visibleTokens = allTokens.filter { it.contractId() !in hiddenIds }
+        val filteredList = applyFilters(visibleTokens.distinctBy { it.contractId() })
+        currentDisplayTokenList.clear()
+        currentDisplayTokenList.addAll(filteredList)
     }
 
     private fun applyFilters(tokens: List<FungibleToken>): List<FungibleToken> {
@@ -248,30 +222,10 @@ object FungibleTokenListManager {
         if (address.isBlank()) {
             return
         }
-        logd(TAG, "setHideDustTokens: hide=$hide, currentDisplayTokenList.size=${currentDisplayTokenList.size}")
-        currentDisplayTokenList.forEach { token ->
-            logd(TAG, "setHideDustTokens: Before - ${token.symbol} balance=${token.tokenBalanceInUSD()}")
-        }
+        logd(TAG, "setHideDustTokens: hide=$hide")
         val oldItem = tokenListCache[address] ?: DisplayTokenListCache()
-        if (hide) {
-            val filteredList = currentDisplayTokenList.filter { it.tokenBalanceInUSD() > BigDecimal(0.01) }
-            logd(TAG, "setHideDustTokens: Filtered out ${currentDisplayTokenList.size - filteredList.size} dust tokens")
-            currentDisplayTokenList.clear()
-            currentDisplayTokenList.addAll(filteredList)
-            tokenListCache[address] = oldItem.copy(hideDustTokens = true, displayTokenList = filteredList)
-        } else {
-            val tokenList = getCurrentTokenListSnapshot()
-            val displayListSnapshot = currentDisplayTokenList.toList()
-            currentDisplayTokenList.clear()
-            if (isOnlyShowVerifiedTokens()) {
-                val filteredList = tokenList.filter { it.isVerified }.filter { verified -> displayListSnapshot.any { it.isSameToken(verified.contractId()) } }
-                currentDisplayTokenList.addAll(filteredList)
-            } else {
-                currentDisplayTokenList.addAll(tokenList)
-            }
-            tokenListCache[address] =
-                oldItem.copy(hideDustTokens = false, displayTokenList = currentDisplayTokenList)
-        }
+        tokenListCache[address] = oldItem.copy(hideDustTokens = hide)
+        rebuildDisplayList(address)
         DisplayTokenCacheManager.cache(tokenListCache)
         dispatchListeners()
     }
@@ -282,24 +236,8 @@ object FungibleTokenListManager {
             return
         }
         val oldItem = tokenListCache[address] ?: DisplayTokenListCache()
-        if (show) {
-            val filteredList = currentDisplayTokenList.filter { it.isVerified }
-            currentDisplayTokenList.clear()
-            currentDisplayTokenList.addAll(filteredList)
-            tokenListCache[address] =
-                oldItem.copy(onlyShowVerifiedTokens = true, displayTokenList = filteredList)
-        } else {
-            val tokenList = getCurrentTokenListSnapshot()
-            val displayListSnapshot = currentDisplayTokenList.toList()
-            currentDisplayTokenList.clear()
-            if (isHideDustTokens()) {
-                val filteredList = tokenList.filter { it.tokenBalanceInUSD() > BigDecimal(0.01) }.filter { verified -> displayListSnapshot.any{ it.isSameToken(verified.contractId()) } }
-                currentDisplayTokenList.addAll(filteredList)
-            } else {
-                currentDisplayTokenList.addAll(tokenList)
-            }
-            tokenListCache[address] = oldItem.copy(onlyShowVerifiedTokens = false, displayTokenList = currentDisplayTokenList)
-        }
+        tokenListCache[address] = oldItem.copy(onlyShowVerifiedTokens = show)
+        rebuildDisplayList(address)
         DisplayTokenCacheManager.cache(tokenListCache)
         dispatchListeners()
     }
@@ -346,43 +284,42 @@ object FungibleTokenListManager {
 
     fun isTokenAdded(contractId: String) = getCurrentTokenListSnapshot().any { it.isSameToken(contractId) }
 
-    fun addDisplayToken(token: FungibleToken) {
+    fun showToken(token: FungibleToken) {
         ioScope {
-            if (currentDisplayTokenList.any { it.isSameToken(token.contractId()) }) {
-                logd(TAG, "Token ${token.contractId()} already in display list.")
-                return@ioScope
-            }
-
-            // Check if token should be filtered out
-            val shouldShow = applyFilters(listOf(token)).isNotEmpty()
-            if (!shouldShow) {
-                logd(TAG, "Token ${token.contractId()} filtered out (dust/unverified), not adding to display list.")
-                return@ioScope
-            }
-
-            currentDisplayTokenList.add(token)
             val address = WalletManager.selectedWalletAddress()
-            if (address.isNotBlank()) {
-                updateDisplayTokenListCache(address)
+            if (address.isBlank()) return@ioScope
+
+            val oldItem = tokenListCache[address] ?: DisplayTokenListCache()
+            val newHidden = oldItem.hiddenTokenIds - token.contractId()
+            tokenListCache[address] = oldItem.copy(hiddenTokenIds = newHidden)
+
+            if (currentDisplayTokenList.none { it.isSameToken(token.contractId()) }) {
+                val shouldShow = applyFilters(listOf(token)).isNotEmpty()
+                if (shouldShow) {
+                    currentDisplayTokenList.add(token)
+                }
             }
+
+            updateDisplayTokenListCache(address)
             dispatchDisplayUpdated(token, true)
-            logd(TAG, "Added token ${token.contractId()} to display list. New count: ${currentDisplayTokenList.size}")
+            logd(TAG, "Showed token ${token.contractId()}. Hidden count: ${newHidden.size}")
         }
     }
 
-    fun removeDisplayToken(token: FungibleToken) {
+    fun hideToken(token: FungibleToken) {
         ioScope {
-            val removed = currentDisplayTokenList.removeAll { it.isSameToken(token.contractId()) }
-            if (removed) {
-                val address = WalletManager.selectedWalletAddress()
-                if (address.isNotBlank()) {
-                    updateDisplayTokenListCache(address)
-                }
-                dispatchDisplayUpdated(token, false)
-                logd(TAG, "Removed token ${token.contractId()} from display list. New count: ${currentDisplayTokenList.size}")
-            } else {
-                logd(TAG, "Token ${token.contractId()} not found in display list for removal.")
-            }
+            val address = WalletManager.selectedWalletAddress()
+            if (address.isBlank()) return@ioScope
+
+            val oldItem = tokenListCache[address] ?: DisplayTokenListCache()
+            val newHidden = oldItem.hiddenTokenIds + token.contractId()
+            tokenListCache[address] = oldItem.copy(hiddenTokenIds = newHidden)
+
+            currentDisplayTokenList.removeAll { it.isSameToken(token.contractId()) }
+
+            updateDisplayTokenListCache(address)
+            dispatchDisplayUpdated(token, false)
+            logd(TAG, "Hid token ${token.contractId()}. Hidden count: ${newHidden.size}")
         }
     }
 
@@ -415,6 +352,6 @@ data class DisplayTokenListCache(
     val hideDustTokens: Boolean = false,
     @SerializedName("onlyShowVerifiedTokens")
     val onlyShowVerifiedTokens: Boolean = false,
-    @SerializedName("displayTokenList")
-    val displayTokenList: List<FungibleToken> = emptyList()
+    @SerializedName("hiddenTokenIds")
+    val hiddenTokenIds: Set<String> = emptySet()
 )
