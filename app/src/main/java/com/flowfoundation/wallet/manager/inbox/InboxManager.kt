@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.manager.inbox
 
+import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryInboxUnclaimedNumber
 import com.flowfoundation.wallet.manager.notification.WalletNotificationManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
@@ -26,6 +27,9 @@ object InboxManager {
     private var inboxNotification: WalletNotification? = null
 
     fun refresh() {
+        if (AppConfig.canClaimInbox().not()) {
+            return
+        }
         ioScope {
             if (WalletManager.isChildAccountSelected() || WalletManager.isEVMAccountSelected()) {
                 updateCount(0)
