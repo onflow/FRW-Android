@@ -272,16 +272,32 @@ object WalletDataManager {
             // EOA Wallet - canDeriveEoa is determined per-wallet by WalletCreationHelper
             // based on key type (Secure Enclave / private key = false, seed phrase = true)
             if (canDeriveEoa) {
-                val eoa = deriveEoaAddress(wallet)
-                logd(TAG, "Generated EOA address: $eoa")
-                if (eoa.isNotEmpty()) {
-                    logd(TAG, "Adding EOA for account: $eoa")
-                    val eoaEmojiInfo = getEmojiInfo(eoa)
-                    nodes.add(EOAWallet(
-                        address = eoa,
-                        name = eoaEmojiInfo.emojiName,
-                        emojiId = eoaEmojiInfo.emojiId
-                    ))
+                val existingEOAs = account.walletNodes.filterIsInstance<EOAWallet>()
+                if (existingEOAs.isNotEmpty()) {
+                    // Preserve all existing EOA wallets with their indices
+                    existingEOAs.forEach { existingEoa ->
+                        val eoaEmojiInfo = getEmojiInfo(existingEoa.address)
+                        nodes.add(EOAWallet(
+                            address = existingEoa.address,
+                            name = eoaEmojiInfo.emojiName,
+                            emojiId = eoaEmojiInfo.emojiId,
+                            index = existingEoa.index
+                        ))
+                    }
+                    logd(TAG, "Preserved ${existingEOAs.size} existing EOA wallets")
+                } else {
+                    val eoa = deriveEoaAddress(wallet)
+                    logd(TAG, "Generated EOA address: $eoa")
+                    if (eoa.isNotEmpty()) {
+                        logd(TAG, "Adding EOA for account: $eoa")
+                        val eoaEmojiInfo = getEmojiInfo(eoa)
+                        nodes.add(EOAWallet(
+                            address = eoa,
+                            name = eoaEmojiInfo.emojiName,
+                            emojiId = eoaEmojiInfo.emojiId,
+                            index = 0
+                        ))
+                    }
                 }
             }
 
@@ -392,15 +408,30 @@ object WalletDataManager {
                 // EOA - canDeriveEoa is determined per-wallet by WalletCreationHelper
                 // based on key type (Secure Enclave / private key = false, seed phrase = true)
                 if (canDeriveEoa) {
-                    val eoa = deriveEoaAddress(wallet)
-                    if (eoa.isNotEmpty()) {
-                        logd(TAG, "Adding EOA for non-current account: $eoa")
-                        val eoaEmojiInfo = getEmojiInfo(eoa)
-                        nodes.add(EOAWallet(
-                            address = eoa,
-                            name = eoaEmojiInfo.emojiName,
-                            emojiId = eoaEmojiInfo.emojiId
-                        ))
+                    val existingEOAs = account.walletNodes.filterIsInstance<EOAWallet>()
+                    if (existingEOAs.isNotEmpty()) {
+                        existingEOAs.forEach { existingEoa ->
+                            val eoaEmojiInfo = getEmojiInfo(existingEoa.address)
+                            nodes.add(EOAWallet(
+                                address = existingEoa.address,
+                                name = eoaEmojiInfo.emojiName,
+                                emojiId = eoaEmojiInfo.emojiId,
+                                index = existingEoa.index
+                            ))
+                        }
+                        logd(TAG, "Preserved ${existingEOAs.size} existing EOA wallets for non-current account")
+                    } else {
+                        val eoa = deriveEoaAddress(wallet)
+                        if (eoa.isNotEmpty()) {
+                            logd(TAG, "Adding EOA for non-current account: $eoa")
+                            val eoaEmojiInfo = getEmojiInfo(eoa)
+                            nodes.add(EOAWallet(
+                                address = eoa,
+                                name = eoaEmojiInfo.emojiName,
+                                emojiId = eoaEmojiInfo.emojiId,
+                                index = 0
+                            ))
+                        }
                     }
                 } else {
                     logd(TAG, "Skipping EOA for non-current account (canDeriveEoa=false)")

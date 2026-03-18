@@ -49,7 +49,8 @@ class WalletBridgeHandler(private val reactContext: ReactApplicationContext) {
         ioScope {
             try {
                 logd(TAG, "ethSign() called with hexData: $hexData")
-                val signature = WalletManager.wallet()?.ethSignDigest(hexData?.hexToBytes() ?: throw IllegalArgumentException("hexData is null"))
+                val eoaIndex = WalletManager.getSelectedEOAIndex()
+                val signature = WalletManager.wallet()?.ethSignDigest(hexData?.hexToBytes() ?: throw IllegalArgumentException("hexData is null"), index = eoaIndex)
                 if (signature != null && signature.isNotEmpty()) {
                     val result = Numeric.toHexString(signature)
                     logd(TAG, "ethSign() - signature $result")

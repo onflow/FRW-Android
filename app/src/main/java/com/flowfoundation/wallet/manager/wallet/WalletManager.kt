@@ -55,6 +55,18 @@ object WalletManager {
         return null
     }
 
+    /**
+     * Get the BIP44 derivation index for the currently selected EOA wallet.
+     * Returns 0 if no EOA is selected or found.
+     */
+    fun getSelectedEOAIndex(): Int {
+        val selectedAddress = selectedWalletAddress()
+        return AccountManager.walletNodes()
+            ?.filterIsInstance<EOAWallet>()
+            ?.firstOrNull { it.address.equals(selectedAddress, ignoreCase = true) }
+            ?.index ?: 0
+    }
+
 
     private fun initializeWallet(): Boolean {
         logd(TAG, "initializeWallet() called")

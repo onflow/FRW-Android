@@ -1,7 +1,9 @@
 package com.flowfoundation.wallet.manager.evm
 
+import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryCOATokenBalance
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.walletdata.EOAWallet
 import com.flowfoundation.wallet.utils.formatPrice
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.ioScope
@@ -107,12 +109,12 @@ object DAppEVMConnectionManager {
                     }
                 }
 
-                // Load EOA account
-                val eoaAddress = WalletManager.getEOAAddress()
-                if (!eoaAddress.isNullOrEmpty()) {
-                    logd(TAG, "Found EOA account: $eoaAddress")
-                    // EOA balance is hidden as per requirements
-                    accounts.add(DAppEVMAccount(eoaAddress, DAppEVMAccountType.EOA, null))
+                // Load all EOA accounts
+                val eoaWallets = AccountManager.walletNodes()
+                    ?.filterIsInstance<EOAWallet>() ?: emptyList()
+                eoaWallets.forEach { eoaWallet ->
+                    logd(TAG, "Found EOA account: ${eoaWallet.address} (index=${eoaWallet.index})")
+                    accounts.add(DAppEVMAccount(eoaWallet.address, DAppEVMAccountType.EOA, null))
                 }
 
                 _availableAccounts.value = accounts

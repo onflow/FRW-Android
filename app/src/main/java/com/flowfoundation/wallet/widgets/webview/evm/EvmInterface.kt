@@ -283,7 +283,8 @@ class EvmInterface(
                     val signature = if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
                         signEthereumMessage(signMessage)
                     } else {
-                        val result = WalletManager.wallet()?.ethSignPersonalMessage(data)
+                        val eoaIndex = WalletManager.getSelectedEOAIndex()
+                        val result = WalletManager.wallet()?.ethSignPersonalMessage(data, index = eoaIndex)
                         Numeric.toHexString(result)
                     }
                     webView.sendResult(network, signature, id)
@@ -310,7 +311,8 @@ class EvmInterface(
                     val signature = if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
                         signTypedData(data)
                     } else {
-                        val result = WalletManager.wallet()?.ethSignTypedData(raw)
+                        val eoaIndex = WalletManager.getSelectedEOAIndex()
+                        val result = WalletManager.wallet()?.ethSignTypedData(raw, index = eoaIndex)
                         Numeric.toHexString(result)
                     }
                     webView.sendResult(network, signature, id)

@@ -189,6 +189,8 @@
     <string name="hold_to_send">Hold to Send</string>
     <string name="transaction_is_processing">The transaction is processing</string>
     <string name="common_error_hint">Something went wrong, please try again later.</string>
+    <string name="create_new_cadence_account">Create a new Flow Cadence account</string>
+    <string name="create_new_eoa_account">Create a new Flow EVM account</string>
     <string name="pending">Pending</string>
     <string name="success">Success</string>
     <string name="failed">Failed</string>

@@ -77,6 +77,7 @@ import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.clearWebViewCache
 import com.flowfoundation.wallet.network.model.UserInfoData
+import com.flowfoundation.wallet.page.dialog.common.AddNewAccountDialog
 import com.flowfoundation.wallet.page.dialog.profile.ProfileSwitchDialog
 import com.flowfoundation.wallet.page.evm.EnableEVMActivity
 import com.flowfoundation.wallet.page.main.MainActivity
@@ -119,6 +120,7 @@ fun DrawerLayoutCompose(drawer: DrawerLayout) {
     val balanceMap by viewModel.balanceMap.collectAsStateWithLifecycle()
     val isAddingAccount by viewModel.isAddingAccount.collectAsStateWithLifecycle()
     val canAddAccount by viewModel.canAddAccount.collectAsStateWithLifecycle()
+    val canAddEOAAccount by viewModel.canAddEOAAccount.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         viewModel.loadData()
@@ -213,8 +215,16 @@ fun DrawerLayoutCompose(drawer: DrawerLayout) {
             onImportWalletClick = {
                 WalletRestoreActivity.launch(activity)
             },
-            onAddAccountClick = { viewModel.addAccount() },
-            canAddAccount = canAddAccount
+            onAddAccountClick = {
+                AddNewAccountDialog.show(
+                    activity.supportFragmentManager,
+                    canAddCadence = canAddAccount,
+                    canAddEOA = canAddEOAAccount,
+                    onCadence = { viewModel.addCadenceAccount() },
+                    onEOA = { viewModel.addEOAAccount() }
+                )
+            },
+            canAddAccount = canAddAccount || canAddEOAAccount
         )
     }
 }
