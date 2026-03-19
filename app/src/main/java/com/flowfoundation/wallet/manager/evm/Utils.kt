@@ -72,7 +72,7 @@ suspend fun loadInitJS(): String {
             }
         }
 
-        WalletManager.getEOAAddress()?.let { eoaAddress ->
+        WalletManager.getEOAAddresses().forEach { eoaAddress ->
             if (eoaAddress.isNotEmpty()) {
                 addressList.add(eoaAddress)
             }
@@ -257,11 +257,13 @@ Unit) {
                     return@ioScope
                 }
                 val singer = cryptoProvider.getSigner(HashingAlgorithm.SHA2_256)
+                val eoaIndex = WalletManager.getSelectedEOAIndex()
                 val result = WalletManager.wallet()?.ethSignTransactionAndSendByCadence(
                     input = input,
                     fromAddress = address,
                     signers = listOf(singer),
-                    flowAddress = FlowAddress(WalletManager.getCurrentFlowWalletAddress().orEmpty())
+                    flowAddress = FlowAddress(WalletManager.getCurrentFlowWalletAddress().orEmpty()),
+                    index = eoaIndex
                 )
                 if (result == null) {
                     logd("EOATransaction", "ERROR: Failed to sign transaction")
@@ -275,7 +277,8 @@ Unit) {
                 callback.invoke(txHash)
 
             } else {
-                val output = WalletManager.wallet()?.ethSignTransaction(input)
+                val eoaIndex = WalletManager.getSelectedEOAIndex()
+                val output = WalletManager.wallet()?.ethSignTransaction(input, index = eoaIndex)
 
                 if (output == null) {
                     logd("EOATransaction", "ERROR: Failed to sign transaction")

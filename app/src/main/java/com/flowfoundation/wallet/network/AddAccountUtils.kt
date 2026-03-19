@@ -5,6 +5,7 @@ import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.walletdata.EOAWallet
 import com.flowfoundation.wallet.manager.walletdata.FlowWallet
 import com.flowfoundation.wallet.network.model.ManualAddressRequest
 import com.flowfoundation.wallet.utils.logd
@@ -87,6 +88,53 @@ suspend fun addNewFlowAccount(): String? {
         formattedAddress
     } catch (e: Exception) {
         loge(TAG, "Failed to add new Flow account: ${e.message}")
+        e.printStackTrace()
+        null
+    }
+}
+
+/**
+ * Add a new EOA (Externally Owned Account) wallet by deriving the next BIP44 index.
+ * This is a purely local operation (no network request needed).
+ *
+ * @return the new EOA address, or null on failure
+ */
+suspend fun addNewEOAAccount(): String? {
+    return try {
+        val wallet = WalletManager.wallet()
+        if (wallet == null) {
+            loge(TAG, "No wallet available from WalletManager")
+            return null
+        }
+
+        val existingEOAs = AccountManager.walletNodes()
+            ?.filterIsInstance<EOAWallet>() ?: emptyList()
+        val nextIndex = if (existingEOAs.isEmpty()) 0 else existingEOAs.maxOf { it.index } + 1
+
+        logd(TAG, "Deriving EOA address at index $nextIndex")
+        val address = wallet.ethAddress(nextIndex)
+        if (address.isBlank()) {
+            loge(TAG, "Derived empty EOA address at index $nextIndex")
+            return null
+        }
+
+        val emojiInfo = AccountEmojiManager.getEmojiByAddress(address)
+
+        val eoaWallet = EOAWallet(
+            address = address,
+            name = emojiInfo.emojiName,
+            emojiId = emojiInfo.emojiId,
+            index = nextIndex
+        )
+
+        AccountManager.updateCurrentAccount { account ->
+            account.copy(walletNodes = account.walletNodes + eoaWallet)
+        }
+
+        logd(TAG, "New EOAWallet added to account: $address (index=$nextIndex)")
+        address
+    } catch (e: Exception) {
+        loge(TAG, "Failed to add new EOA account: ${e.message}")
         e.printStackTrace()
         null
     }

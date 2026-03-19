@@ -33,7 +33,9 @@ data class EOAWallet(
     @SerializedName("name")
     override val name: String,
     @SerializedName("emojiId")
-    override val emojiId: Int
+    override val emojiId: Int,
+    @SerializedName("index")
+    val index: Int = 0
 ) : MainWallet()
 
 // Linked Wallets (Children / COA)

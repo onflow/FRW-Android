@@ -65,6 +65,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
+import com.flowfoundation.wallet.page.dialog.common.AddNewAccountDialog
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.page.wallet.view.AccountItemSection
 import com.flowfoundation.wallet.page.profile.subpage.wallet.WalletSettingActivity
@@ -107,6 +108,7 @@ fun AccountListScreen(
     val hiddenAccounts by viewModel.hiddenAccounts.collectAsState()
     val isAddingAccount by viewModel.isAddingAccount.collectAsState()
     val canAddAccount by viewModel.canAddAccount.collectAsState()
+    val canAddEOAAccount by viewModel.canAddEOAAccount.collectAsState()
     val context = LocalContext.current
     val activity = remember { getActivityFromContext(context) as FragmentActivity }
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
@@ -154,10 +156,19 @@ fun AccountListScreen(
                     }
                 },
                 actions = {
+                    val canAdd = canAddAccount || canAddEOAAccount
                     IconButton(
-                        onClick = { viewModel.addAccount() },
-                        enabled = canAddAccount,
-                        modifier = Modifier.alpha(if (canAddAccount) 1f else 0f)
+                        onClick = {
+                            AddNewAccountDialog.show(
+                                activity.supportFragmentManager,
+                                canAddCadence = canAddAccount,
+                                canAddEOA = canAddEOAAccount,
+                                onCadence = { viewModel.addCadenceAccount() },
+                                onEOA = { viewModel.addEOAAccount() }
+                            )
+                        },
+                        enabled = canAdd,
+                        modifier = Modifier.alpha(if (canAdd) 1f else 0f)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Add,

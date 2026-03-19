@@ -18,11 +18,14 @@ import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.key.AndroidKeystoreCryptoProvider
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.network.ApiService
+import com.flowfoundation.wallet.manager.key.HDWalletCryptoProvider
+import com.flowfoundation.wallet.network.addNewEOAAccount
 import com.flowfoundation.wallet.network.addNewFlowAccount
 import com.flowfoundation.wallet.network.retrofitApi
 import com.flowfoundation.wallet.utils.formatLargeBalanceNumber
 import com.flowfoundation.wallet.utils.isHideCOAWithZeroBalanceEnable
 import com.flowfoundation.wallet.utils.ioScope
+import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.network.model.UserInfoData
 import com.flowfoundation.wallet.manager.account.AccountVisibilityManager
 import com.flowfoundation.wallet.manager.account.OnAccountUpdate
@@ -53,6 +56,9 @@ class DrawerLayoutViewModel : ViewModel(), OnAccountUpdate, OnEmojiUpdate {
 
     private val _canAddAccount = MutableStateFlow(false)
     val canAddAccount: StateFlow<Boolean> = _canAddAccount.asStateFlow()
+
+    private val _canAddEOAAccount = MutableStateFlow(false)
+    val canAddEOAAccount: StateFlow<Boolean> = _canAddEOAAccount.asStateFlow()
 
     private val service by lazy { retrofitApi().create(ApiService::class.java) }
 
@@ -176,13 +182,21 @@ class DrawerLayoutViewModel : ViewModel(), OnAccountUpdate, OnEmojiUpdate {
                 && cryptoProvider != null
                 && cryptoProvider !is AndroidKeystoreCryptoProvider
 
+            val eoaWalletCount = walletNodes.filterIsInstance<EOAWallet>().size
+            val canCreate = AppConfig.canCreateNewAccount()
+            val canDerive = WalletManager.canDeriveEoa()
+            val eoaUnderLimit = eoaWalletCount < 5
+            val isHDProvider = cryptoProvider is HDWalletCryptoProvider
+            _canAddEOAAccount.value = canCreate && canDerive && eoaUnderLimit && isHDProvider
+            logd("DrawerLayoutViewModel", "canAddEOA: canCreate=$canCreate, canDerive=$canDerive, eoaCount=$eoaWalletCount(<5=$eoaUnderLimit), isHDProvider=$isHDProvider => ${_canAddEOAAccount.value}")
+
             if (refreshBalance) {
                 fetchAllBalances(addressList, pendingEvmAddresses)
             }
         }
     }
 
-    fun addAccount() {
+    fun addCadenceAccount() {
         ioScope {
             _isAddingAccount.value = true
             try {
@@ -191,7 +205,24 @@ class DrawerLayoutViewModel : ViewModel(), OnAccountUpdate, OnEmojiUpdate {
                     _isAddingAccount.value = false
                     toast(msgRes = R.string.common_error_hint)
                 } else {
-                    // New accounts always have 0 balance; inject immediately for instant UI feedback
+                    _balanceMap.value += (result to "0 FLOW")
+                    refreshWalletList(false)
+                }
+            } finally {
+                _isAddingAccount.value = false
+            }
+        }
+    }
+
+    fun addEOAAccount() {
+        ioScope {
+            _isAddingAccount.value = true
+            try {
+                val result = addNewEOAAccount()
+                if (result == null) {
+                    _isAddingAccount.value = false
+                    toast(msgRes = R.string.common_error_hint)
+                } else {
                     _balanceMap.value += (result to "0 FLOW")
                     refreshWalletList(false)
                 }
