@@ -15,6 +15,7 @@ import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.walletdata.FlowWallet
 import com.flowfoundation.wallet.manager.walletdata.COAWallet
 import com.flowfoundation.wallet.manager.walletdata.ChildWallet
+import com.flowfoundation.wallet.manager.walletdata.EOAWallet
 import com.flowfoundation.wallet.reactnative.bridge.RNBridge
 import com.flowfoundation.wallet.reactnative.bridge.createEmojiInfo
 import com.flowfoundation.wallet.reactnative.bridge.isSelectedWalletAddress
@@ -210,15 +211,17 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
                     println("EVM account not available: ${e.message}")
                 }
 
-                // Get EOA address only if it's different from EVM address
+                // Get EOA addresses only if they're different from EVM address
                 // For Secure Type (COA) accounts, EOA and EVM addresses are the same,
                 // so we should only show the EVM account to avoid duplicate "EOA" chip
                 try {
-                    val eoaAddress = WalletManager.getEOAAddress()
-                    if (!eoaAddress.isNullOrEmpty()) {
-                        // Only add EOA account if it's different from EVM address
-                        // Secure Type accounts have a prefix field, Recovery Phrase accounts don't
-                        val isSecureTypeAccount = !currentAccount?.prefix.isNullOrBlank()
+                    val isSecureTypeAccount = !currentAccount?.prefix.isNullOrBlank()
+                    val eoaWallets = AccountManager.walletNodes()
+                        ?.filterIsInstance<EOAWallet>() ?: emptyList()
+
+                    for (eoaWallet in eoaWallets) {
+                        val eoaAddress = eoaWallet.address
+                        if (eoaAddress.isEmpty()) continue
 
                         // Only add EOA if:
                         // 1. EOA address is different from EVM address, AND
@@ -229,7 +232,7 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
                         if (isDifferentFromEVM && !isSecureTypeAccount) {
                             val eoaEmojiInfo = createEmojiInfo(eoaAddress)
                             val eoaAccount = RNBridge.WalletAccount(
-                                id = "eoa",
+                                id = "eoa_${eoaAddress}",
                                 name = eoaEmojiInfo?.name ?: "EOA Account",
                                 address = eoaAddress,
                                 parentAddress = mainAddress,
@@ -245,8 +248,8 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
                         }
                     }
                 } catch (e: Exception) {
-                    // EOA account might not be available, continue without it
-                    println("EOA account not available: ${e.message}")
+                    // EOA accounts might not be available, continue without them
+                    println("EOA accounts not available: ${e.message}")
                 }
 
                 val response = RNBridge.WalletAccountsResponse(accounts = bridgeAccounts)
@@ -475,15 +478,20 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
                 }
             }
 
-            // Add EOA address only for currently selected wallet
+            // Add EOA addresses only for currently selected wallet
             val mainAddress = flowWallets.firstOrNull()?.address
             if (mainAddress != null && isSelectedWalletAddress(mainAddress)) {
                 try {
-                    val eoaAddress = WalletManager.getEOAAddress()
-                    if (!eoaAddress.isNullOrEmpty()) {
+                    val eoaWallets = AccountManager.walletNodes()
+                        ?.filterIsInstance<EOAWallet>() ?: emptyList()
+
+                    for (eoaWallet in eoaWallets) {
+                        val eoaAddress = eoaWallet.address
+                        if (eoaAddress.isEmpty()) continue
+
                         val eoaEmojiInfo = createEmojiInfo(eoaAddress)
                         val eoaAccount = RNBridge.WalletAccount(
-                            id = "eoa",
+                            id = "eoa_${eoaAddress}",
                             name = eoaEmojiInfo?.name ?: "EVM Account (EOA)",
                             address = eoaAddress,
                             parentAddress = mainAddress,
@@ -498,7 +506,7 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
                         bridgeAccounts.add(eoaAccount)
                     }
                 } catch (e: Exception) {
-                    logw(TAG, "createWalletProfileFromAccount() - EOA account not available: ${e.message}")
+                    logw(TAG, "createWalletProfileFromAccount() - EOA accounts not available: ${e.message}")
                 }
             }
 

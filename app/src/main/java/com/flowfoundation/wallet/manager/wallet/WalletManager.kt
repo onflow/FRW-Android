@@ -40,7 +40,7 @@ object WalletManager {
     fun canDeriveEoa() = _canDeriveEoa
 
     /**
-     * Get EOA address
+     * Get the first EOA address (for backward compatibility / single-address scenarios)
      */
     fun getEOAAddress(): String? {
         val eoaWallet = AccountManager.walletNodes()
@@ -53,6 +53,16 @@ object WalletManager {
         }
 
         return null
+    }
+
+    /**
+     * Get all EOA addresses
+     */
+    fun getEOAAddresses(): List<String> {
+        return AccountManager.walletNodes()
+            ?.filterIsInstance<EOAWallet>()
+            ?.map { it.address }
+            ?: emptyList()
     }
 
     /**
@@ -155,7 +165,9 @@ object WalletManager {
     }
 
     fun isEVMAccountSelected(): Boolean {
-        return selectedWalletAddress().toAddress().equals(EVMWalletManager.getEVMAddress()?.toAddress(), ignoreCase = true) || selectedWalletAddress().toAddress().equals(getEOAAddress(), ignoreCase = true)
+        val selected = selectedWalletAddress().toAddress()
+        return selected.equals(EVMWalletManager.getEVMAddress()?.toAddress(), ignoreCase = true)
+            || EVMWalletManager.isEOAAddress(selected)
     }
 
     fun isSelfFlowAddress(address: String): Boolean {

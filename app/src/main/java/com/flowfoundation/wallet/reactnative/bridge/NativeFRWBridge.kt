@@ -443,7 +443,13 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
 
     override fun closeRN(id: String?) = uiHandler.closeRN(id)
 
-    override fun closeRNWithNFT(id: String?) {}
+    override fun onUpdateDialogActionPress(
+      actionType: String?,
+      actionUrl: String?,
+      actionText: String?
+    ) {}
+
+  override fun closeRNWithNFT(id: String?) {}
 
     override fun getSignKeyIndex(): Double = accountHandler.getSignKeyIndex()
 

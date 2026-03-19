@@ -72,7 +72,7 @@ suspend fun loadInitJS(): String {
             }
         }
 
-        WalletManager.getEOAAddress()?.let { eoaAddress ->
+        WalletManager.getEOAAddresses().forEach { eoaAddress ->
             if (eoaAddress.isNotEmpty()) {
                 addressList.add(eoaAddress)
             }

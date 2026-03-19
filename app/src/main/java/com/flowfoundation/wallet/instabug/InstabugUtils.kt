@@ -68,7 +68,7 @@ fun instabugInitialize(application: Application) {
                 childAccounts.toString()
             )
         report.setUserAttribute("COA", EVMWalletManager.getEVMAddress().orEmpty())
-        report.setUserAttribute("EOA", WalletManager.getEOAAddress().orEmpty())
+        report.setUserAttribute("EOA", WalletManager.getEOAAddresses().toString())
         report.setUserAttribute("Network", chainNetWorkString())
     }
     val configuration = ProactiveReportingConfigs.Builder()
