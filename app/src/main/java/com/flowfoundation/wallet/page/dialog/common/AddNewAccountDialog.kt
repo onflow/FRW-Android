@@ -107,7 +107,7 @@ private fun AddNewAccountContent(
                 .fillMaxWidth()
                 .background(
                     color = colorResource(id = R.color.bg_card),
-                    shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
+                    shape = RoundedCornerShape(16.dp)
                 )
                 .padding(horizontal = 18.dp)
         ) {
