@@ -73,7 +73,7 @@ class EvmInterface(
                     return
                 }
                 uiScope {
-                    if (EVMWalletManager.haveEVMAddress()) {
+                    if (EVMWalletManager.haveEVMAddress() || WalletManager.getEOAAddresses().isNotEmpty()) {
                         val connect = EvmRequestAccountDialog().show(
                             activity.supportFragmentManager,
                             EVMDialogModel(
@@ -283,7 +283,7 @@ class EvmInterface(
                     val signature = if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
                         signEthereumMessage(signMessage)
                     } else {
-                        val eoaIndex = WalletManager.getSelectedEOAIndex()
+                        val eoaIndex = WalletManager.getEOAIndexForAddress(fromAddress)
                         val result = WalletManager.wallet()?.ethSignPersonalMessage(data, index = eoaIndex)
                         Numeric.toHexString(result)
                     }
@@ -311,7 +311,7 @@ class EvmInterface(
                     val signature = if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
                         signTypedData(data)
                     } else {
-                        val eoaIndex = WalletManager.getSelectedEOAIndex()
+                        val eoaIndex = WalletManager.getEOAIndexForAddress(fromAddress)
                         val result = WalletManager.wallet()?.ethSignTypedData(raw, index = eoaIndex)
                         Numeric.toHexString(result)
                     }

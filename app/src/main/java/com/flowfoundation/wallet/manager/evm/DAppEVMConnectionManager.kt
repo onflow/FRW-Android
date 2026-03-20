@@ -120,8 +120,13 @@ object DAppEVMConnectionManager {
                 _availableAccounts.value = accounts
                 logd(TAG, "Loaded ${accounts.size} available accounts")
 
-                // Set default selected account if none is selected
-                if (_selectedAccount.value == null && accounts.isNotEmpty()) {
+                // Sync with main wallet's selected address if it matches an available account
+                val walletSelected = WalletManager.selectedWalletAddress()
+                val matchingAccount = accounts.firstOrNull { it.address.equals(walletSelected, ignoreCase = true) }
+                if (matchingAccount != null) {
+                    logd(TAG, "Syncing DApp selection with main wallet address: ${matchingAccount.address} (${matchingAccount.type})")
+                    setSelectedAccount(matchingAccount)
+                } else if (_selectedAccount.value == null && accounts.isNotEmpty()) {
                     // Default to COA account, fallback to first available
                     val defaultAccount = accounts.find { it.type == DAppEVMAccountType.COA } ?: accounts.first()
                     setSelectedAccount(defaultAccount)

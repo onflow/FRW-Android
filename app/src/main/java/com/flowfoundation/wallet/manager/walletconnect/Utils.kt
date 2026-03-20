@@ -26,9 +26,21 @@ fun Sign.Model.SessionProposal.approveSession() {
     namespaces.putAll(requiredNamespaces.map { item ->
         pair(item)
     }.toMap())
-    namespaces.putAll(optionalNamespaces.map { item ->
-        pair(item)
-    }.toMap())
+    // Merge optional namespaces instead of overwriting required ones
+    optionalNamespaces.forEach { item ->
+        val (key, session) = pair(item)
+        val existing = namespaces[key]
+        if (existing != null) {
+            namespaces[key] = Sign.Model.Namespace.Session(
+                chains = ((existing.chains.orEmpty()) + (session.chains.orEmpty())).distinct(),
+                accounts = ((existing.accounts) + (session.accounts)).distinct(),
+                methods = ((existing.methods) + (session.methods)).distinct(),
+                events = ((existing.events) + (session.events)).distinct()
+            )
+        } else {
+            namespaces[key] = session
+        }
+    }
 
     logd(TAG, "approveSession: $namespaces")
 

@@ -188,7 +188,8 @@ suspend fun WCRequest.evmSignTypedData() {
         EVMSignTypedDataDialog.observe { isApprove ->
             ioScope {
                 val result = if (DAppEVMConnectionManager.isCurrentEOAAccount()) {
-                    val eoaIndex = WalletManager.getSelectedEOAIndex()
+                    val currentAddress = DAppEVMConnectionManager.getCurrentAccount()?.address.orEmpty()
+                    val eoaIndex = WalletManager.getEOAIndexForAddress(currentAddress)
                     val data = WalletManager.wallet()?.ethSignTypedData(message, index = eoaIndex)
                     Numeric.toHexString(data)
                 } else {
@@ -291,7 +292,7 @@ private suspend fun WCRequest.evmSignMessage() {
                 val result = if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
                     signEthereumMessage(message)
                 } else {
-                    val eoaIndex = WalletManager.getSelectedEOAIndex()
+                    val eoaIndex = WalletManager.getEOAIndexForAddress(fromAddress)
                     val data = WalletManager.wallet()?.ethSignPersonalMessage(hexMessage.hexToBytes(), index = eoaIndex)
                     Numeric.toHexString(data)
                 }

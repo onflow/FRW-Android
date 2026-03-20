@@ -77,6 +77,18 @@ object WalletManager {
             ?.index ?: 0
     }
 
+    /**
+     * Get the BIP44 derivation index for a specific EOA address.
+     * Use this in DApp contexts where the signing address may differ from the globally selected one.
+     * Returns 0 if the address is not found among EOA wallets.
+     */
+    fun getEOAIndexForAddress(address: String): Int {
+        return AccountManager.walletNodes()
+            ?.filterIsInstance<EOAWallet>()
+            ?.firstOrNull { it.address.equals(address, ignoreCase = true) }
+            ?.index ?: 0
+    }
+
 
     private fun initializeWallet(): Boolean {
         logd(TAG, "initializeWallet() called")

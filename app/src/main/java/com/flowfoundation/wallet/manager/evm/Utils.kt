@@ -257,7 +257,7 @@ Unit) {
                     return@ioScope
                 }
                 val singer = cryptoProvider.getSigner(HashingAlgorithm.SHA2_256)
-                val eoaIndex = WalletManager.getSelectedEOAIndex()
+                val eoaIndex = WalletManager.getEOAIndexForAddress(address)
                 val result = WalletManager.wallet()?.ethSignTransactionAndSendByCadence(
                     input = input,
                     fromAddress = address,
@@ -277,7 +277,7 @@ Unit) {
                 callback.invoke(txHash)
 
             } else {
-                val eoaIndex = WalletManager.getSelectedEOAIndex()
+                val eoaIndex = WalletManager.getEOAIndexForAddress(address)
                 val output = WalletManager.wallet()?.ethSignTransaction(input, index = eoaIndex)
 
                 if (output == null) {
