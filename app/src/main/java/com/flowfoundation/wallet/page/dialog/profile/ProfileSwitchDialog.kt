@@ -107,7 +107,7 @@ private fun ProfileSwitchContent(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                color = colorResource(id = R.color.deep_bg),
+                color = colorResource(id = R.color.deep_bg_dialog),
                 shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
             )
             .padding(18.dp)

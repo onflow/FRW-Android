@@ -7,6 +7,7 @@ import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.emoji.OnEmojiUpdate
+import com.flowfoundation.wallet.manager.evm.COAVisibilityCache
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.flowjvm.cadenceGetAllFlowBalance
 import com.flowfoundation.wallet.manager.walletdata.FlowWallet
@@ -62,9 +63,6 @@ class DrawerLayoutViewModel : ViewModel(), OnAccountUpdate, OnEmojiUpdate {
 
     private val service by lazy { retrofitApi().create(ApiService::class.java) }
 
-    // Cache for verified EVM addresses that should be included in linkedAccounts
-    private val verifiedEvmAddresses = mutableSetOf<String>()
-
     init {
         AccountManager.addListener(this)
         AccountEmojiManager.addListener(this)
@@ -87,6 +85,8 @@ class DrawerLayoutViewModel : ViewModel(), OnAccountUpdate, OnEmojiUpdate {
             val addressList = mutableListOf<String>()
             val accounts = mutableListOf<WalletAccountData>()
             val pendingEvmAddresses = mutableListOf<Pair<String, String>>() // EVM address to wallet address mapping
+            val hideCOAWithZeroBalance = isHideCOAWithZeroBalanceEnable()
+            val selectedAddress = WalletManager.selectedWalletAddress()
 
             walletNodes.forEach { mainNode ->
                 when (mainNode) {
@@ -97,7 +97,7 @@ class DrawerLayoutViewModel : ViewModel(), OnAccountUpdate, OnEmojiUpdate {
                                 address = mainNode.address,
                                 name = mainNode.name,
                                 emojiId = mainNode.emojiId,
-                                isSelected = WalletManager.selectedWalletAddress().equals(mainNode.address, ignoreCase = true),
+                                isSelected = selectedAddress.equals(mainNode.address, ignoreCase = true),
                                 isEOAAccount = true
                             )
                         )
@@ -116,7 +116,7 @@ class DrawerLayoutViewModel : ViewModel(), OnAccountUpdate, OnEmojiUpdate {
                                                 name = linkedWallet.name,
                                                 icon = linkedWallet.icon,
                                                 emojiId = linkedWallet.emojiId,
-                                                isSelected = WalletManager.selectedWalletAddress().equals(linkedWallet.address, ignoreCase = true),
+                                                isSelected = selectedAddress.equals(linkedWallet.address, ignoreCase = true),
                                                 isCOAAccount = false
                                             )
                                         )
@@ -124,19 +124,21 @@ class DrawerLayoutViewModel : ViewModel(), OnAccountUpdate, OnEmojiUpdate {
                                     is COAWallet -> {
                                         val evmAddress = linkedWallet.address
                                         addressList.add(evmAddress)
-                                        if (evmAddress !in verifiedEvmAddresses) {
-                                            pendingEvmAddresses.add(Pair(evmAddress, mainNode.address))
-                                        } else {
+                                        val isSelected = selectedAddress.equals(evmAddress, ignoreCase = true)
+                                        // Show immediately if: currently selected, preference disabled, or cache-verified
+                                        if (isSelected || !hideCOAWithZeroBalance || COAVisibilityCache.isVerified(evmAddress)) {
                                             linkedAccounts.add(
                                                 LinkedAccountData(
                                                     address = evmAddress,
                                                     name = linkedWallet.name,
                                                     icon = null,
                                                     emojiId = linkedWallet.emojiId,
-                                                    isSelected = WalletManager.selectedWalletAddress().equals(evmAddress, ignoreCase = true),
+                                                    isSelected = isSelected,
                                                     isCOAAccount = true
                                                 )
                                             )
+                                        } else {
+                                            pendingEvmAddresses.add(Pair(evmAddress, mainNode.address))
                                         }
                                     }
                                 }
@@ -147,7 +149,7 @@ class DrawerLayoutViewModel : ViewModel(), OnAccountUpdate, OnEmojiUpdate {
                                     address = mainNode.address,
                                     name = mainNode.name,
                                     emojiId = mainNode.emojiId,
-                                    isSelected = WalletManager.selectedWalletAddress().equals(mainNode.address, ignoreCase = true),
+                                    isSelected = selectedAddress.equals(mainNode.address, ignoreCase = true),
                                     linkedAccounts = linkedAccounts
                                 )
                             )
@@ -231,7 +233,6 @@ class DrawerLayoutViewModel : ViewModel(), OnAccountUpdate, OnEmojiUpdate {
             }
         }
     }
-
     private fun fetchAllBalances(addressList: List<String>, pendingEvmAddresses: List<Pair<String, String>> = emptyList()) {
         ioScope {
             val balanceMap = cadenceGetAllFlowBalance(addressList) ?: return@ioScope
@@ -240,28 +241,42 @@ class DrawerLayoutViewModel : ViewModel(), OnAccountUpdate, OnEmojiUpdate {
             }
             _balanceMap.value = formattedBalanceMap
 
-            val hideCOAWithZeroBalance = isHideCOAWithZeroBalanceEnable()
+            val selectedAddress = WalletManager.selectedWalletAddress()
 
             // Check each pending EVM address
             pendingEvmAddresses.forEach { (evmAddress, walletAddress) ->
-                val shouldShow = if (!hideCOAWithZeroBalance) {
-                    true
-                } else {
-                    val evmBalance = balanceMap[evmAddress]
-                    val hasBalance = evmBalance != null && evmBalance > BigDecimal.ZERO
-                    var hasNFTs = false
+                // Skip balance check for the currently selected COA — it's always shown
+                if (selectedAddress.equals(evmAddress, ignoreCase = true)) {
+                    COAVisibilityCache.markVerified(evmAddress)
+                    return@forEach
+                }
 
-                    if (!hasBalance) {
-                        try {
-                            val nftResponse = service.getEVMNFTCollections(evmAddress)
-                            val totalNftCount = nftResponse.data?.sumOf { it.count ?: 0 } ?: 0
-                            hasNFTs = nftResponse.data?.isNotEmpty() == true && totalNftCount > 0
-                        } catch (_: Exception) {
-                            // Ignore NFT API errors
-                        }
+                val shouldShow = run {
+                    // 1. Check FLOW balance
+                    val evmBalance = balanceMap[evmAddress]
+                    if (evmBalance != null && evmBalance > BigDecimal.ZERO) return@run true
+
+                    // 2. Check EVM token balances (USDC, WETH, etc.)
+                    try {
+                        val tokenResponse = service.getEVMTokenList(evmAddress, null, null)
+                        val hasEvmTokens = tokenResponse.data?.any { token ->
+                            token.balance?.toBigDecimalOrNull()?.let { it > BigDecimal.ZERO } == true
+                        } == true
+                        if (hasEvmTokens) return@run true
+                    } catch (_: Exception) {
+                        // Ignore EVM token API errors
                     }
 
-                    hasBalance || hasNFTs
+                    // 3. Check NFT collections
+                    try {
+                        val nftResponse = service.getEVMNFTCollections(evmAddress)
+                        val totalNftCount = nftResponse.data?.sumOf { it.count ?: 0 } ?: 0
+                        if (nftResponse.data?.isNotEmpty() == true && totalNftCount > 0) return@run true
+                    } catch (_: Exception) {
+                        // Ignore NFT API errors
+                    }
+
+                    false
                 }
 
                 if (shouldShow) {
@@ -269,7 +284,6 @@ class DrawerLayoutViewModel : ViewModel(), OnAccountUpdate, OnEmojiUpdate {
                     val currentAccounts = _accounts.value.toMutableList()
                     val walletAccount = currentAccounts.find { it.address == walletAddress }
                     walletAccount?.let { account ->
-                        // Check if EVM address already exists in linked accounts
                         val alreadyExists = account.linkedAccounts.any { it.address == evmAddress }
                         if (!alreadyExists) {
                             val emojiInfo = AccountEmojiManager.getEmojiByAddress(evmAddress)
@@ -280,7 +294,7 @@ class DrawerLayoutViewModel : ViewModel(), OnAccountUpdate, OnEmojiUpdate {
                                     name = emojiInfo.emojiName,
                                     icon = null,
                                     emojiId = emojiInfo.emojiId,
-                                    isSelected = WalletManager.selectedWalletAddress() == evmAddress,
+                                    isSelected = selectedAddress.equals(evmAddress, ignoreCase = true),
                                     isCOAAccount = true
                                 )
                             )
@@ -291,8 +305,7 @@ class DrawerLayoutViewModel : ViewModel(), OnAccountUpdate, OnEmojiUpdate {
                                 _accounts.value = currentAccounts
                             }
                         }
-                        // Add to verified cache for future refreshWalletList calls
-                        verifiedEvmAddresses.add(evmAddress)
+                        COAVisibilityCache.markVerified(evmAddress)
                     }
                 } else {
                     // Remove EVM address from linked accounts if it no longer has assets
@@ -311,8 +324,7 @@ class DrawerLayoutViewModel : ViewModel(), OnAccountUpdate, OnEmojiUpdate {
                             }
                         }
                     }
-                    // Remove from verified cache
-                    verifiedEvmAddresses.remove(evmAddress)
+                    COAVisibilityCache.markUnverified(evmAddress)
                 }
             }
         }

@@ -116,7 +116,7 @@
                     android:layout_height="14dp"
                     android:layout_marginEnd="7dp"
                     android:background="@drawable/bg_round_corner"
-                    android:backgroundTint="@color/deep_bg"
+                    android:backgroundTint="@color/deep_bg_dialog"
                     android:padding="1dp"
                     android:scaleType="centerCrop"
                     app:round="100dp"

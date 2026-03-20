@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/bg_top_radius_16dp"
-        android:backgroundTint="@color/deep_bg"
+        android:backgroundTint="@color/deep_bg_dialog"
         android:orientation="vertical"
         android:paddingHorizontal="18dp"
         android:paddingTop="18dp"

@@ -83,7 +83,7 @@
         android:layout_marginTop="10dp"
         android:outlineAmbientShadowColor="@color/border_2"
         android:outlineSpotShadowColor="@color/border_2"
-        app:cardBackgroundColor="@color/deep_bg"
+        app:cardBackgroundColor="@color/deep_bg_dialog"
         app:cardCornerRadius="16dp"
         app:cardElevation="18dp"
         app:layout_constraintTop_toBottomOf="@id/title_view">
@@ -153,7 +153,7 @@
                 android:layout_width="36dp"
                 android:layout_height="16dp"
                 android:src="@drawable/ic_unlink_mid"
-                android:background="@color/deep_bg"
+                android:background="@color/deep_bg_dialog"
                 app:layout_constraintBottom_toBottomOf="@id/line"
                 app:layout_constraintEnd_toEndOf="@id/line"
                 app:layout_constraintStart_toStartOf="@id/line"

@@ -128,6 +128,9 @@ object AccountManager {
                 // Migrate key material to independent storage now that accounts are loaded.
                 // This must run inside the ioScope block so accounts list is fully populated.
                 safeRun { KeyStorageMigration.runMigrationIfNeeded() }
+                // Load emoji list for current account before building wallet data,
+                // otherwise getEmojiByAddress() sees an empty list and re-randomizes emojis.
+                AccountEmojiManager.init()
                 // Update Accounts info with WalletDataManager
                 WalletDataManager.updateWalletData()
 

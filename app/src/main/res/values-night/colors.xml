@@ -55,6 +55,7 @@
     <color name="warning2">#C44536</color>
     <color name="warning5">#261C1B</color>
     <color name="deep_bg">#000000</color>
+    <color name="deep_bg_dialog">#121212</color>
 
     <color name="bg_icon">#333333</color>
 

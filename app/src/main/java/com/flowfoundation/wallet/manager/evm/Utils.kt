@@ -5,7 +5,6 @@ import com.flowfoundation.wallet.BuildConfig
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.app.networkChainId
 import com.flowfoundation.wallet.manager.app.networkRPCUrl
-import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.config.isWrapEOATxWithCadence
 import com.flowfoundation.wallet.manager.flowjvm.EVM_GAS_LIMIT
 import com.flowfoundation.wallet.manager.flowjvm.cadenceGetNonce
@@ -49,7 +48,7 @@ import wallet.core.jni.proto.Ethereum
 import wallet.core.jni.Hash
 import java.math.BigInteger
 
-suspend fun loadInitJS(): String {
+fun loadInitJS(): String {
     // Refresh account data first
     DAppEVMConnectionManager.refreshAccounts()
 
@@ -166,7 +165,9 @@ Unit) {
             // Parse transaction parameters
             val chainId = networkChainId().toBigInteger()
             val valueAmount = Numeric.decodeQuantity(transaction.value ?: "0x0")
-            val gasLimit = Numeric.decodeQuantity(transaction.gas ?: "0x5208")
+            val gasLimit = transaction.gas?.let {
+                Numeric.decodeQuantity(it)
+            } ?: EVM_GAS_LIMIT.toBigInteger()
 
             // Check for EIP-1559 parameters
             val maxFeePerGasStr = transaction.maxFeePerGas

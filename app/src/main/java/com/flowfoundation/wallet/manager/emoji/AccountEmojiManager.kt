@@ -85,7 +85,7 @@ object AccountEmojiManager {
         val filterEmojiList = getEmojiList().filter { emoji ->
             emoji.id !in idList
         }
-        return if(filterEmojiList.isEmpty()) Emoji.PENGUIN else filterEmojiList.random()
+        return if (filterEmojiList.isEmpty()) getEmojiList().random() else filterEmojiList.random()
     }
 
     fun changeEmojiInfo(userName: String, address: String, emojiId: Int, emojiName: String) {
@@ -142,11 +142,41 @@ object AccountEmojiManager {
 
         val usedIds = emojiList.map { it.emojiId }
         val available = getEmojiList().filter { it.id !in usedIds }
-        val emoji = if (available.isEmpty()) Emoji.PENGUIN else available.random()
+        val emoji = if (available.isEmpty()) getEmojiList().random() else available.random()
         val info = WalletEmojiInfo(address, emoji.id, emoji.defaultName)
         emojiList.add(info)
         AccountManager.updateWalletEmojiInfo(username, emojiList.toMutableList())
         return info
+    }
+
+    /**
+     * Remove emoji entries whose address is not in [validAddresses].
+     * This prevents stale entries from exhausting the 12-emoji pool.
+     */
+    @Synchronized
+    fun cleanStaleEntries(validAddresses: Set<String>) {
+        val before = accountEmojiList.size
+        accountEmojiList.removeAll { it.address !in validAddresses }
+        if (accountEmojiList.size != before) {
+            val username = AccountManager.userInfo()?.username ?: return
+            AccountManager.updateWalletEmojiInfo(username, accountEmojiList.toMutableList())
+        }
+    }
+
+    /**
+     * Remove emoji entries whose address is not in [validAddresses] from the given per-account list.
+     */
+    @Synchronized
+    fun cleanStaleEntriesForAccount(
+        validAddresses: Set<String>,
+        username: String,
+        emojiList: MutableList<WalletEmojiInfo>
+    ) {
+        val before = emojiList.size
+        emojiList.removeAll { it.address !in validAddresses }
+        if (emojiList.size != before) {
+            AccountManager.updateWalletEmojiInfo(username, emojiList.toMutableList())
+        }
     }
 
     fun clear() {

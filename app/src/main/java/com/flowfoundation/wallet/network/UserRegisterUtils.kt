@@ -19,6 +19,7 @@ import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.app.isMainnet
 import com.flowfoundation.wallet.manager.app.refreshChainNetworkSync
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
+import com.flowfoundation.wallet.manager.evm.COAVisibilityCache
 import com.flowfoundation.wallet.manager.evm.DAppEVMConnectionManager
 import com.flowfoundation.wallet.manager.key.AndroidKeystoreCryptoProvider
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
@@ -652,6 +653,7 @@ suspend fun clearUserCache() {
     StakingManager.clear()
     CryptoProviderManager.clear()
     cleanBackupMnemonicPreference()
+    COAVisibilityCache.clear()
     delay(1000)
 }
 

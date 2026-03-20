@@ -72,7 +72,7 @@ object EVMWalletManager {
     fun getEVMAddressByAddress(address: String): String? {
         val evmAddress = AccountManager.walletNodes()
             ?.filterIsInstance<FlowWallet>()
-            ?.firstOrNull { it.address == address }
+            ?.firstOrNull { it.address.equals(address, true) }
             ?.linkedWallets
             ?.filterIsInstance<COAWallet>()
             ?.firstOrNull()?.address
