@@ -148,15 +148,14 @@ object WalletManager {
                     selectedWalletAddressRef.set(currentNetworkFlowWallet.address)
                     updateSelectedWalletAddress(currentNetworkFlowWallet.address)
                 } else {
-                    // Check if currentSelected is a Flow Main account but NOT the one for the current network
-                    val isSelectedFlowMain = walletNodes.filterIsInstance<FlowWallet>()
-                        .any { it.address.equals(currentSelected, ignoreCase = true) }
+                    // Check if currentSelected is a Flow Main account on a different network
+                    val selectedFlowWallet = walletNodes.filterIsInstance<FlowWallet>()
+                        .firstOrNull { it.address.equals(currentSelected, ignoreCase = true) }
 
-                    if (isSelectedFlowMain) {
-                        if (!currentNetworkFlowWallet.address.equals(currentSelected, ignoreCase = true)) {
-                            selectedWalletAddressRef.set(currentNetworkFlowWallet.address)
-                            updateSelectedWalletAddress(currentNetworkFlowWallet.address)
-                        }
+                    if (selectedFlowWallet != null && !selectedFlowWallet.chainIdString.equals(currentNetwork, ignoreCase = true)) {
+                        logd(TAG, "Selected FlowWallet is on a different network (${selectedFlowWallet.chainIdString} vs $currentNetwork), switching to current network account: ${currentNetworkFlowWallet.address}")
+                        selectedWalletAddressRef.set(currentNetworkFlowWallet.address)
+                        updateSelectedWalletAddress(currentNetworkFlowWallet.address)
                     }
                 }
             }

@@ -185,7 +185,8 @@ fun DrawerLayoutCompose(drawer: DrawerLayout) {
                 toast(msgRes = R.string.copy_address_toast)
             },
             onAccountClick = { address ->
-                FlowLoadingDialog(context).show()
+                val loadingDialog = FlowLoadingDialog(context)
+                loadingDialog.show()
                 WalletManager.selectWalletAddress(address)
                 ioScope {
                     delay(200)
@@ -200,6 +201,7 @@ fun DrawerLayoutCompose(drawer: DrawerLayout) {
                     CryptoProviderManager.clear()
                     delay(1000)
                     uiScope {
+                        loadingDialog.dismiss()
                         MainActivity.relaunch(Env.getApp())
                     }
                 }
