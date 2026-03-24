@@ -7,8 +7,6 @@ import com.flowfoundation.wallet.cache.recentTransactionCache
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
-import com.flowfoundation.wallet.manager.evm.EVMWalletManager.isValidEVMAddress
-import com.flowfoundation.wallet.manager.evm.EVMWalletManager.toChecksumEVMAddress
 import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
@@ -101,33 +99,24 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
         ioScope {
             try {
                 val bridgeAccounts = mutableListOf<RNBridge.WalletAccount>()
-
-                // Get main wallet address - for hardware-backed keys, wallet() returns null,
-                // so we need to use selectedWalletAddress() as fallback
-                var mainAddress = WalletManager.getCurrentFlowWalletAddress()
-                if (mainAddress.isNullOrEmpty()) {
-                    // Hardware-backed key fallback: use the selected address
-                    mainAddress = WalletManager.selectedWalletAddress()
+                val currentAccount = AccountManager.get() ?: run {
+                    val emptyResponse = RNBridge.WalletAccountsResponse(accounts = emptyList())
+                    uiScope { promise.resolve(bridgeModelToWritableMap(emptyResponse)) }
+                    return@ioScope
                 }
-                val mainEmojiInfo = createEmojiInfo(mainAddress)
-                if (mainAddress.isNotEmpty()) {
-                    // For secure enclave COA accounts, check if main address has EVM capabilities
-                    // If it does, set type to EVM instead of MAIN
-                    // Check both evmAddressMap and getEVMAddress() since evmAddressMap might not be populated yet
-                    val mainAccountType = try {
-                        val isEVM = EVMWalletManager.isEVMWalletAddress(mainAddress) ||
-                            mainAddress.equals(EVMWalletManager.getEVMAddress(), ignoreCase = true) ||
-                            isValidEVMAddress(mainAddress)
-                        if (isEVM) {
-                            RNBridge.AccountType.EVM
-                        } else {
-                            RNBridge.AccountType.MAIN
-                        }
-                    } catch (e: Exception) {
-                        RNBridge.AccountType.MAIN
-                    }
 
-                    val mainAccount = RNBridge.WalletAccount(
+                val currentNetwork = com.flowfoundation.wallet.manager.app.chainNetWorkString()
+
+                // 1. Process FlowWallets (main account + linked wallets)
+                val flowWallets = currentAccount.walletNodes.filterIsInstance<FlowWallet>()
+                    .filter { it.chainIdString == currentNetwork }
+
+                flowWallets.forEach { flowWallet ->
+                    val mainAddress = flowWallet.address
+                    val mainEmojiInfo = createEmojiInfo(mainAddress)
+
+                    // Main account
+                    bridgeAccounts.add(RNBridge.WalletAccount(
                         id = "main",
                         name = mainEmojiInfo?.name ?: "Main Account",
                         address = mainAddress,
@@ -136,134 +125,75 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
                         parentAddress = null,
                         avatar = null,
                         isActive = isSelectedWalletAddress(mainAddress),
-                        type = mainAccountType,
+                        type = RNBridge.AccountType.MAIN,
                         balance = null,
                         nfts = null,
-                    )
-                    bridgeAccounts.add(mainAccount)
-                }
+                    ))
 
-                // Get child accounts
-                try {
-                    val childAccounts = WalletManager.childAccountList(mainAddress)
-                    childAccounts.forEach { childAccount ->
-                        val childAccountBridge = RNBridge.WalletAccount(
-                            id = "child_${childAccount.address}",
-                            name = childAccount.name,
-                            address = childAccount.address,
-                            emojiInfo = null,
-                            parentEmoji = mainEmojiInfo,
-                            parentAddress = mainAddress,
-                            avatar = childAccount.icon,
-                            isActive = isSelectedWalletAddress(childAccount.address),
-                            type = RNBridge.AccountType.CHILD,
-                            balance = null,
-                            nfts = null,
-                        )
-                        bridgeAccounts.add(childAccountBridge)
-                    }
-                } catch (e: Exception) {
-                    // Child accounts might not be available, continue without them
-                    println("Child accounts not available: ${e.message}")
-                }
-
-                // Get EVM address if available
-                // For Secure Type (hardware-backed keys), skip adding separate EVM account entry
-                // because the COA child account already represents the EVM account
-                var evmAddress: String? = null
-                val currentAccount = AccountManager.get()
-                val isSecureType = !currentAccount?.prefix.isNullOrBlank()
-
-                try {
-                    evmAddress = EVMWalletManager.getEVMAddress()
-                    if (!evmAddress.isNullOrEmpty()) {
-                        // Check if EVM address matches any child account address
-                        // If it does, don't add a separate EVM account entry (it's already represented as a child account)
-                        val childAccounts = WalletManager.childAccountList(mainAddress)
-                        val evmMatchesChildAccount = childAccounts.any {
-                            it.address.equals(evmAddress, ignoreCase = true)
-                        }
-
-                        // Only add EVM account entry if:
-                        // 1. Not Secure Type (Recovery Phrase flow), OR
-                        // 2. EVM address doesn't match any child account (shouldn't happen, but safety check)
-                        if (!isSecureType || !evmMatchesChildAccount) {
-                            val evmEmojiInfo = createEmojiInfo(evmAddress)
-
-                            val evmAccount = RNBridge.WalletAccount(
-                                id = "evm",
-                                name = evmEmojiInfo?.name ?: "EVM Account",
-                                address = evmAddress,
-                                parentAddress = mainAddress,
-                                emojiInfo = evmEmojiInfo,
-                                parentEmoji = mainEmojiInfo,
-                                avatar = null,
-                                isActive = isSelectedWalletAddress(evmAddress),
-                                type = RNBridge.AccountType.EVM,
-                                balance = null,
-                                nfts = null,
-                            )
-                            bridgeAccounts.add(evmAccount)
+                    // Linked wallets (COA/EVM + Child)
+                    flowWallet.linkedWallets.forEach { linkedWallet ->
+                        when (linkedWallet) {
+                            is COAWallet -> {
+                                val evmEmojiInfo = createEmojiInfo(linkedWallet.address)
+                                bridgeAccounts.add(RNBridge.WalletAccount(
+                                    id = "evm",
+                                    name = evmEmojiInfo?.name ?: linkedWallet.name,
+                                    address = linkedWallet.address,
+                                    parentAddress = mainAddress,
+                                    emojiInfo = evmEmojiInfo,
+                                    parentEmoji = mainEmojiInfo,
+                                    avatar = null,
+                                    isActive = isSelectedWalletAddress(linkedWallet.address),
+                                    type = RNBridge.AccountType.EVM,
+                                    balance = null,
+                                    nfts = null,
+                                ))
+                            }
+                            is ChildWallet -> {
+                                bridgeAccounts.add(RNBridge.WalletAccount(
+                                    id = "child_${linkedWallet.address}",
+                                    name = linkedWallet.name,
+                                    address = linkedWallet.address,
+                                    emojiInfo = null,
+                                    parentEmoji = mainEmojiInfo,
+                                    parentAddress = mainAddress,
+                                    avatar = linkedWallet.icon,
+                                    isActive = isSelectedWalletAddress(linkedWallet.address),
+                                    type = RNBridge.AccountType.CHILD,
+                                    balance = null,
+                                    nfts = null,
+                                ))
+                            }
                         }
                     }
-                } catch (e: Exception) {
-                    // EVM account might not be available, continue without it
-                    println("EVM account not available: ${e.message}")
                 }
 
-                // Get EOA addresses only if they're different from EVM address
-                // For Secure Type (COA) accounts, EOA and EVM addresses are the same,
-                // so we should only show the EVM account to avoid duplicate "EOA" chip
-                try {
-                    val isSecureTypeAccount = !currentAccount?.prefix.isNullOrBlank()
-                    val eoaWallets = AccountManager.walletNodes()
-                        ?.filterIsInstance<EOAWallet>() ?: emptyList()
+                // 2. Process EOAWallets (already correctly populated by WalletDataManager based on canDeriveEoa)
+                currentAccount.walletNodes.filterIsInstance<EOAWallet>().forEach { eoaWallet ->
+                    val eoaAddress = eoaWallet.address
+                    if (eoaAddress.isEmpty()) return@forEach
 
-                    for (eoaWallet in eoaWallets) {
-                        val eoaAddress = eoaWallet.address
-                        if (eoaAddress.isEmpty()) continue
-
-                        // Only add EOA if:
-                        // 1. EOA address is different from EVM address, AND
-                        // 2. Account is NOT Secure Type (Recovery Phrase account)
-                        val isDifferentFromEVM = evmAddress == null ||
-                            !eoaAddress.equals(evmAddress, ignoreCase = true)
-
-                        if (isDifferentFromEVM && !isSecureTypeAccount) {
-                            val eoaEmojiInfo = createEmojiInfo(eoaAddress)
-                            val eoaAccount = RNBridge.WalletAccount(
-                                id = "eoa_${eoaAddress}",
-                                name = eoaEmojiInfo?.name ?: "EOA Account",
-                                address = eoaAddress,
-                                parentAddress = mainAddress,
-                                emojiInfo = eoaEmojiInfo,
-                                parentEmoji = mainEmojiInfo,
-                                avatar = null,
-                                isActive = isSelectedWalletAddress(eoaAddress),
-                                type = RNBridge.AccountType.EOA,
-                                balance = null,
-                                nfts = null,
-                            )
-                            bridgeAccounts.add(eoaAccount)
-                        }
-                    }
-                } catch (e: Exception) {
-                    // EOA accounts might not be available, continue without them
-                    println("EOA accounts not available: ${e.message}")
+                    val eoaEmojiInfo = createEmojiInfo(eoaAddress)
+                    bridgeAccounts.add(RNBridge.WalletAccount(
+                        id = "eoa_${eoaAddress}",
+                        name = eoaEmojiInfo?.name ?: "EOA Account",
+                        address = eoaAddress,
+                        parentAddress = null,
+                        emojiInfo = eoaEmojiInfo,
+                        parentEmoji = null,
+                        avatar = null,
+                        isActive = isSelectedWalletAddress(eoaAddress),
+                        type = RNBridge.AccountType.EOA,
+                        balance = null,
+                        nfts = null,
+                    ))
                 }
 
                 val response = RNBridge.WalletAccountsResponse(accounts = bridgeAccounts)
-                val result = bridgeModelToWritableMap(response)
-
-                uiScope {
-                    promise.resolve(result)
-                }
+                uiScope { promise.resolve(bridgeModelToWritableMap(response)) }
             } catch (e: Exception) {
                 val emptyResponse = RNBridge.WalletAccountsResponse(accounts = emptyList())
-                val result = bridgeModelToWritableMap(emptyResponse)
-                uiScope {
-                    promise.resolve(result)
-                }
+                uiScope { promise.resolve(bridgeModelToWritableMap(emptyResponse)) }
             }
         }
     }
@@ -478,36 +408,33 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
                 }
             }
 
-            // Add EOA addresses only for currently selected wallet
-            val mainAddress = flowWallets.firstOrNull()?.address
-            if (mainAddress != null && isSelectedWalletAddress(mainAddress)) {
-                try {
-                    val eoaWallets = AccountManager.walletNodes()
-                        ?.filterIsInstance<EOAWallet>() ?: emptyList()
+            // Add EOA addresses from account's walletNodes
+            // EOAWallet is only present when canDeriveEoa=true (populated by WalletDataManager)
+            try {
+                val eoaWallets = account.walletNodes.filterIsInstance<EOAWallet>()
 
-                    for (eoaWallet in eoaWallets) {
-                        val eoaAddress = eoaWallet.address
-                        if (eoaAddress.isEmpty()) continue
+                for (eoaWallet in eoaWallets) {
+                    val eoaAddress = eoaWallet.address
+                    if (eoaAddress.isEmpty()) continue
 
-                        val eoaEmojiInfo = createEmojiInfo(eoaAddress)
-                        val eoaAccount = RNBridge.WalletAccount(
-                            id = "eoa_${eoaAddress}",
-                            name = eoaEmojiInfo?.name ?: "EVM Account (EOA)",
-                            address = eoaAddress,
-                            parentAddress = mainAddress,
-                            emojiInfo = eoaEmojiInfo,
-                            parentEmoji = null,
-                            avatar = null,
-                            isActive = isSelectedWalletAddress(eoaAddress),
-                            type = RNBridge.AccountType.EOA,
-                            balance = null,
-                            nfts = null,
-                        )
-                        bridgeAccounts.add(eoaAccount)
-                    }
-                } catch (e: Exception) {
-                    logw(TAG, "createWalletProfileFromAccount() - EOA accounts not available: ${e.message}")
+                    val eoaEmojiInfo = createEmojiInfo(eoaAddress)
+                    val eoaAccount = RNBridge.WalletAccount(
+                        id = "eoa_${eoaAddress}",
+                        name = eoaEmojiInfo?.name ?: "EVM Account (EOA)",
+                        address = eoaAddress,
+                        parentAddress = null,
+                        emojiInfo = eoaEmojiInfo,
+                        parentEmoji = null,
+                        avatar = null,
+                        isActive = isSelectedWalletAddress(eoaAddress),
+                        type = RNBridge.AccountType.EOA,
+                        balance = null,
+                        nfts = null,
+                    )
+                    bridgeAccounts.add(eoaAccount)
                 }
+            } catch (e: Exception) {
+                logw(TAG, "createWalletProfileFromAccount() - EOA accounts not available: ${e.message}")
             }
 
             // Create wallet profile

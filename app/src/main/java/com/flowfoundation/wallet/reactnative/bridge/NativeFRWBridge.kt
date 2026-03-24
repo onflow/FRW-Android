@@ -431,7 +431,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         }
     }
 
-    override fun ethSign(hexData: String?, promise: Promise?) = walletHandler.ethSign(hexData, promise)
+    override fun ethSign(hexData: String?, address: String?, promise: Promise?) = walletHandler.ethSign(hexData, address, promise)
 
     override fun listenTransaction(txid: String) = walletHandler.listenTransaction(txid)
 
