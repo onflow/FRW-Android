@@ -173,21 +173,34 @@ class ProfileSwitchViewModel : ViewModel() {
             flowWallet.linkedWallets.filterIsInstance<COAWallet>().forEach { coaWallet ->
                 val coaAddress = coaWallet.address
 
-                // Only show COA if it has balance or NFTs
-                val coaBalance = balanceMap[coaAddress]
-                val hasBalance = coaBalance != null && coaBalance > BigDecimal.ZERO
-                var hasNFTs = false
+                // Only show COA if it has balance, EVM tokens, or NFTs
+                val shouldShowCoa = run {
+                    // 1. Check FLOW balance
+                    val coaBalance = balanceMap[coaAddress]
+                    if (coaBalance != null && coaBalance > BigDecimal.ZERO) return@run true
 
-                if (!hasBalance) {
+                    // 2. Check EVM token balances (USDC, WETH, etc.)
+                    try {
+                        val tokenResponse = service.getEVMTokenList(coaAddress, null, null)
+                        val hasEvmTokens = tokenResponse.data?.any { token ->
+                            token.balance?.toBigDecimalOrNull()?.let { it > BigDecimal.ZERO } == true
+                        } == true
+                        if (hasEvmTokens) return@run true
+                    } catch (_: Exception) {
+                        // Ignore EVM token API errors
+                    }
+
+                    // 3. Check NFT collections
                     try {
                         val nftResponse = service.getEVMNFTCollections(coaAddress)
                         val totalNftCount = nftResponse.data?.sumOf { it.count ?: 0 } ?: 0
-                        hasNFTs = nftResponse.data?.isNotEmpty() == true && totalNftCount > 0
-                    } catch (e: Exception) {
+                        if (nftResponse.data?.isNotEmpty() == true && totalNftCount > 0) return@run true
+                    } catch (_: Exception) {
                         // Ignore NFT API errors
                     }
+
+                    false
                 }
-                val shouldShowCoa = hasBalance || hasNFTs
 
                 if (shouldShowCoa) {
                     // Add if not present

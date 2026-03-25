@@ -305,7 +305,7 @@
         android:id="@+id/tv_token_count"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
+        android:layout_marginStart="16dp"
         android:layout_marginTop="24dp"
         android:fontFamily="@font/inter"
         android:textColor="@color/text_3"

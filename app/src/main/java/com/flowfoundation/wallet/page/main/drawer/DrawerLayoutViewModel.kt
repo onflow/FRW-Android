@@ -282,9 +282,9 @@ class DrawerLayoutViewModel : ViewModel(), OnAccountUpdate, OnEmojiUpdate {
                 if (shouldShow) {
                     // Add EVM address to linked accounts
                     val currentAccounts = _accounts.value.toMutableList()
-                    val walletAccount = currentAccounts.find { it.address == walletAddress }
+                    val walletAccount = currentAccounts.find { it.address.equals(walletAddress, true) }
                     walletAccount?.let { account ->
-                        val alreadyExists = account.linkedAccounts.any { it.address == evmAddress }
+                        val alreadyExists = account.linkedAccounts.any { it.address.equals(evmAddress, true) }
                         if (!alreadyExists) {
                             val emojiInfo = AccountEmojiManager.getEmojiByAddress(evmAddress)
                             val updatedLinkedAccounts = account.linkedAccounts.toMutableList()
@@ -299,7 +299,7 @@ class DrawerLayoutViewModel : ViewModel(), OnAccountUpdate, OnEmojiUpdate {
                                 )
                             )
                             val updatedAccount = account.copy(linkedAccounts = updatedLinkedAccounts)
-                            val accountIndex = currentAccounts.indexOfFirst { it.address == walletAddress }
+                            val accountIndex = currentAccounts.indexOfFirst { it.address.equals(walletAddress, ignoreCase = true) }
                             if (accountIndex >= 0) {
                                 currentAccounts[accountIndex] = updatedAccount
                                 _accounts.value = currentAccounts
@@ -310,14 +310,14 @@ class DrawerLayoutViewModel : ViewModel(), OnAccountUpdate, OnEmojiUpdate {
                 } else {
                     // Remove EVM address from linked accounts if it no longer has assets
                     val currentAccounts = _accounts.value.toMutableList()
-                    val walletAccount = currentAccounts.find { it.address == walletAddress }
+                    val walletAccount = currentAccounts.find { it.address.equals(walletAddress, ignoreCase = true) }
                     walletAccount?.let { account ->
-                        val existingLinkedAccount = account.linkedAccounts.find { it.address == evmAddress }
+                        val existingLinkedAccount = account.linkedAccounts.find { it.address.equals(evmAddress, ignoreCase = true) }
                         if (existingLinkedAccount != null) {
                             val updatedLinkedAccounts = account.linkedAccounts.toMutableList()
-                            updatedLinkedAccounts.removeAll { it.address == evmAddress }
+                            updatedLinkedAccounts.removeAll { it.address.equals(evmAddress, ignoreCase = true) }
                             val updatedAccount = account.copy(linkedAccounts = updatedLinkedAccounts)
-                            val accountIndex = currentAccounts.indexOfFirst { it.address == walletAddress }
+                            val accountIndex = currentAccounts.indexOfFirst { it.address.equals(walletAddress, ignoreCase = true) }
                             if (accountIndex >= 0) {
                                 currentAccounts[accountIndex] = updatedAccount
                                 _accounts.value = currentAccounts
