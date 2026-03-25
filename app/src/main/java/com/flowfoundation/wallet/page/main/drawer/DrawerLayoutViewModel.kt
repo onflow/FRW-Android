@@ -163,12 +163,21 @@ class DrawerLayoutViewModel : ViewModel(), OnAccountUpdate, OnEmojiUpdate {
             // Use AccountManager (already updated before listeners fire) rather than
             // firebaseUid() (reads Firebase.auth.currentUser which can still be anonymous
             // during the auth transition window of an account switch).
+            // Always keep the currently selected account visible to avoid broken UI state.
             val userId = AccountManager.get()?.wallet?.id
             val filteredAccounts = if (userId != null) {
                 AccountVisibilityManager.filterVisibleAccounts(
                     userId,
                     accounts
-                ) { it.address }
+                ) { it.address }.let { visible ->
+                    // Ensure the currently selected account is always present
+                    if (visible.none { it.address.equals(selectedAddress, ignoreCase = true) }) {
+                        val selected = accounts.find { it.address.equals(selectedAddress, ignoreCase = true) }
+                        if (selected != null) visible + selected else visible
+                    } else {
+                        visible
+                    }
+                }
             } else {
                 accounts
             }
