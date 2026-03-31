@@ -22,6 +22,7 @@ import com.flowfoundation.wallet.page.profile.subpage.wallet.ChildAccountCollect
 import com.flowfoundation.wallet.page.receive.ReceiveActivity
 import com.flowfoundation.wallet.reactnative.ReactNativeActivity
 import com.flowfoundation.wallet.manager.app.isTestnet
+import com.flowfoundation.wallet.network.explorerUrl
 import com.flowfoundation.wallet.reactnative.bridge.RNBridge
 import com.flowfoundation.wallet.reactnative.bridge.toRNBridgeTokenModel
 import com.flowfoundation.wallet.page.staking.openStakingPage
@@ -135,9 +136,9 @@ class TokenDetailPresenter(
         binding.tvContractAddress.paintFlags = binding.tvContractAddress.paintFlags or Paint.UNDERLINE_TEXT_FLAG
         binding.tvContractAddress.setOnClickListener {
             val url = if (token.tokenType == FungibleTokenType.FLOW || token.isFlowToken()) {
-                "https://www.flowscan.io/ft/token/${token.tokenIdentifier()}"
+                explorerUrl(id = token.tokenIdentifier(), type = "token", chain = "flow")
             } else {
-                "https://evm.flowscan.io/token/${token.tokenAddress()}"
+                explorerUrl(id = token.tokenAddress(), type = "token", chain = "evm")
             }
             openBrowser(activity, url)
         }

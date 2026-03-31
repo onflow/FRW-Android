@@ -6,7 +6,7 @@ import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
-import com.flowfoundation.wallet.manager.app.isTestnet
+import com.flowfoundation.wallet.network.explorerUrl
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.safeRun
 
@@ -28,7 +28,6 @@ class NotificationDispatchActivity : BaseActivity() {
         }
 
         finish()
-        logd("xxx", "data: $data")
     }
 
     override fun finish() {
@@ -44,8 +43,6 @@ class NotificationDispatchActivity : BaseActivity() {
     }
 
     private fun String.toFlowScanTransactionUrl(): String {
-        return if (isTestnet()) {
-            "https://testnet.flowscan.io/tx/$this"
-        } else "https://flowscan.io/tx/$this"
+        return explorerUrl(id = this, type = "tx", chain = "flow")
     }
 }
