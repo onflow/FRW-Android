@@ -332,6 +332,9 @@
     <string name="connected_site">Connected Site</string>
     <string name="currency">Currency</string>
     <string name="stake_flow_banner_title">Stake Flow and Earn Rewards</string>
+    <string name="earn">Earn</string>
+    <string name="earn_banner_subtitle">Don\'t miss out on $1,203 this year</string>
+    <string name="earn_banner_title">Earn 15% APY on Flow Vaults</string>
     <string name="stake_flow">Stake Flow</string>
     <string name="stake_guide_header1">Earn Rewards When You</string>
     <string name="stake_guide_header2">Stake Your Flow</string>

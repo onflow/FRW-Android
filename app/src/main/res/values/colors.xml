@@ -234,4 +234,5 @@
 
     <color name="bg_card">#F2F2F7</color>
     <color name="icon">#767676</color>
+    <color name="earn_green">#00EF8B</color>
 </resources>

@@ -379,6 +379,42 @@
         </FrameLayout>
 
         <FrameLayout
+            android:id="@+id/fl_earn"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_marginEnd="12dp"
+            android:background="@drawable/bg_round_corner"
+            android:backgroundTint="@color/text_4"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/fl_manage_token"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:visibility="visible">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/inter_medium"
+                    android:text="@string/earn"
+                    android:textColor="@color/text_3"
+                    android:textSize="16sp" />
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginStart="10dp"
+                    android:src="@drawable/ic_earn_header" />
+            </LinearLayout>
+        </FrameLayout>
+
+        <FrameLayout
             android:id="@+id/fl_manage_token"
             android:layout_width="40dp"
             android:layout_height="40dp"

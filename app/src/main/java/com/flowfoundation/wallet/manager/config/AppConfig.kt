@@ -58,6 +58,8 @@ object AppConfig {
 
     fun canClaimInbox() = isDev() || isTesting() || (config().getFeatures().cadenceInbox ?: false)
 
+    fun showEarnEntrance() = isDev() || isTesting() || (config().getFeatures().vaultEntrance ?: false)
+
     fun addressRegistry(network: Int): Map<String, String> {
         return when (network) {
             NETWORK_TESTNET -> flowAddressRegistry().testnet
@@ -236,7 +238,9 @@ private data class Features(
     @SerializedName("create_new_account")
     val createNewAccount: Boolean?,
     @SerializedName("cadence_inbox")
-    val cadenceInbox: Boolean?
+    val cadenceInbox: Boolean?,
+    @SerializedName("vault_entrance")
+    val vaultEntrance: Boolean?
 )
 
 private data class Payer(

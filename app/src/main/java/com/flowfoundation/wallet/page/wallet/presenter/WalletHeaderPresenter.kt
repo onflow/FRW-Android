@@ -101,6 +101,7 @@ class WalletHeaderPresenter(
                 flManageToken.gone()
                 flAddToken.gone()
                 flInbox.gone()
+                flEarn.gone()
             } else {
                 flAddToken.setOnClickListener {
                     if (WalletManager.isEVMAccountSelected()) {
@@ -127,6 +128,10 @@ class WalletHeaderPresenter(
                 cvBuy.setVisible(WalletManager.isEVMAccountSelected().not() && AppConfig.isInAppBuy())
                 cvSwap.setVisible(AppConfig.isInAppSwap())
                 flAddToken.visible()
+                flEarn.setVisible(AppConfig.showEarnEntrance())
+                flEarn.setOnClickListener {
+                    activity?.let { openBrowser(it, "https://earn.flow.com") }
+                }
             }
 
             ivHide.setOnClickListener {

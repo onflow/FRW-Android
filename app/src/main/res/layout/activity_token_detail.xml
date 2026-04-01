@@ -349,6 +349,10 @@
                 </FrameLayout>
             </androidx.cardview.widget.CardView>
 
+            <include
+                android:id="@+id/earn_banner_wrapper"
+                layout="@layout/layout_earn_banner"/>
+
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/cl_verified_tip"
                 android:layout_width="match_parent"
@@ -358,7 +362,7 @@
                 android:paddingVertical="10dp"
                 android:paddingHorizontal="16dp"
                 android:visibility="visible"
-                app:layout_constraintTop_toBottomOf="@id/top_card">
+                app:layout_constraintTop_toBottomOf="@id/earn_banner_wrapper">
 
                 <androidx.constraintlayout.utils.widget.ImageFilterView
                     android:id="@+id/ic_verified_warning"

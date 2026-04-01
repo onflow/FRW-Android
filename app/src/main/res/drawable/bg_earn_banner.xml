@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Border gradient: top rgba(earn_green, 0.4) → bottom transparent -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:startColor="#6600EF8B"
+                android:endColor="#0000EF8B"
+                android:angle="270" />
+            <corners android:radius="16dp" />
+        </shape>
+    </item>
+    <!-- Fill gradient: bottom #191919 → top subtle green tint -->
+    <!-- CSS: linear-gradient(0deg, #191919 0%, #00EF8B 661.74%) -->
+    <!-- At 100% top the color is ~15% interpolated: #15392A -->
+    <item
+        android:left="1dp"
+        android:top="1dp"
+        android:right="1dp"
+        android:bottom="1dp">
+        <shape android:shape="rectangle">
+            <gradient
+                android:startColor="#15392A"
+                android:endColor="#191919"
+                android:angle="270" />
+            <corners android:radius="15dp" />
+        </shape>
+    </item>
+</layer-list>

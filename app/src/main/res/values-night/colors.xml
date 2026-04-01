@@ -133,5 +133,6 @@
     <color name="surge_button_progress">#F97066</color> <!-- Keep progress red -->
 
     <color name="bg_card">#1A1A1A</color>
+    <color name="earn_green">#00EF8B</color>
 </resources>
 

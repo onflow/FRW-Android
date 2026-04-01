@@ -124,6 +124,12 @@ class TokenDetailPresenter(
                 )
             }
         }
+
+        binding.earnBannerWrapper.root.setVisible(AppConfig.showEarnEntrance())
+        binding.earnBannerWrapper.root.setOnClickListener {
+            openBrowser(activity, "https://earn.flow.com")
+        }
+
         bindAccessible(token)
         bindStorageInfo(token)
         bindVerifiedInfo(token)
