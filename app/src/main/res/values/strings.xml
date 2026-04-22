@@ -830,4 +830,5 @@
     <string name="confirm_copy_address_tips">You have copied an EVM address on the Flow network, please make sure you only send assets on the Flow network to this address otherwise they will be lost.</string>
     <string name="evm_on_flow_address">EVM on Flow address</string>
     <string name="recover_profile">Recover profile</string>
+    <string name="webview_unavailable">Android System WebView is unavailable on this device. Please install or enable it from the Play Store and try again.</string>
 </resources>
