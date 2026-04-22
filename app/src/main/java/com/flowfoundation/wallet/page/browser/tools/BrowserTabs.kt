@@ -11,6 +11,7 @@ import com.flowfoundation.wallet.page.browser.widgets.LilicoWebView
 import com.flowfoundation.wallet.page.window.WindowFrame
 import com.flowfoundation.wallet.utils.extensions.removeFromParent
 import com.flowfoundation.wallet.utils.extensions.setVisible
+import com.flowfoundation.wallet.utils.loge
 import java.util.*
 
 private val tabs = mutableListOf<BrowserTab>()
@@ -24,6 +25,7 @@ fun popBrowserTab(tabId: String) {
     tab.webView.saveRecentRecord()
 
     webViewContainer.removeWebView(tab.webView)
+    tab.webView.destroyWebView()
 
     if (tabs.isEmpty()) {
         releaseBrowser()
@@ -72,6 +74,11 @@ fun newAndPushBrowserTab(url: String? = null): BrowserTab? {
 }
 
 fun clearBrowserTabs() {
+    // Destroy each WebView before dropping the references. Without this the
+    // chromium-side resources (renderer process, GPU buffers, JS heap) stay
+    // alive until the GC happens to collect the wrapper, which is a major
+    // contributor to the OOM reports filed against ExploreFragment.
+    tabs.forEach { runCatching { it.webView.destroyWebView() }.onFailure { loge(it) } }
     tabs.clear()
 }
 
@@ -98,6 +105,23 @@ private fun ViewGroup.removeWebView(webView: WebView) {
 
 private fun cleanCallbacks() {
     tabs.forEach { it.webView.setWebViewCallback(null) }
+}
+
+/**
+ * Standard cleanup sequence recommended by the Android WebView team. Skipping
+ * any of these steps tends to leave the renderer process or the chromium JS
+ * heap allocated, which shows up later as an OOM in an unrelated allocation.
+ */
+private fun LilicoWebView.destroyWebView() {
+    runCatching {
+        stopLoading()
+        setWebViewCallback(null)
+        loadUrl("about:blank")
+        clearHistory()
+        removeFromParent()
+        removeAllViews()
+        destroy()
+    }.onFailure { loge(it) }
 }
 
 class BrowserTab(
