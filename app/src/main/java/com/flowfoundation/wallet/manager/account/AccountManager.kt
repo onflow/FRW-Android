@@ -132,6 +132,26 @@ object AccountManager {
                 // Update Accounts info with WalletDataManager
                 WalletDataManager.updateWalletData()
 
+                // Legacy Keystore discovery performs network I/O for locally known addresses.
+                // Keep it off the initialization path, then publish all recovered mappings once.
+                ioScope {
+                    val discovery = KeyStoreMigrationManager.discoverOrphanedKeystoreKeys()
+                    val publication = applyRecoveredKeystoreKeys(discovery.matches)
+                    if (publication.updatedAccountCount > 0) {
+                        logd(
+                            TAG,
+                            "Recovered Keystore mappings for " +
+                                "${publication.updatedAccountCount} account(s)"
+                        )
+                    }
+                    discovery.failures.forEach { failure ->
+                        loge(
+                            TAG,
+                            "Keystore recovery incomplete for ${failure.target}: ${failure.message}"
+                        )
+                    }
+                }
+
             } catch (e: Exception) {
                 loge(TAG, "AccountManager initialization failed: $e")
                 ErrorReporter.reportWithMixpanel(AccountError.INIT_FAILED, e)
@@ -364,6 +384,7 @@ object AccountManager {
         }
     }
 
+    @Synchronized
     fun updateAccountList(accountList: List<Account>) {
         if (accountList.isEmpty()) return
 
@@ -371,10 +392,15 @@ object AccountManager {
         accountList.forEach { newAccount ->
             val index = accounts.indexOfFirst { it.userInfo.username == newAccount.userInfo.username }
             if (index != -1) {
-                accounts[index] = newAccount
-                if (currentAccount?.userInfo?.username == newAccount.userInfo.username) {
-                    currentAccount = newAccount
-                    dispatchListeners(newAccount)
+                // Wallet refreshes must not overwrite a local custody mapping recovered in
+                // parallel from Android Keystore.
+                val mergedAccount = newAccount.copy(
+                    prefix = accounts[index].prefix ?: newAccount.prefix
+                )
+                accounts[index] = mergedAccount
+                if (currentAccount?.userInfo?.username == mergedAccount.userInfo.username) {
+                    currentAccount = mergedAccount
+                    dispatchListeners(mergedAccount)
                 }
                 hasChanges = true
             }
@@ -385,6 +411,128 @@ object AccountManager {
             dispatchListListeners(accounts)
         }
     }
+
+    internal data class RecoveryPublication(
+        val updatedAccountCount: Int,
+        val unresolvedMatches: List<KeyStoreMigrationManager.RecoveryMatch>,
+    )
+
+    /**
+     * Applies discovery results to existing real accounts and publishes one accumulated snapshot.
+     * The scanner never mutates account state itself.
+     */
+    internal fun applyRecoveredKeystoreKeys(
+        matches: List<KeyStoreMigrationManager.RecoveryMatch>,
+    ): RecoveryPublication {
+        if (matches.isEmpty()) {
+            return RecoveryPublication(0, emptyList())
+        }
+
+        data class ResolvedAccount(
+            val index: Int,
+            val account: Account,
+            val uid: String,
+            val prefix: String,
+        )
+
+        val publicationState = synchronized(this) {
+            val unresolved = matches.toMutableSet()
+            val resolved = accounts.mapIndexedNotNull { index, account ->
+                val addresses = KeyStoreMigrationManager.locallyKnownFlowAddresses(account)
+                    .mapTo(linkedSetOf()) { address ->
+                        KeyStoreMigrationManager.normalizeAddress(address)
+                    }
+                val accountMatches = matches.filter { match ->
+                    KeyStoreMigrationManager.normalizeAddress(match.address) in addresses
+                }
+                if (accountMatches.isEmpty()) return@mapIndexedNotNull null
+
+                val uid = account.wallet?.id?.takeIf { it.isNotBlank() }
+                if (uid == null) return@mapIndexedNotNull null
+
+                val candidatePrefixes = accountMatches.map { it.prefix }.distinct()
+                val selectedPrefix = when {
+                    account.prefix in candidatePrefixes -> account.prefix
+                    candidatePrefixes.size == 1 -> candidatePrefixes.single()
+                    else -> null
+                } ?: return@mapIndexedNotNull null
+
+                unresolved.removeAll(accountMatches.toSet())
+                ResolvedAccount(index, account, uid, selectedPrefix)
+            }
+
+            val recoveredUids = resolved.mapTo(linkedSetOf()) { it.uid }
+            val newPrefixes = userPrefixes
+                .filterNot { it.userId in recoveredUids }
+                .toMutableList()
+                .apply {
+                    addAll(resolved.map { UserPrefix(it.uid, it.prefix) })
+                }
+
+            var updatedAccountCount = 0
+            var activeAccountUpdate: Account? = null
+            resolved.forEach { recovered ->
+                val mappingWasComplete = recovered.account.prefix == recovered.prefix &&
+                    userPrefixes.count {
+                        it.userId == recovered.uid && it.prefix == recovered.prefix
+                    } == 1 &&
+                    userPrefixes.none {
+                        it.userId == recovered.uid && it.prefix != recovered.prefix
+                    }
+                if (!mappingWasComplete) updatedAccountCount++
+
+                if (recovered.account.prefix != recovered.prefix) {
+                    val updated = recovered.account.copy(prefix = recovered.prefix)
+                    accounts[recovered.index] = updated
+                    if (currentAccount?.wallet?.id == recovered.uid) {
+                        currentAccount = updated
+                        activeAccountUpdate = updated
+                    }
+                }
+            }
+
+            val prefixStateChanged = newPrefixes != userPrefixes
+            if (prefixStateChanged) {
+                userPrefixes.clear()
+                userPrefixes.addAll(newPrefixes)
+            }
+
+            val stateChanged = updatedAccountCount > 0 || prefixStateChanged
+            RecoveryPublicationState(
+                accountSnapshot = accounts.toList(),
+                prefixSnapshot = userPrefixes.toList(),
+                activeAccountUpdate = activeAccountUpdate,
+                updatedAccountCount = updatedAccountCount,
+                unresolvedMatches = unresolved.toList(),
+                stateChanged = stateChanged,
+            )
+        }
+
+        if (publicationState.stateChanged) {
+            AccountCacheManager.cache(
+                Accounts().apply { addAll(publicationState.accountSnapshot) }
+            )
+            UserPrefixCacheManager.cache(
+                UserPrefixes().apply { addAll(publicationState.prefixSnapshot) }
+            )
+            publicationState.activeAccountUpdate?.let(::dispatchListeners)
+            dispatchListListeners(publicationState.accountSnapshot)
+        }
+
+        return RecoveryPublication(
+            updatedAccountCount = publicationState.updatedAccountCount,
+            unresolvedMatches = publicationState.unresolvedMatches,
+        )
+    }
+
+    private data class RecoveryPublicationState(
+        val accountSnapshot: List<Account>,
+        val prefixSnapshot: List<UserPrefix>,
+        val activeAccountUpdate: Account?,
+        val updatedAccountCount: Int,
+        val unresolvedMatches: List<KeyStoreMigrationManager.RecoveryMatch>,
+        val stateChanged: Boolean,
+    )
 
     fun addListener(callback: OnAccountUpdate) {
         uiScope { listeners.add(WeakReference(callback)) }
@@ -834,4 +982,3 @@ interface OnAccountListUpdate {
 interface OnUserInfoReload {
     fun onUserInfoReload()
 }
-
