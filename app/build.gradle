@@ -79,12 +79,12 @@ def verNameInternal = "i${vNum}"
 def verNameRelease = "r${vNum}"
 
 android {
-    compileSdk 35
+    compileSdk rootProject.ext.compileSdkVersion
 
     defaultConfig {
         applicationId "com.flowfoundation.wallet"
         minSdk 28
-        targetSdk 35
+        targetSdk rootProject.ext.targetSdkVersion
         versionCode vCode as Integer
         versionName vName
 
