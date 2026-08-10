@@ -6,7 +6,7 @@
   android:layout_height="wrap_content"
   android:minHeight="500dp"
   android:background="@drawable/bg_top_radius_16dp"
-  android:backgroundTint="@color/deep_bg"
+  android:backgroundTint="@color/deep_bg_dialog"
   android:padding="24dp">
 
   <TextView

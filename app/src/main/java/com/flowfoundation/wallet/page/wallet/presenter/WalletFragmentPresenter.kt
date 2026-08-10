@@ -84,6 +84,8 @@ class WalletFragmentPresenter(
         model.data?.let {
             reportEvent("wallet_coin_list_loaded", mapOf("count" to it.size.toString()))
             adapter.setNewDiffData(it)
+            binding.shimmerCoinList.stopShimmer()
+            binding.shimmerCoinList.gone()
             binding.refreshLayout.isRefreshing = false
             bindUserInfo()
         }

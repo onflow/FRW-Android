@@ -31,7 +31,7 @@ import com.flowfoundation.wallet.utils.listeners.SimpleTextWatcher
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.toast
-import com.instabug.library.Instabug
+import ai.luciq.library.Luciq
 import org.json.JSONObject
 
 
@@ -122,8 +122,8 @@ class PrivateKeyStoreInfoFragment: Fragment() {
             // Set up clickable error message
             setupErrorMessage()
 
-            Instabug.addPrivateViews(etJson)
-            Instabug.addPrivateViews(etPassword)
+            Luciq.addPrivateViews(etJson)
+            Luciq.addPrivateViews(etPassword)
         }
 
         // Observe keystore format errors from ViewModel

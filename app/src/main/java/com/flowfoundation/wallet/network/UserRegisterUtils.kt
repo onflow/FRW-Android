@@ -11,8 +11,7 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.firebase.auth.firebaseCustomLogin
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
-import com.flowfoundation.wallet.firebase.auth.isAnonymousSignIn
-import com.flowfoundation.wallet.firebase.auth.signInAnonymously
+import com.flowfoundation.wallet.firebase.auth.setToAnonymous
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
@@ -20,6 +19,7 @@ import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.app.isMainnet
 import com.flowfoundation.wallet.manager.app.refreshChainNetworkSync
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
+import com.flowfoundation.wallet.manager.evm.COAVisibilityCache
 import com.flowfoundation.wallet.manager.evm.DAppEVMConnectionManager
 import com.flowfoundation.wallet.manager.key.AndroidKeystoreCryptoProvider
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
@@ -58,9 +58,6 @@ import com.flowfoundation.wallet.utils.storeWalletPassword
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.updateChainNetworkPreference
 import com.flowfoundation.wallet.wallet.Wallet
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
-import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.nftco.flow.sdk.HashAlgorithm
@@ -527,16 +524,13 @@ private suspend fun registerOutblockUserInternal(
 }
 
 private fun registerFirebase(user: RegisterResponse, callback: (isSuccess: Boolean) -> Unit) {
-    FirebaseMessaging.getInstance().deleteToken()
-    Firebase.auth.currentUser?.delete()?.addOnCompleteListener {
-        logd(TAG, "delete user finish exception:${it.exception}")
-        if (it.isSuccessful) {
-            firebaseCustomLogin(user.data.customToken) { isSuccessful, _ ->
-                if (isSuccessful) {
-                    MixpanelManager.identifyUserProfile()
-                    callback(true)
-                } else callback(false)
-            }
+    // signInWithCustomToken atomically replaces the current anonymous user without going through
+    // null. The prior delete() call created a null window that raced with background
+    // getFirebaseJwt() → signInAnonymously() calls. FCM token is refreshed by firebaseCustomLogin.
+    firebaseCustomLogin(user.data.customToken) { isSuccessful, _ ->
+        if (isSuccessful) {
+            MixpanelManager.identifyUserProfile()
+            callback(true)
         } else callback(false)
     }
 }
@@ -560,63 +554,10 @@ private suspend fun registerServer(username: String, prefix: String): RegisterRe
               firebaseJwt
             )
         )
-        // Create EVMAccountInfo for registration
-        // IMPORTANT: EVM key must be derived from the MNEMONIC, not from the P256 private key
-        // The extension derives EVM from mnemonic with BIP44 path m/44'/60'/0'/0/0
-        val evmAccountInfo = try {
-            // Generate and store mnemonic globally for potential future EOA support
-            val mnemonic = BIP39.generate(BIP39.SeedPhraseLength.TWELVE)
-            logd(TAG, "Generated new 12-word mnemonic for backup support")
-
-            val passwordMap = try {
-              val pref = readWalletPassword()
-              if (pref.isBlank()) {
-                HashMap<String, String>()
-              } else {
-                Gson().fromJson(pref, object : TypeToken<HashMap<String, String>>() {}.type)
-              }
-            } catch (_: Exception) {
-              HashMap()
-            }
-
-            // Store mnemonic globally (available for future EOA enablement if user chooses)
-            storeWalletPassword(Gson().toJson(passwordMap.apply { put("global", mnemonic) }))
-            logd(TAG, "Stored mnemonic globally for backup support")
-            // Use Trust Wallet Core to derive EVM key from mnemonic
-            val hdWallet = wallet.core.jni.HDWallet(mnemonic, "")
-            val evmDerivationPath = "m/44'/60'/0'/0/0" // Standard Ethereum BIP44 path
-
-            // Get private key for EVM using secp256k1 curve
-            val evmPrivateKey = hdWallet.getKeyByCurve(wallet.core.jni.Curve.SECP256K1, evmDerivationPath)
-            val evmPublicKey = evmPrivateKey.getPublicKeySecp256k1(false) // uncompressed
-
-            // Derive EVM address from public key
-            val evmAddress = wallet.core.jni.AnyAddress(evmPublicKey, wallet.core.jni.CoinType.ETHEREUM).description()
-            logd(TAG, "Derived EVM address from mnemonic: $evmAddress")
-
-            // Sign keccak256(idToken) for EVM - NO domain tag, same as extension
-            val jwtBytes = firebaseJwt.toByteArray(Charsets.UTF_8)
-            val jwtHash = Hash.keccak256(jwtBytes)
-
-            // Sign the digest with secp256k1
-            val signatureData = evmPrivateKey.sign(jwtHash, wallet.core.jni.Curve.SECP256K1)
-
-            val evmSignature = "0x" + signatureData.joinToString("") { "%02x".format(it) }
-            logd(TAG, "Generated EVM signature from mnemonic, length: ${evmSignature.length}")
-
-            EvmAccountInfo(
-                eoaAddress = evmAddress,
-                signature = evmSignature
-            )
-        } catch (e: Exception) {
-            logd(TAG, "Error creating EVM account info from mnemonic: ${e.message}")
-            e.printStackTrace()
-            null
-        }
 
         val request = RegisterRequest(
             flowAccountInfo = flowAccountInfo,
-            evmAccountInfo = evmAccountInfo,
+            evmAccountInfo = null,
             username = username,
             deviceInfo = deviceInfoRequest
         )
@@ -649,14 +590,6 @@ fun generatePrefix(text: String): String {
     val bytes = MessageDigest.getInstance(HashAlgorithm.SHA2_256.algorithm)
         .digest(combinedInput.toByteArray())
     return bytes.joinToString("") { "%02x".format(it) }
-}
-
-private suspend fun setToAnonymous(): Boolean {
-    if (!isAnonymousSignIn()) {
-        Firebase.auth.signOut()
-        return signInAnonymously()
-    }
-    return true
 }
 
 // create user failed, resume account
@@ -720,6 +653,7 @@ suspend fun clearUserCache() {
     StakingManager.clear()
     CryptoProviderManager.clear()
     cleanBackupMnemonicPreference()
+    COAVisibilityCache.clear()
     delay(1000)
 }
 

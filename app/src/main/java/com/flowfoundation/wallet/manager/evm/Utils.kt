@@ -5,7 +5,6 @@ import com.flowfoundation.wallet.BuildConfig
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.app.networkChainId
 import com.flowfoundation.wallet.manager.app.networkRPCUrl
-import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.config.isWrapEOATxWithCadence
 import com.flowfoundation.wallet.manager.flowjvm.EVM_GAS_LIMIT
 import com.flowfoundation.wallet.manager.flowjvm.cadenceGetNonce
@@ -49,7 +48,7 @@ import wallet.core.jni.proto.Ethereum
 import wallet.core.jni.Hash
 import java.math.BigInteger
 
-suspend fun loadInitJS(): String {
+fun loadInitJS(): String {
     // Refresh account data first
     DAppEVMConnectionManager.refreshAccounts()
 
@@ -72,7 +71,7 @@ suspend fun loadInitJS(): String {
             }
         }
 
-        WalletManager.getEOAAddress()?.let { eoaAddress ->
+        WalletManager.getEOAAddresses().forEach { eoaAddress ->
             if (eoaAddress.isNotEmpty()) {
                 addressList.add(eoaAddress)
             }
@@ -166,7 +165,9 @@ Unit) {
             // Parse transaction parameters
             val chainId = networkChainId().toBigInteger()
             val valueAmount = Numeric.decodeQuantity(transaction.value ?: "0x0")
-            val gasLimit = Numeric.decodeQuantity(transaction.gas ?: "0x5208")
+            val gasLimit = transaction.gas?.let {
+                Numeric.decodeQuantity(it)
+            } ?: EVM_GAS_LIMIT.toBigInteger()
 
             // Check for EIP-1559 parameters
             val maxFeePerGasStr = transaction.maxFeePerGas
@@ -257,11 +258,13 @@ Unit) {
                     return@ioScope
                 }
                 val singer = cryptoProvider.getSigner(HashingAlgorithm.SHA2_256)
+                val eoaIndex = WalletManager.getEOAIndexForAddress(address)
                 val result = WalletManager.wallet()?.ethSignTransactionAndSendByCadence(
                     input = input,
                     fromAddress = address,
                     signers = listOf(singer),
-                    flowAddress = FlowAddress(WalletManager.getCurrentFlowWalletAddress().orEmpty())
+                    flowAddress = FlowAddress(WalletManager.getCurrentFlowWalletAddress().orEmpty()),
+                    index = eoaIndex
                 )
                 if (result == null) {
                     logd("EOATransaction", "ERROR: Failed to sign transaction")
@@ -275,7 +278,8 @@ Unit) {
                 callback.invoke(txHash)
 
             } else {
-                val output = WalletManager.wallet()?.ethSignTransaction(input)
+                val eoaIndex = WalletManager.getEOAIndexForAddress(address)
+                val output = WalletManager.wallet()?.ethSignTransaction(input, index = eoaIndex)
 
                 if (output == null) {
                     logd("EOATransaction", "ERROR: Failed to sign transaction")

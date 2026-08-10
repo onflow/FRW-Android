@@ -45,11 +45,12 @@ class WalletBridgeHandler(private val reactContext: ReactApplicationContext) {
         }
     }
 
-    fun ethSign(hexData: String?, promise: Promise?) {
+    fun ethSign(hexData: String?, address: String?, promise: Promise?) {
         ioScope {
             try {
-                logd(TAG, "ethSign() called with hexData: $hexData")
-                val signature = WalletManager.wallet()?.ethSignDigest(hexData?.hexToBytes() ?: throw IllegalArgumentException("hexData is null"))
+                logd(TAG, "ethSign() called with hexData: $hexData, address: $address")
+                val eoaIndex = WalletManager.getEOAIndexForAddress(address ?: "")
+                val signature = WalletManager.wallet()?.ethSignDigest(hexData?.hexToBytes() ?: throw IllegalArgumentException("hexData is null"), index = eoaIndex)
                 if (signature != null && signature.isNotEmpty()) {
                     val result = Numeric.toHexString(signature)
                     logd(TAG, "ethSign() - signature $result")

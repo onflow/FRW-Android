@@ -138,7 +138,7 @@ fun SettingSwitchItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable { onCheckedChange(!isChecked) }
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Icon

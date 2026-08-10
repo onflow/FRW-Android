@@ -34,6 +34,7 @@ import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.manager.account.AccountVisibilityManager
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
+import com.flowfoundation.wallet.manager.wallet.WalletManager
 
 class WalletSettingActivity : BaseActivity(), OnEmojiUpdate {
 
@@ -97,17 +98,21 @@ class WalletSettingActivity : BaseActivity(), OnEmojiUpdate {
             }
 
             // Initialize account visibility preference
-            val userId = firebaseUid() ?: ""
-            val isAccountVisible = !AccountVisibilityManager.isAccountHidden(userId, walletAddress)
-            showInAccountListPreference.setChecked(isAccountVisible)
-            showInAccountListPreference.setOnCheckedChangeListener { checked ->
-                val currentUserId = firebaseUid() ?: ""
-                if (checked) {
-                    // User wants to show the account in the list (make it visible)
-                    AccountVisibilityManager.showAccount(currentUserId, walletAddress)
-                } else {
-                    // User wants to hide the account from the list
-                    AccountVisibilityManager.hideAccount(currentUserId, walletAddress)
+            // Hide the toggle for the currently selected account — it must remain visible
+            val isCurrentlySelected = WalletManager.selectedWalletAddress()
+                .equals(walletAddress, ignoreCase = true)
+            showInAccountListPreference.setVisible(!isCurrentlySelected)
+            if (!isCurrentlySelected) {
+                val userId = firebaseUid() ?: ""
+                val isAccountVisible = !AccountVisibilityManager.isAccountHidden(userId, walletAddress)
+                showInAccountListPreference.setChecked(isAccountVisible)
+                showInAccountListPreference.setOnCheckedChangeListener { checked ->
+                    val currentUserId = firebaseUid() ?: ""
+                    if (checked) {
+                        AccountVisibilityManager.showAccount(currentUserId, walletAddress)
+                    } else {
+                        AccountVisibilityManager.hideAccount(currentUserId, walletAddress)
+                    }
                 }
             }
 

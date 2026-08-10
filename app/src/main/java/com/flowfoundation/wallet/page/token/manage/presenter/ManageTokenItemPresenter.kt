@@ -35,9 +35,9 @@ class ManageTokenItemPresenter(
             switchDisplay.isChecked = FungibleTokenListManager.isDisplayToken(contractId = model.contractId())
             switchDisplay.setOnCheckedChangeListener { _, isChecked ->
                 if (isChecked) {
-                    FungibleTokenListManager.addDisplayToken(model)
+                    FungibleTokenListManager.showToken(model)
                 } else {
-                    FungibleTokenListManager.removeDisplayToken(model)
+                    FungibleTokenListManager.hideToken(model)
                 }
             }
         }

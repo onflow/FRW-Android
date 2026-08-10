@@ -107,7 +107,7 @@ private fun ProfileSwitchContent(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                color = colorResource(id = R.color.deep_bg),
+                color = colorResource(id = R.color.deep_bg_dialog),
                 shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
             )
             .padding(18.dp)
@@ -262,14 +262,10 @@ private fun LocalSwitchAccountItem(
     ConstraintLayout(
         modifier = Modifier
             .fillMaxWidth()
-            .background(
-                color = colorResource(id = R.color.bg_card),
-                shape = RoundedCornerShape(16.dp)
-            )
-            .padding(18.dp)
+            .padding(vertical = 20.dp)
             .clickable(onClick = onClick)
     ) {
-        val (icon, name, address) = createRefs()
+        val (icon, name) = createRefs()
 
         // Placeholder icon
         Icon(
@@ -278,7 +274,7 @@ private fun LocalSwitchAccountItem(
             tint = colorResource(id = R.color.icon),
             modifier = Modifier
                 .constrainAs(icon) {
-                    top.linkTo(parent.top, 8.dp)
+                    top.linkTo(parent.top)
                     start.linkTo(parent.start)
                 }
                 .size(40.dp)
@@ -289,25 +285,14 @@ private fun LocalSwitchAccountItem(
             text = account.username,
             color = colorResource(id = R.color.text_1),
             fontSize = 14.sp,
-            fontWeight = FontWeight.SemiBold,
+            fontWeight = FontWeight.Bold,
             modifier = Modifier
                 .constrainAs(name) {
                     top.linkTo(icon.top)
+                    bottom.linkTo(icon.bottom)
                     start.linkTo(icon.end, 12.dp)
-                    end.linkTo(parent.end, 12.dp)
+                    end.linkTo(parent.end)
                     width = Dimension.fillToConstraints
-                }
-        )
-
-        // Address
-        Text(
-            text = account.address,
-            color = colorResource(id = R.color.text_2),
-            fontSize = 12.sp,
-            modifier = Modifier
-                .constrainAs(address) {
-                    top.linkTo(name.bottom, 4.dp)
-                    start.linkTo(name.start)
                 }
         )
     }

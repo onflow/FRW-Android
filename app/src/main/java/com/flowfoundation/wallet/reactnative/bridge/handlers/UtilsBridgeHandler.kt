@@ -23,6 +23,7 @@ import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.logw
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
+import com.flowfoundation.wallet.manager.config.AppConfig
 import java.util.Locale
 
 /**
@@ -93,7 +94,8 @@ class UtilsBridgeHandler(private val reactContext: ReactApplicationContext) {
                 BuildConfig.MIXPANEL_TOKEN_DEV
             } else {
                 BuildConfig.MIXPANEL_TOKEN_PROD
-            }
+            },
+            CADENCE_INBOX = AppConfig.canClaimInbox()
         )
 
         return bridgeModelToWritableMap(environmentVariables)
@@ -210,7 +212,7 @@ class UtilsBridgeHandler(private val reactContext: ReactApplicationContext) {
                 args.getString(i) ?: ""
             }
 
-            // Delegate to the centralized Instabug logging system in Log.kt
+            // Delegate to the centralized Luciq logging system in Log.kt
             logToInstabug(level, message, *stringArgs)
         } catch (e: Exception) {
             // Fallback with just the message if args conversion fails

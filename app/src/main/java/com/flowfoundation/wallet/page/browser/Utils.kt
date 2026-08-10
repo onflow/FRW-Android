@@ -12,8 +12,8 @@ import com.bumptech.glide.load.model.LazyHeaders
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.database.AppDataBase
 import com.flowfoundation.wallet.database.WebviewRecord
-import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.config.AppConfig
+import com.flowfoundation.wallet.network.explorerUrl
 import com.flowfoundation.wallet.page.browser.tools.browserTabLast
 import com.flowfoundation.wallet.page.browser.tools.expandWebView
 import com.flowfoundation.wallet.page.browser.tools.shrinkWebView
@@ -159,11 +159,11 @@ fun String.toFavIcon(size: Int = 256): String {
 }
 
 fun openInFlowScan(activity: Activity, transactionId: String) {
-    openBrowser(activity, "https://${if (isTestnet()) "testnet." else ""}flowscan" + ".io/tx/$transactionId")
+    openBrowser(activity, explorerUrl(id = transactionId, type = "tx", chain = "flow"))
 }
 
 fun openInFlowEVMScan(activity: Activity, transactionId: String) {
-    openBrowser(activity, "https://${if (isTestnet()) "evm-testnet" else "evm"}.flowscan.io/tx/$transactionId")
+    openBrowser(activity, explorerUrl(id = transactionId, type = "tx", chain = "evm"))
 }
 
 class BrowserParams(

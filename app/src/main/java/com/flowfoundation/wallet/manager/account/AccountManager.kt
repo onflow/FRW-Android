@@ -8,8 +8,7 @@ import com.flowfoundation.wallet.cache.AccountCacheManager
 import com.flowfoundation.wallet.cache.UserPrefixCacheManager
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
-import com.flowfoundation.wallet.firebase.auth.isAnonymousSignIn
-import com.flowfoundation.wallet.firebase.auth.signInAnonymously
+import com.flowfoundation.wallet.firebase.auth.setToAnonymous
 import com.flowfoundation.wallet.firebase.messaging.uploadPushToken
 import com.flowfoundation.wallet.manager.account.model.LocalSwitchAccount
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
@@ -22,9 +21,7 @@ import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.clearUserCache
 import com.flowfoundation.wallet.manager.key.HDWalletCryptoProvider
 import com.flowfoundation.wallet.network.model.AccountKey
-import com.flowfoundation.wallet.network.model.EvmAccountInfo
 import com.flowfoundation.wallet.network.model.FlowAccountInfo
-import com.flowfoundation.wallet.network.model.LoginRequest
 import com.flowfoundation.wallet.network.model.LoginV4Request
 import com.flowfoundation.wallet.network.model.UserInfoData
 import com.flowfoundation.wallet.network.model.WalletListData
@@ -42,8 +39,6 @@ import com.flowfoundation.wallet.utils.setRegistered
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.wallet.Wallet
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.serialization.Serializable
@@ -56,7 +51,10 @@ import com.flowfoundation.wallet.utils.storeWalletPassword
 import com.flowfoundation.wallet.manager.walletdata.WalletDataManager
 
 import com.flowfoundation.wallet.manager.walletdata.MainWallet
+import com.flowfoundation.wallet.manager.key.storage.KeyStorageManager
+import com.flowfoundation.wallet.manager.key.storage.KeyStorageMigration
 import com.flowfoundation.wallet.page.restore.keystore.model.KeystoreAddress
+import com.flowfoundation.wallet.utils.safeRun
 import kotlin.text.isNullOrEmpty
 
 object AccountManager {
@@ -66,7 +64,6 @@ object AccountManager {
     private val listeners = CopyOnWriteArrayList<WeakReference<OnAccountUpdate>>()
     private val listListeners = CopyOnWriteArrayList<WeakReference<OnAccountListUpdate>>()
     private val userPrefixes = mutableListOf<UserPrefix>()
-    private val switchAccounts = mutableListOf<LocalSwitchAccount>()
 
     private var currentAccount: Account? = null
     private var isInitialized = false
@@ -84,7 +81,6 @@ object AccountManager {
         logd(TAG, "Starting AccountManager initialization")
         accounts.clear()
         userPrefixes.clear()
-        switchAccounts.clear()
         currentAccount = null
 
         ioScope {
@@ -129,6 +125,12 @@ object AccountManager {
                 }
 
                 logd(TAG, "AccountManager initialization completed successfully")
+                // Migrate key material to independent storage now that accounts are loaded.
+                // This must run inside the ioScope block so accounts list is fully populated.
+                safeRun { KeyStorageMigration.runMigrationIfNeeded() }
+                // Load emoji list for current account before building wallet data,
+                // otherwise getEmojiByAddress() sees an empty list and re-randomizes emojis.
+                AccountEmojiManager.init()
                 // Update Accounts info with WalletDataManager
                 WalletDataManager.updateWalletData()
 
@@ -144,7 +146,6 @@ object AccountManager {
                 // Clear potentially corrupted state
                 accounts.clear()
                 userPrefixes.clear()
-                switchAccounts.clear()
                 currentAccount = null
 
                 // Initialization failed - user needs to login/restore
@@ -154,28 +155,50 @@ object AccountManager {
 
     fun getSwitchAccountList(): List<Any> {
         logd(TAG, "getSwitchAccountList() called")
-        logd(TAG, "Current accounts: $accounts")
-        logd(TAG, "Current switchAccounts: $switchAccounts")
+        logd(TAG, "Current accounts: ${accounts.map { it.userInfo.username }}")
 
         val list = mutableListOf<Any>()
         list.addAll(accounts)
 
-        // Collect all FlowWallet addresses for the current network from walletNodes
-        val currentNetwork = chainNetWorkString()
-        val addressSet = accounts.flatMap { account ->
-            account.walletNodes.filterIsInstance<FlowWallet>()
-                .filter { it.chainIdString == currentNetwork }
-                .map { it.address }
-        }.toSet()
+        val keyOnlyAccounts = buildLocalKeyAccounts()
+        logd(TAG, "Key-only accounts (no Account object): $keyOnlyAccounts")
 
-        logd(TAG, "Address set from accounts (current network): $addressSet")
-
-        val filteredSwitchAccounts = switchAccounts.filter { it.address !in addressSet }
-        logd(TAG, "Filtered switch accounts: $filteredSwitchAccounts")
-
-        list.addAll(filteredSwitchAccounts)
+        list.addAll(keyOnlyAccounts)
         logd(TAG, "Final list size: ${list.size}")
         return list
+    }
+
+    /**
+     * Builds a list of [LocalSwitchAccount] entries for UIDs that have key material stored
+     * in [KeyStorageManager] but no matching [Account] in [accounts] (i.e. the account cache
+     * was lost while the key survived).
+     *
+     * The returned list is computed fresh on each call and is not stored persistently.
+     */
+    private fun buildLocalKeyAccounts(): List<LocalSwitchAccount> {
+        // Collect all UIDs known to the accounts list
+        val knownUids = accounts.mapNotNull { it.wallet?.id }.toSet()
+
+        // Union of all UIDs present in any of the three key stores
+        val allKeyUids = (
+            KeyStorageManager.getAllSeedPhraseUids() +
+            KeyStorageManager.getAllPrivateKeyUids() +
+            KeyStorageManager.getAllAndroidKeystoreUids()
+        ).toSet()
+
+        // Only keep UIDs that have a key but no account
+        val orphanUids = allKeyUids - knownUids
+
+        return orphanUids.map { uid ->
+            val akPrefix = KeyStorageManager.getAndroidKeystorePrefix(uid)
+            val address = KeyStorageManager.getWalletAddress(uid) ?: ""
+            LocalSwitchAccount(
+                username = address,
+                address = address,
+                userId = uid,
+                prefix = akPrefix
+            )
+        }
     }
 
     fun add(account: Account, uid: String? = null) {
@@ -183,7 +206,7 @@ object AccountManager {
         WalletManager.clear()
 
         currentAccount = account
-        logd(TAG, "Account added. Current account is now: $currentAccount")
+        logd(TAG, "Account added. Current account is now: ${currentAccount?.userInfo?.username.orEmpty()}")
         accounts.removeAll { it.userInfo.username == account.userInfo.username }
         accounts.add(account)
         accounts.forEach {
@@ -195,6 +218,8 @@ object AccountManager {
             userPrefixes.removeAll { it.userId == uid}
             userPrefixes.add(UserPrefix(uid, prefix))
             UserPrefixCacheManager.cache(UserPrefixes().apply { addAll(userPrefixes) })
+            // Write to independent key storage so prefix survives account-cache loss
+            KeyStorageManager.saveAndroidKeystorePrefix(uid, prefix)
         }
         AccountEmojiManager.init()
 
@@ -243,9 +268,6 @@ object AccountManager {
 
             logd(TAG, "Removing active account and clearing all related state")
 
-            // Set Firebase to anonymous before clearing state
-            setToAnonymous()
-
             // Clear the account from the list
             val account = accounts.removeAt(index)
             logd(TAG, "Removed account: ${account.userInfo.username}")
@@ -262,7 +284,6 @@ object AccountManager {
             // Clear account cache
             AccountCacheManager.cache(Accounts().apply { addAll(accounts) })
             logd(TAG, "Cleared account cache")
-
 
             // Clear WalletManager state
             try {
@@ -300,14 +321,20 @@ object AccountManager {
             setUploadedAddressSet(emptySet())
             logd(TAG, "Cleared uploaded address set")
 
-            uiScope {
-                // Clear user cache
-                clearUserCache()
-                logd(TAG, "Cleared user cache")
-
-                // Navigate to main activity (which should show the get started screen)
-                logd(TAG, "Relaunching MainActivity after account reset")
-                MainActivity.relaunch(Env.getApp(), true)
+            val nextAccount = accounts.firstOrNull()
+            if (nextAccount != null) {
+                // Switch to the first remaining account so Firebase re-authenticates properly.
+                // setToAnonymous() is called inside switchAccount() before the new login.
+                logd(TAG, "Remaining accounts found, switching to: ${nextAccount.userInfo.username}")
+                switch(nextAccount) {}
+            } else {
+                // No remaining accounts — go back to get started screen.
+                setToAnonymous()
+                uiScope {
+                    clearUserCache()
+                    logd(TAG, "Relaunching MainActivity after account reset")
+                    MainActivity.relaunch(Env.getApp(), true)
+                }
             }
         }
     }
@@ -415,14 +442,15 @@ object AccountManager {
     }
 
     fun list(): List<Account> {
-        logd(TAG, "list() called. Accounts: $accounts")
+        logd(TAG, "list() called. Accounts: ${accounts.map { it.userInfo.username }}")
         return accounts
     }
 
+    @Volatile
     private var isSwitching = false
 
     fun switch(account: Account, onFinish: () -> Unit) {
-        logd(TAG, "switch() called. Switching to account: $account")
+        logd(TAG, "switch() called. Switching to account: ${account.userInfo.username}")
 
         // Check if we're already on this account
         if (account.isActive && currentAccount?.userInfo?.username == account.userInfo.username) {
@@ -458,16 +486,22 @@ object AccountManager {
                 return@ioScope
             }
             isSwitching = true
-            currentAccount = account
-            logd(TAG, "Account switched. Current account is now: $currentAccount")
+            logd(TAG, "Starting account switch to: ${account.userInfo.username}")
             switchAccount(account) { isSuccess ->
                 if (isSuccess) {
                     isSwitching = false
+                    currentAccount = account
+                    logd(TAG, "Account switch successful. Current account updated to: ${currentAccount?.userInfo?.username}")
                     accounts.forEach {
                         it.isActive = it.userInfo.username == account.userInfo.username
                     }
                     AccountCacheManager.cache(Accounts().apply { addAll(accounts) })
                     AccountEmojiManager.init()
+                    // Resume HD wallet state now that currentAccount is updated.
+                    // Only needed for mnemonic accounts (no prefix, no keyStoreInfo).
+                    if (account.prefix == null && account.keyStoreInfo == null) {
+                        Wallet.store().resume()
+                    }
                     uiScope {
                         clearUserCache()
                         MainActivity.relaunch(Env.getApp(), true)
@@ -477,7 +511,7 @@ object AccountManager {
                     loge(TAG, "Account switch failed, showing error toast")
                     toast(msgRes = R.string.resume_login_error, duration = Toast.LENGTH_LONG)
                 }
-                logd(TAG, "switch() completed. Current account: $currentAccount")
+                logd(TAG, "switch() completed. Current account: ${currentAccount?.userInfo?.username}")
                 onFinish()
             }
         }
@@ -492,7 +526,9 @@ object AccountManager {
             switchAccount(switchAccount) { isSuccess ->
                 if (isSuccess) {
                     isSwitching = false
-                    switchAccounts.remove(switchAccount)
+                    // localKeyAccounts is computed dynamically from KeyStorageManager; once the
+                    // account is re-added via the login flow the UID will appear in accounts and
+                    // will be excluded from buildLocalKeyAccounts() automatically.
                     uiScope {
                         clearUserCache()
                         MainActivity.relaunch(Env.getApp(), true)
@@ -533,8 +569,10 @@ object AccountManager {
             logd(TAG, "  Sign Algorithm: ${cryptoProvider.getSignatureAlgorithm()}")
             logd(TAG, "  Key Weight: ${cryptoProvider.getKeyWeight()}")
 
-            // Get JWT with force refresh to avoid token expiration issues
-            val jwt = getFirebaseJwt(true)
+            // Use the cached token from the anonymous sign-in done in setToAnonymous().
+            // forceRefresh=true would cause two separate network fetches (here and in HeaderInterceptor),
+            // returning tokens with different iat values, making signature verification fail on the server.
+            val jwt = getFirebaseJwt()
             logd(TAG, "Retrieved JWT for account switch (length: ${jwt.length})")
 
             val publicKey = cryptoProvider.getPublicKey()
@@ -580,9 +618,6 @@ object AccountManager {
                 firebaseLogin(resp.data.customToken) { isSuccess ->
                     if (isSuccess) {
                         setRegistered()
-                        if (account.prefix == null && account.keyStoreInfo == null) {
-                            Wallet.store().resume()
-                        }
                         callback.invoke(true)
                     } else {
                         loge(tag = "SWITCH_ACCOUNT", msg = "get firebase login failed :: ${resp.data.customToken}")
@@ -619,16 +654,8 @@ object AccountManager {
         }
     }
 
-    private suspend fun setToAnonymous(): Boolean {
-        if (!isAnonymousSignIn()) {
-            Firebase.auth.signOut()
-            return signInAnonymously()
-        }
-        return true
-    }
-
     private fun dispatchListeners(account: Account) {
-        logd(TAG, "dispatchListeners: $account")
+        logd(TAG, "dispatchListeners: ${account.userInfo.username}")
         uiScope {
             listeners.removeAll { it.get() == null }
             listeners.forEach { it.get()?.onAccountUpdate(account) }
@@ -690,8 +717,10 @@ object AccountManager {
             logd(TAG, "  Sign Algorithm: ${cryptoProvider.getSignatureAlgorithm()}")
             logd(TAG, "  Key Weight: ${cryptoProvider.getKeyWeight()}")
 
-            // Get JWT with force refresh to avoid token expiration issues
-            val jwt = getFirebaseJwt(true)
+            // Use the cached token from the anonymous sign-in done in setToAnonymous().
+            // forceRefresh=true would cause two separate network fetches (here and in HeaderInterceptor),
+            // returning tokens with different iat values, making signature verification fail on the server.
+            val jwt = getFirebaseJwt()
             logd(TAG, "Retrieved JWT for local account switch (length: ${jwt.length})")
 
             val publicKey = cryptoProvider.getPublicKey()
@@ -731,21 +760,43 @@ object AccountManager {
             val resp = service.loginV4(loginRequest)
             if (resp.data?.customToken.isNullOrBlank()) {
                 loge(tag = "SWITCH_ACCOUNT", msg = "get customToken failed :: ${resp.data?.customToken}")
+                loge(tag = "SWITCH_ACCOUNT", msg = "Response status: ${resp.status}, message: ${resp.message}")
                 callback.invoke(false)
             } else {
                 firebaseLogin(resp.data.customToken) { isSuccess ->
                     if (isSuccess) {
                         setRegistered()
-                        if (switchAccount.prefix == null) {
-                            Wallet.store().resume()
-                        } else {
-                            firebaseUid()?.let { userId ->
-                                userPrefixes.removeAll { it.userId == userId}
-                                userPrefixes.add(UserPrefix(userId, switchAccount.prefix))
-                                UserPrefixCacheManager.cache(UserPrefixes().apply { addAll(userPrefixes) })
+                        // Fetch user info and persist the account so it survives MainActivity relaunch.
+                        // Without this, AccountManager.init() reads an empty cache after relaunch.
+                        ioScope {
+                            try {
+                                val userInfo = service.userInfo().data
+                                val userId = firebaseUid() ?: ""
+                                clearUserCache()
+                                add(Account(
+                                    userInfo = userInfo,
+                                    wallet = WalletListData(id = userId, username = userInfo.username, wallets = null),
+                                    prefix = switchAccount.prefix
+                                ))
+                                logd(TAG, "LocalSwitchAccount: account stored for uid: $userId")
+
+                                if (switchAccount.prefix != null) {
+                                    // Hardware-backed key: persist prefix so CryptoProviderManager
+                                    // can reconstruct the provider after relaunch.
+                                    userPrefixes.removeAll { it.userId == userId }
+                                    userPrefixes.add(UserPrefix(userId, switchAccount.prefix))
+                                    UserPrefixCacheManager.cache(UserPrefixes().apply { addAll(userPrefixes) })
+                                } else if (!KeyStorageManager.hasPrivateKey(switchAccount.userId ?: "")) {
+                                    // HD wallet (seed phrase) account only — not private-key import.
+                                    // Mirrors the condition in switchAccount(Account):
+                                    // account.prefix == null && account.keyStoreInfo == null
+                                    Wallet.store().resume()
+                                }
+                            } catch (e: Exception) {
+                                loge(TAG, "LocalSwitchAccount: failed to fetch/store user info: ${e.message}")
                             }
+                            callback.invoke(true)
                         }
-                        callback.invoke(true)
                     } else {
                         loge(tag = "SWITCH_ACCOUNT", msg = "get firebase login failed :: ${resp.data.customToken}")
                         callback.invoke(false)

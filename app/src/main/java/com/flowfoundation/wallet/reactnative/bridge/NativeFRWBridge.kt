@@ -22,6 +22,7 @@ import org.json.JSONObject
 import org.json.JSONArray
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
+import com.flowfoundation.wallet.manager.account.firstFlowWalletAddress
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.logw
@@ -51,6 +52,7 @@ import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.generatePrefix
 import org.onflow.flow.infrastructure.Cadence.Companion.uint8
 import com.facebook.react.modules.core.DeviceEventManagerModule
+import com.flowfoundation.wallet.manager.key.storage.KeyStorageManager
 import com.flowfoundation.wallet.reactnative.bridge.handlers.AccountBridgeHandler
 import com.flowfoundation.wallet.reactnative.bridge.handlers.AuthBridgeHandler
 import com.flowfoundation.wallet.reactnative.bridge.handlers.UIBridgeHandler
@@ -85,8 +87,6 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
     }
 
     init {
-        logd(TAG, "NativeFRWBridge initialized with context: ${reactContext != null}")
-        logd(TAG, "React context is active: ${reactContext.hasActiveCatalystInstance()}")
         ActivityManager.setReactContext(reactContext)
         System.loadLibrary("TrustWalletCore")
     }
@@ -160,6 +160,16 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 // Update and store the mnemonic in Wallet
                 Wallet.store().updateMnemonic(seedPhrase).store()
 
+                // Also persist in independent key storage so it survives account-cache loss
+                val uid = firebaseUid() ?: AccountManager.get()?.wallet?.id
+                if (!uid.isNullOrBlank()) {
+                    KeyStorageManager.saveSeedPhrase(uid, seedPhrase)
+                    val address = AccountManager.get()?.firstFlowWalletAddress()
+                    if (!address.isNullOrBlank()) {
+                        KeyStorageManager.saveWalletAddress(uid, address)
+                    }
+                }
+
                 logd(TAG, "saveNewKey() - Seed phrase saved successfully")
                 uiScope {
                     promise.resolve(null)
@@ -201,6 +211,11 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 // Update AccountManager cache
                 // AccountManager.add(account) will update the list and cache it
                 AccountManager.add(account)
+
+                // Delete any pkStorage entry that KeyStorageMigration (Case 2) may have created
+                if (!uid.isNullOrBlank()) {
+                    KeyStorageManager.deletePrivateKey(uid)
+                }
 
                 // 3. Clear CryptoProvider
                 CryptoProviderManager.clear()
@@ -368,8 +383,29 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
 
                 // 4. Update local account state with new prefix
                 logd(TAG, "keystoreMigration() - updating local account state")
+                val uid = firebaseUid() ?: account.wallet?.id
+                val oldPrefix = account.prefix
                 account.prefix = newPrefix
                 AccountManager.add(account)
+
+                // Sync new prefix to independent AKP storage
+                if (!uid.isNullOrBlank()) {
+                    KeyStorageManager.saveAndroidKeystorePrefix(uid, newPrefix)
+                    val address = account.firstFlowWalletAddress()
+                    if (!address.isNullOrBlank()) {
+                        KeyStorageManager.saveWalletAddress(uid, address)
+                    }
+                }
+
+                // Remove the stale file-private-key entry that KeyCompatibilityManager may find
+                if (!oldPrefix.isNullOrBlank()) {
+                    try {
+                        getStorage().remove("prefix_key_$oldPrefix")
+                        logd(TAG, "Removed old prefix key from shared storage: prefix_key_$oldPrefix")
+                    } catch (e: Exception) {
+                        loge(TAG, "Failed to remove old prefix key: ${e.message}")
+                    }
+                }
 
                 // 5. Reload CryptoProvider
                 logd(TAG, "keystoreMigration() - reloading crypto provider")
@@ -395,7 +431,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         }
     }
 
-    override fun ethSign(hexData: String?, promise: Promise?) = walletHandler.ethSign(hexData, promise)
+    override fun ethSign(hexData: String?, address: String?, promise: Promise?) = walletHandler.ethSign(hexData, address, promise)
 
     override fun listenTransaction(txid: String) = walletHandler.listenTransaction(txid)
 
@@ -407,6 +443,14 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
 
     override fun closeRN(id: String?) = uiHandler.closeRN(id)
 
+    override fun onUpdateDialogActionPress(
+      actionType: String?,
+      actionUrl: String?,
+      actionText: String?
+    ) {}
+
+  override fun closeRNWithNFT(id: String?) {}
+
     override fun getSignKeyIndex(): Double = accountHandler.getSignKeyIndex()
 
     override fun isFreeGasEnabled(promise: Promise) = utilsHandler.isFreeGasEnabled(promise)
@@ -414,6 +458,13 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
     override fun getEnv(): WritableMap = utilsHandler.getEnv(::bridgeModelToWritableMap)
 
     override fun getSelectedAccount(promise: Promise) = accountHandler.getSelectedAccount(promise, ::bridgeModelToWritableMap)
+
+    override fun getMigrationAssets(
+      sourceAddress: String?,
+      promise: Promise?
+    ) {}
+
+    override fun refreshCoaAfterMigration(promise: Promise?) {}
 
     override fun getCurrency(): WritableMap = utilsHandler.getCurrency(::bridgeModelToWritableMap)
 
@@ -439,8 +490,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         try {
             val jsonObject = JSONObject(jsonString)
             jsonObject.keys().forEach { key ->
-                val value = jsonObject.get(key)
-                when (value) {
+                when (val value = jsonObject.get(key)) {
                     is String -> map.putString(key, value)
                     is Boolean -> map.putBoolean(key, value)
                     is Int -> map.putInt(key, value)
@@ -468,8 +518,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         val array = WritableNativeArray()
         try {
             for (i in 0 until jsonArray.length()) {
-                val value = jsonArray.get(i)
-                when (value) {
+              when (val value = jsonArray.get(i)) {
                     is String -> array.pushString(value)
                     is Boolean -> array.pushBoolean(value)
                     is Int -> array.pushInt(value)

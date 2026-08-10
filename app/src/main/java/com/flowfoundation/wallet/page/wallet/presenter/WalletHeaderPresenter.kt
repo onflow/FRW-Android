@@ -3,7 +3,6 @@ package com.flowfoundation.wallet.page.wallet.presenter
 import android.annotation.SuppressLint
 import android.view.View
 import android.widget.TextView
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
@@ -15,6 +14,8 @@ import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
 import com.flowfoundation.wallet.databinding.LayoutWalletCoordinatorHeaderBinding
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.config.AppConfig
+import com.flowfoundation.wallet.manager.inbox.InboxManager
+import com.flowfoundation.wallet.manager.inbox.OnInboxCountUpdate
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.notification.WalletNotificationManager
 import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
@@ -46,7 +47,7 @@ import java.util.Date
 class WalletHeaderPresenter(
     private val fragment: Fragment,
     private val view: View,
-) : BaseViewHolder(view), BasePresenter<WalletHeaderModel?> {
+) : BaseViewHolder(view), BasePresenter<WalletHeaderModel?>, OnInboxCountUpdate {
 
     private val binding by lazy { LayoutWalletCoordinatorHeaderBinding.bind(view) }
 
@@ -68,6 +69,8 @@ class WalletHeaderPresenter(
                     ).ifEmpty { "0" }
                 )
                 ivHide.setImageResource(if (isHideBalance) R.drawable.ic_eye_off else R.drawable.ic_eye_on)
+                shimmerBalance.stopShimmer()
+                shimmerBalance.gone()
             }
 
             val count = if (model.coinCount > 0 ) model.coinCount else FungibleTokenListManager.getCurrentDisplayTokenListSnapshot().size
@@ -80,17 +83,24 @@ class WalletHeaderPresenter(
             cvReceive.setOnClickListener { ReactNativeActivity.launch(view.context, RNBridge.ScreenType.RECEIVE) }
             val address = shortenEVMString(WalletManager.selectedWalletAddress().toAddress())
             tvAddress.text = address
+            shimmerAddress.stopShimmer()
+            shimmerAddress.gone()
             ivCopy.setVisible(address.isNotBlank())
             ivCopy.setOnClickListener {
                 copyAddress(
                     WalletManager.selectedWalletAddress().toAddress()
                 )
             }
+            InboxManager.addListener(this@WalletHeaderPresenter)
+            flInbox.setOnClickListener { ReactNativeActivity.launchClaimTokens(view.context) }
+            updateInboxBadge(InboxManager.unclaimedCount)
+
             if (WalletManager.isChildAccountSelected()) {
                 cvSwap.gone()
                 cvBuy.gone()
                 flManageToken.gone()
                 flAddToken.gone()
+                flInbox.gone()
             } else {
                 flAddToken.setOnClickListener {
                     if (WalletManager.isEVMAccountSelected()) {
@@ -188,6 +198,23 @@ class WalletHeaderPresenter(
                         pendingRequest = pendingRequestModel.request // Store the request directly
                     )
                 )
+            }
+        }
+    }
+
+    override fun onInboxCountUpdate(count: Int) {
+        updateInboxBadge(count)
+    }
+
+    private fun updateInboxBadge(count: Int) {
+        with(binding) {
+            val show = count > 0 && !WalletManager.isChildAccountSelected()
+            flInbox.setVisible(show)
+            if (show) {
+                tvInboxBadge.visible()
+                tvInboxBadge.text = InboxManager.formatBadgeCount(count)
+            } else {
+                tvInboxBadge.gone()
             }
         }
     }

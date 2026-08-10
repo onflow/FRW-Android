@@ -107,7 +107,10 @@ enum class CadenceScript(val scriptId: String, val type: CadenceScriptType) {
 
     // DOMAIN
     CADENCE_CLAIM_INBOX_TOKEN("claimFTFromInbox", CadenceScriptType.DOMAIN),
-    CADENCE_CLAIM_INBOX_NFT("claimNFTFromInbox", CadenceScriptType.DOMAIN);
+    CADENCE_CLAIM_INBOX_NFT("claimNFTFromInbox", CadenceScriptType.DOMAIN),
+
+    // LOST_AND_FOUND
+    CADENCE_BATCH_QUERY_UNCLAIMED_NUMBER("batchQueryUnclaimedNumber", CadenceScriptType.LOST_AND_FOUND);
 
     fun getScript(): String {
         return when (type) {
@@ -124,6 +127,7 @@ enum class CadenceScript(val scriptId: String, val type: CadenceScriptType) {
             CadenceScriptType.NFT -> CadenceApiManager.getCadenceNFTScript(scriptId)
             CadenceScriptType.SWAP -> CadenceApiManager.getCadenceSwapScript(scriptId)
             CadenceScriptType.BRIDGE -> CadenceApiManager.getCadenceBridgeScript(scriptId)
+            CadenceScriptType.LOST_AND_FOUND -> CadenceApiManager.getCadenceLostAndFoundScript(scriptId)
         }
     }
 }
@@ -141,5 +145,6 @@ enum class CadenceScriptType {
     EVM,
     NFT,
     SWAP,
-    BRIDGE;
+    BRIDGE,
+    LOST_AND_FOUND;
 }

@@ -5,7 +5,6 @@ import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.model.LocalSwitchAccount
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
-import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.flowjvm.cadenceGetAllFlowBalance
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofitApi
@@ -102,8 +101,7 @@ class ProfileSwitchViewModel : ViewModel() {
 
         flowWallets.forEach { flowWallet ->
             // Main account
-            val emojiInfo = AccountEmojiManager.getEmojiByAddress(flowWallet.address)
-            avatars.add(AvatarData.Emoji(emojiInfo.emojiId))
+            avatars.add(AvatarData.Emoji(flowWallet.emojiId))
 
             flowWallet.linkedWallets.forEach { linked ->
                 when (linked) {
@@ -111,8 +109,7 @@ class ProfileSwitchViewModel : ViewModel() {
                          if (linked.icon.isNotEmpty()) {
                             avatars.add(AvatarData.Icon(linked.icon))
                         } else {
-                            val childEmojiInfo = AccountEmojiManager.getEmojiByAddress(linked.address)
-                            avatars.add(AvatarData.Emoji(childEmojiInfo.emojiId))
+                            avatars.add(AvatarData.Emoji(linked.emojiId))
                         }
                     }
                     is COAWallet -> {
@@ -128,8 +125,7 @@ class ProfileSwitchViewModel : ViewModel() {
 
         // Add EOA address avatar
         profile.walletNodes.filterIsInstance<EOAWallet>().forEach { eoa ->
-            val emojiInfo = AccountEmojiManager.getEmojiByAddress(eoa.address)
-            avatars.add(AvatarData.Emoji(emojiInfo.emojiId))
+            avatars.add(AvatarData.Emoji(eoa.emojiId))
         }
 
         return ProfileItemData(profile, avatars, emptyMap())
@@ -177,27 +173,39 @@ class ProfileSwitchViewModel : ViewModel() {
             flowWallet.linkedWallets.filterIsInstance<COAWallet>().forEach { coaWallet ->
                 val coaAddress = coaWallet.address
 
-                // Only show COA if it has balance or NFTs
-                val coaBalance = balanceMap[coaAddress]
-                val hasBalance = coaBalance != null && coaBalance > BigDecimal.ZERO
-                var hasNFTs = false
+                // Only show COA if it has balance, EVM tokens, or NFTs
+                val shouldShowCoa = run {
+                    // 1. Check FLOW balance
+                    val coaBalance = balanceMap[coaAddress]
+                    if (coaBalance != null && coaBalance > BigDecimal.ZERO) return@run true
 
-                if (!hasBalance) {
+                    // 2. Check EVM token balances (USDC, WETH, etc.)
+                    try {
+                        val tokenResponse = service.getEVMTokenList(coaAddress, null, null)
+                        val hasEvmTokens = tokenResponse.data?.any { token ->
+                            token.balance?.toBigDecimalOrNull()?.let { it > BigDecimal.ZERO } == true
+                        } == true
+                        if (hasEvmTokens) return@run true
+                    } catch (_: Exception) {
+                        // Ignore EVM token API errors
+                    }
+
+                    // 3. Check NFT collections
                     try {
                         val nftResponse = service.getEVMNFTCollections(coaAddress)
                         val totalNftCount = nftResponse.data?.sumOf { it.count ?: 0 } ?: 0
-                        hasNFTs = nftResponse.data?.isNotEmpty() == true && totalNftCount > 0
-                    } catch (e: Exception) {
+                        if (nftResponse.data?.isNotEmpty() == true && totalNftCount > 0) return@run true
+                    } catch (_: Exception) {
                         // Ignore NFT API errors
                     }
+
+                    false
                 }
-                val shouldShowCoa = hasBalance || hasNFTs
 
                 if (shouldShowCoa) {
                     // Add if not present
                     if (!verifiedCoaAvatars.containsKey(coaAddress)) {
-                        val emojiInfo = AccountEmojiManager.getEmojiByAddress(coaAddress)
-                        val avatarData = AvatarData.Emoji(emojiInfo.emojiId)
+                        val avatarData = AvatarData.Emoji(coaWallet.emojiId)
                         verifiedCoaAvatars[coaAddress] = avatarData
                         currentAvatars.add(avatarData)
                     }

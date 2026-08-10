@@ -9,16 +9,19 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
+import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
 import com.flowfoundation.wallet.databinding.ItemWalletNotificationBinding
+import com.flowfoundation.wallet.manager.inbox.InboxManager
 import com.flowfoundation.wallet.manager.notification.WalletNotificationManager
 import com.flowfoundation.wallet.manager.walletconnect.dispatch
 import com.flowfoundation.wallet.manager.walletconnect.getWalletConnectPendingRequests
 import com.flowfoundation.wallet.manager.walletconnect.model.toWcRequest
 import com.flowfoundation.wallet.page.browser.openBrowser
 import com.flowfoundation.wallet.page.notification.model.DisplayType
+import com.flowfoundation.wallet.reactnative.ReactNativeActivity
 import com.flowfoundation.wallet.page.notification.model.Type
 import com.flowfoundation.wallet.page.notification.model.WalletNotification
 import com.flowfoundation.wallet.page.profile.subpage.walletconnect.session.WalletConnectSessionActivity
@@ -43,8 +46,11 @@ class NotificationItemPresenter(
             if (model.icon.isNullOrEmpty()) {
                 ivIcon.gone()
             } else {
-                Glide.with(ivIcon).load(model.icon()).transform(CenterCrop(), CircleCrop())
-                    .into(ivIcon)
+                if (model.type == Type.INBOX) {
+                    ivIcon.setImageResource(R.drawable.ic_inbox)
+                } else {
+                    Glide.with(ivIcon).load(model.icon()).transform(CenterCrop(), CircleCrop()).into(ivIcon)
+                }
                 ivIcon.visible()
             }
             tvTitle.text = model.title.orEmpty()
@@ -78,6 +84,12 @@ class NotificationItemPresenter(
                 WalletNotificationManager.removeNotification(model)
             }
             binding.root.setOnClickListener {
+                if (model.type == Type.INBOX) {
+                    ReactNativeActivity.launchClaimTokens(view.context)
+                    WalletNotificationManager.removeNotification(model)
+                    InboxManager.clearNotificationRef()
+                    return@setOnClickListener
+                }
                 if (model.type == Type.PENDING_REQUEST) {
                     logd("NotificationItemPresenter", "click pending request")
 

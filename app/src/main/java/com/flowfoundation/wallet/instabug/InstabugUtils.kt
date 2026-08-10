@@ -7,18 +7,18 @@ import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.instabug.library.Feature
-import com.instabug.library.Instabug
-import com.instabug.library.IssueType
-import com.instabug.library.MaskingType
-import com.instabug.library.ReproConfigurations
-import com.instabug.library.ReproMode
-import com.instabug.library.invocation.InstabugInvocationEvent
-import com.instabug.library.ui.onboarding.WelcomeMessage
+import ai.luciq.library.Feature
+import ai.luciq.library.Luciq
+import ai.luciq.library.IssueType
+import ai.luciq.library.MaskingType
+import ai.luciq.library.ReproConfigurations
+import ai.luciq.library.ReproMode
+import ai.luciq.library.invocation.LuciqInvocationEvent
+import ai.luciq.library.ui.onboarding.WelcomeMessage
 import com.flowfoundation.wallet.utils.isDev
 import com.flowfoundation.wallet.utils.isTesting
-import com.instabug.bug.BugReporting
-import com.instabug.bug.ProactiveReportingConfigs
+import ai.luciq.bug.BugReporting
+import ai.luciq.bug.ProactiveReportingConfigs
 
 
 fun instabugInitialize(application: Application) {
@@ -26,11 +26,11 @@ fun instabugInitialize(application: Application) {
         return
     }
     if (isDev()) {
-        Instabug.Builder(application, BuildConfig.INSTABUG_TOKEN_DEV)
+        Luciq.Builder(application, BuildConfig.INSTABUG_TOKEN_DEV)
             .setInvocationEvents(
-                InstabugInvocationEvent.SCREENSHOT,
-                InstabugInvocationEvent.SHAKE,
-                InstabugInvocationEvent.FLOATING_BUTTON)
+                LuciqInvocationEvent.SCREENSHOT,
+                LuciqInvocationEvent.SHAKE,
+                LuciqInvocationEvent.FLOATING_BUTTON)
             .setTrackingUserStepsState(Feature.State.ENABLED)
             .setReproConfigurations(
                 ReproConfigurations.Builder()
@@ -38,12 +38,12 @@ fun instabugInitialize(application: Application) {
                 .build())
             .setAutoMaskScreenshotsTypes(MaskingType.MASK_NOTHING)
             .build()
-        Instabug.setWelcomeMessageState(WelcomeMessage.State.BETA)
+        Luciq.setWelcomeMessageState(WelcomeMessage.State.BETA)
     } else {
-        Instabug.Builder(application, BuildConfig.INSTABUG_TOKEN_PROD)
+        Luciq.Builder(application, BuildConfig.INSTABUG_TOKEN_PROD)
             .setInvocationEvents(
-                InstabugInvocationEvent.SCREENSHOT,
-                InstabugInvocationEvent.SHAKE
+                LuciqInvocationEvent.SCREENSHOT,
+                LuciqInvocationEvent.SHAKE
             )
             .setTrackingUserStepsState(Feature.State.ENABLED)
             .setReproConfigurations(
@@ -52,9 +52,9 @@ fun instabugInitialize(application: Application) {
                     .build())
             .setAutoMaskScreenshotsTypes(MaskingType.MASK_NOTHING)
             .build()
-        Instabug.setWelcomeMessageState(WelcomeMessage.State.DISABLED)
+        Luciq.setWelcomeMessageState(WelcomeMessage.State.DISABLED)
     }
-    Instabug.onReportSubmitHandler { report ->
+    Luciq.onReportSubmitHandler { report ->
         firebaseUid()?.let {
             report.setUserAttribute("uid", it)
         }
@@ -68,7 +68,7 @@ fun instabugInitialize(application: Application) {
                 childAccounts.toString()
             )
         report.setUserAttribute("COA", EVMWalletManager.getEVMAddress().orEmpty())
-        report.setUserAttribute("EOA", WalletManager.getEOAAddress().orEmpty())
+        report.setUserAttribute("EOA", WalletManager.getEOAAddresses().toString())
         report.setUserAttribute("Network", chainNetWorkString())
     }
     val configuration = ProactiveReportingConfigs.Builder()

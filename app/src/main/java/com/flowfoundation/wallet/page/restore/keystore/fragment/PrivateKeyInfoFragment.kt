@@ -20,7 +20,7 @@ import com.flowfoundation.wallet.utils.listeners.SimpleTextWatcher
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.toast
-import com.instabug.library.Instabug
+import ai.luciq.library.Luciq
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -121,7 +121,7 @@ class PrivateKeyInfoFragment: Fragment() {
             }
 
             updateImportButtonState()
-            Instabug.addPrivateViews(etPrivateKey)
+            Luciq.addPrivateViews(etPrivateKey)
         }
     }
 

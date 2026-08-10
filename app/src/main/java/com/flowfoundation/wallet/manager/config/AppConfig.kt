@@ -54,6 +54,10 @@ object AppConfig {
 
     fun checkBloctoKeyRotation() = isDev() || isTesting() || (config().getFeatures().bloctoKeyRotation ?: false)
 
+    fun canCreateNewAccount() = isDev() || isTesting() || (config().getFeatures().createNewAccount ?: false)
+
+    fun canClaimInbox() = isDev() || isTesting() || (config().getFeatures().cadenceInbox ?: false)
+
     fun addressRegistry(network: Int): Map<String, String> {
         return when (network) {
             NETWORK_TESTNET -> flowAddressRegistry().testnet
@@ -228,7 +232,11 @@ private data class Features(
     @SerializedName("blocto_key_rotation")
     val bloctoKeyRotation: Boolean?,
     @SerializedName("coa_migration")
-    val coaMigration: Boolean?
+    val coaMigration: Boolean?,
+    @SerializedName("create_new_account")
+    val createNewAccount: Boolean?,
+    @SerializedName("cadence_inbox")
+    val cadenceInbox: Boolean?
 )
 
 private data class Payer(

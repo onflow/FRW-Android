@@ -5,10 +5,13 @@ import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager.walletNodes
 import com.flowfoundation.wallet.manager.account.AccountWalletManager
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
+import com.flowfoundation.wallet.manager.key.storage.KeyStorageManager
 import com.flowfoundation.wallet.manager.walletdata.FlowWallet
 import com.flowfoundation.wallet.utils.*
 import com.flowfoundation.wallet.utils.error.AccountError
 import com.flowfoundation.wallet.utils.error.ErrorReporter
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
 import java.io.File
@@ -18,6 +21,7 @@ object AccountCacheManager{
     private val TAG = AccountCacheManager::class.java.simpleName
     private val file by lazy { File(ACCOUNT_PATH, "${"accounts".hashCode()}") }
     private val backupFile by lazy { File(ACCOUNT_PATH, "${"accounts_backup".hashCode()}") }
+    private val writeMutex = Mutex()
 
     @WorkerThread
     fun read(): List<Account>? {
@@ -29,11 +33,13 @@ object AccountCacheManager{
             logd(TAG, "Successfully read from primary cache: ${primaryResult.size} accounts")
             // Update backup if primary is good
             ioScope {
-                try {
-                    backupFile.writeText(file.readText())
-                    logd(TAG, "Updated backup from validated primary cache")
-                } catch (e: Exception) {
-                    loge(TAG, "Failed to update backup: $e")
+                writeMutex.withLock {
+                    try {
+                        backupFile.writeText(file.readText())
+                        logd(TAG, "Updated backup from validated primary cache")
+                    } catch (e: Exception) {
+                        loge(TAG, "Failed to update backup: $e")
+                    }
                 }
             }
             return primaryResult
@@ -44,13 +50,15 @@ object AccountCacheManager{
         val backupResult = readFromFile(backupFile)
         if (backupResult != null) {
             logd(TAG, "Successfully recovered from backup cache: ${backupResult.size} accounts")
-            // Restore primary from backup
+            // Restore primary from backup — must go through mutex to avoid racing with cache()
             ioScope {
-                try {
-                    file.writeText(backupFile.readText())
-                    logd(TAG, "Restored primary from repaired backup cache")
-                } catch (e: Exception) {
-                    loge(TAG, "Failed to restore primary from backup: $e")
+                writeMutex.withLock {
+                    try {
+                        backupFile.copyTo(file, overwrite = true)
+                        logd(TAG, "Restored primary from repaired backup cache")
+                    } catch (e: Exception) {
+                        loge(TAG, "Failed to restore primary from backup: $e")
+                    }
                 }
             }
             return backupResult
@@ -66,11 +74,8 @@ object AccountCacheManager{
             return null
         }
 
-        var str = cacheFile.read()
+        val str = cacheFile.read()
         logd(TAG, "Reading from ${cacheFile.name}: ${str.length} characters, isBlank=${str.isBlank()}")
-
-        // Migrate old field names to new format
-        str = migrateOldFieldNames(str)
 
         if (str.isBlank()) {
             logd(TAG, "Warning: Cache file ${cacheFile.name} exists but is empty")
@@ -91,9 +96,14 @@ object AccountCacheManager{
 
             // Validate account data
             val validAccounts = result.filter { account ->
+                val uid = account.wallet?.id ?: ""
                 val isValid = account.userInfo.username.isNotBlank() &&
-                             (!account.keyStoreInfo.isNullOrBlank() || !account.prefix
-                                 .isNullOrBlank() || AccountWalletManager.isHDWallet(account.wallet?.id ?: ""))
+                             (!account.keyStoreInfo.isNullOrBlank() ||
+                              !account.prefix.isNullOrBlank() ||
+                              AccountWalletManager.isHDWallet(uid) ||
+                              KeyStorageManager.hasSeedPhrase(uid) ||
+                              KeyStorageManager.hasPrivateKey(uid) ||
+                              KeyStorageManager.hasAndroidKeystorePrefix(uid))
                 if (!isValid) {
                     logd(TAG, "Invalid account found: ${account.userInfo.username}")
                 }
@@ -127,19 +137,12 @@ object AccountCacheManager{
     }
 
     fun cache(data: List<Account>) {
-        logd(TAG, "cache() called with ${data.size} accounts")
-        logd(TAG, "cache() called with accounts: $data")
-        if (data.isEmpty()) {
-            logd(TAG, "Warning: Caching empty accounts list")
-        } else {
-            logd(TAG, "Caching accounts with usernames: ${data.map { it.userInfo.username }}")
-        }
+        logd(TAG, "cache() called with ${data.size} accounts: ${data.map { it.userInfo.username }}")
         ioScope {
-            try {
-                cacheSync(data)
-                // Create backup copy only after verifying main file integrity
-                if (file.exists() && file.length() > 0) {
-                    // Verify the written data is valid before creating backup
+            writeMutex.withLock {
+                try {
+                    cacheSync(data)
+                    // Create backup copy only after verifying main file integrity
                     val writtenData = readFromFile(file)
                     if (writtenData != null && writtenData.size == data.size) {
                         backupFile.writeText(file.readText())
@@ -147,41 +150,24 @@ object AccountCacheManager{
                     } else {
                         loge(TAG, "Main cache validation failed, not creating backup. Expected: ${data.size}, Got: ${writtenData?.size}")
                     }
+                } catch (e: Exception) {
+                    loge(TAG, "Error caching accounts: $e")
                 }
-            } catch (e: Exception) {
-                loge(TAG, "Error caching accounts: $e")
             }
         }
     }
 
     private fun cacheSync(data: List<Account>) {
-        try {
-            val str = Json.encodeToString(ListSerializer(Account.serializer()), data)
-
-            // Validate JSON before writing
-            try {
-                Json.decodeFromString(ListSerializer(Account.serializer()), str)
-            } catch (e: Exception) {
-                loge(TAG, "Generated invalid JSON, not writing to cache: $e")
-                return
-            }
-
+        val str = Json.encodeToString(ListSerializer(Account.serializer()), data)
+        // Atomic write: write to a temp file first, then rename to avoid partial writes
+        val tempFile = File(ACCOUNT_PATH, "${"accounts".hashCode()}.tmp")
+        tempFile.writeText(str)
+        if (!tempFile.renameTo(file)) {
+            // renameTo can fail across filesystems; fall back to direct write
+            tempFile.delete()
             str.saveToFile(file)
-            logd(TAG, "Successfully cached ${data.size} accounts")
-        } catch (e: Exception) {
-            loge(TAG, "Error during cacheSync: $e")
-            loge(TAG, "Exception type: ${e.javaClass.name}")
-            e.printStackTrace()
-            // Log account structure for debugging
-            if (data.isNotEmpty()) {
-                val firstAccount = data.first()
-                loge(TAG, "First account structure: userInfo=${firstAccount.userInfo.javaClass.name}, " +
-                    "wallet=${firstAccount.wallet?.javaClass?.name}, " +
-                    "walletEmojiList=${firstAccount.walletEmojiList?.javaClass?.name}, " +
-                    "walletNodes=${firstAccount.walletNodes.javaClass.name}")
-            }
-            throw e
         }
+        logd(TAG, "Successfully cached ${data.size} accounts")
     }
 
     fun clearCache() {
@@ -196,29 +182,4 @@ object AccountCacheManager{
         }
     }
 
-    /**
-     * Migrates old field names in cached JSON to new format.
-     * This handles the transition from old cache format to new serialization format.
-     *
-     * Field mappings:
-     * - "isPrivate" -> "private" (UserInfoData field name change)
-     * - "chainId" -> "chain_id" (BlockchainData field name change)
-     */
-    private fun migrateOldFieldNames(json: String): String {
-        var migrated = json
-
-        // Migrate UserInfoData.isPrivate to private
-        if (migrated.contains("\"isPrivate\":")) {
-            logd(TAG, "Migrating old field name: isPrivate -> private")
-            migrated = migrated.replace("\"isPrivate\":", "\"private\":")
-        }
-
-        // Migrate BlockchainData.chainId to chain_id
-        if (migrated.contains("\"chainId\":")) {
-            logd(TAG, "Migrating old field name: chainId -> chain_id")
-            migrated = migrated.replace("\"chainId\":", "\"chain_id\":")
-        }
-
-        return migrated
-    }
 }

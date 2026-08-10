@@ -13,7 +13,7 @@ import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.isNightMode
 import com.flowfoundation.wallet.utils.textToClipboard
 import com.flowfoundation.wallet.utils.toast
-import com.instabug.library.Instabug
+import ai.luciq.library.Luciq
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 
 class SecurityPublicKeyActivity : BaseActivity() {
@@ -51,7 +51,7 @@ class SecurityPublicKeyActivity : BaseActivity() {
 
             hashAlgorithm.text = getString(R.string.hash_algorithm, cryptoProvider.getHashAlgorithm().algorithm)
             signAlgorithm.text = getString(R.string.sign_algorithm, cryptoProvider.getSignatureAlgorithm().value)
-            Instabug.addPrivateViews(privateKeyView)
+            Luciq.addPrivateViews(privateKeyView)
         }
     }
 

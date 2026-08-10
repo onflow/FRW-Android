@@ -41,6 +41,7 @@ object LaunchManager {
         application.startServiceSafe(Intent(application, MessagingService::class.java))
         PageLifecycleObserver.init(application)
         safeRun { System.loadLibrary("TrustWalletCore") }
+        safeRun { instabugInitialize(application) }
         refreshChainNetwork {
             safeRun { MixpanelManager.init(application) }
             safeRun { WalletConnect.init(application) }
@@ -48,7 +49,6 @@ object LaunchManager {
             safeRun { FlowCadenceApi.refreshConfig() }
             safeRun { asyncInit() }
             safeRun { firebaseInitialize(application) }
-            safeRun { instabugInitialize(application) }
             safeRun { crowdinInitialize(application) }
             safeRun { setNightMode() }
             safeRun { runWorker() }

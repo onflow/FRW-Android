@@ -35,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -53,6 +54,7 @@ fun RestoreMnemonicScreen(
 ) {
     val isRestoring by viewModel.isRestoring.collectAsState()
     val restoreSuccess by viewModel.restoreSuccess.collectAsState()
+    val mnemonicMismatch by viewModel.mnemonicMismatch.collectAsState()
     var mnemonic by remember { mutableStateOf("") }
     var isValid by remember { mutableStateOf(false) }
 
@@ -64,6 +66,7 @@ fun RestoreMnemonicScreen(
 
     LaunchedEffect(mnemonic) {
         isValid = viewModel.validateMnemonic(mnemonic.trim())
+        if (mnemonicMismatch) viewModel.resetMnemonicMismatch()
     }
 
     Scaffold(
@@ -116,20 +119,29 @@ fun RestoreMnemonicScreen(
 
                 OutlinedTextField(
                     value = mnemonic,
-                    onValueChange = { mnemonic = it },
+                    onValueChange = {
+                        mnemonic = it
+                        if (mnemonicMismatch) viewModel.resetMnemonicMismatch()
+                    },
+                    isError = mnemonicMismatch,
+                    supportingText = if (mnemonicMismatch) {
+                        { Text(stringResource(R.string.restore_mnemonic_mismatch), color = colorResource(id = R.color.error)) }
+                    } else null,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp),
                     placeholder = { Text("Enter recovery phrase", color = colorResource(id = R.color.text_3)) },
                     shape = RoundedCornerShape(16.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = colorResource(id = R.color.bg_2), // Use bg_2 for input background
+                        focusedContainerColor = colorResource(id = R.color.bg_2),
                         unfocusedContainerColor = colorResource(id = R.color.bg_2),
+                        errorContainerColor = colorResource(id = R.color.bg_2),
                         focusedBorderColor = Color.Transparent,
                         unfocusedBorderColor = Color.Transparent,
                         cursorColor = colorResource(id = R.color.colorSecondary),
                         focusedTextColor = colorResource(id = R.color.text),
-                        unfocusedTextColor = colorResource(id = R.color.text)
+                        unfocusedTextColor = colorResource(id = R.color.text),
+                        errorTextColor = colorResource(id = R.color.text),
                     )
                 )
 

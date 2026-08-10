@@ -1,6 +1,7 @@
 package com.flowfoundation.wallet.manager.evm
 
 import com.flowfoundation.wallet.manager.account.AccountManager
+import com.flowfoundation.wallet.manager.walletdata.EOAWallet
 import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeChildFTFromCOA
 import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeChildFTToCOA
@@ -71,7 +72,7 @@ object EVMWalletManager {
     fun getEVMAddressByAddress(address: String): String? {
         val evmAddress = AccountManager.walletNodes()
             ?.filterIsInstance<FlowWallet>()
-            ?.firstOrNull { it.address == address }
+            ?.firstOrNull { it.address.equals(address, true) }
             ?.linkedWallets
             ?.filterIsInstance<COAWallet>()
             ?.firstOrNull()?.address
@@ -119,7 +120,10 @@ object EVMWalletManager {
     }
 
     fun isEOAAddress(address: String): Boolean {
-        val result = address.equals(WalletManager.getEOAAddress(), ignoreCase = true)
+        val result = AccountManager.walletNodes()
+            ?.filterIsInstance<EOAWallet>()
+            ?.any { it.address.equals(address, ignoreCase = true) }
+            ?: false
         logd(TAG, "isEOAAddress result: $result")
         return result
     }

@@ -52,7 +52,7 @@
         <androidx.constraintlayout.utils.widget.ImageFilterView
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:background="@color/deep_bg"
+            android:background="@color/deep_bg_dialog"
             android:scaleType="centerCrop"
             android:src="@drawable/bg_coin_enable"
             app:layout_constraintBottom_toBottomOf="parent"

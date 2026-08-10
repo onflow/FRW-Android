@@ -75,7 +75,10 @@ enum class Type {
     IMAGE,
 
     @SerializedName("pending_request")
-    PENDING_REQUEST
+    PENDING_REQUEST,
+
+    @SerializedName("inbox")
+    INBOX
 }
 
 enum class Priority {

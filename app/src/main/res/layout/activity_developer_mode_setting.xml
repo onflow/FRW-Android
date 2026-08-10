@@ -196,7 +196,32 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         app:iconEnable="false"
-                        app:titleId="@string/debug_view"/>
+                        app:titleId="@string/wrap_eoa_tx_with_cadence"/>
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cv_hide_coa_zero_balance"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="18dp"
+                android:layout_marginTop="16dp"
+                app:cardBackgroundColor="@color/deep_bg"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp">
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <com.flowfoundation.wallet.page.profile.widget.ProfilePreferenceSwitch
+                        android:id="@+id/hide_coa_zero_balance"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:iconEnable="false"
+                        app:titleId="@string/hide_coa_with_zero_balance"/>
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
             </com.google.android.material.card.MaterialCardView>

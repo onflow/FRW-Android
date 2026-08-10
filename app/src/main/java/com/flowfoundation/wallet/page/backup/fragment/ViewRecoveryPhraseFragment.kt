@@ -12,7 +12,7 @@ import com.flowfoundation.wallet.page.backup.viewmodel.BackupViewMnemonicViewMod
 import com.flowfoundation.wallet.page.walletcreate.fragments.mnemonic.MnemonicAdapter
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.widgets.itemdecoration.GridSpaceItemDecoration
-import com.instabug.library.Instabug
+import ai.luciq.library.Luciq
 
 class ViewRecoveryPhraseFragment: Fragment() {
     private lateinit var binding: FragmentViewRecoveryPhraseBinding
@@ -45,7 +45,7 @@ class ViewRecoveryPhraseFragment: Fragment() {
             adapter = this@ViewRecoveryPhraseFragment.adapter
             layoutManager = GridLayoutManager(context, 2, GridLayoutManager.VERTICAL, false)
             addItemDecoration(GridSpaceItemDecoration(vertical = 16.0))
-            Instabug.addPrivateViews(this)
+            Luciq.addPrivateViews(this)
         }
         binding.copyButton.setOnClickListener {
             viewModel.copyMnemonic()

@@ -20,6 +20,8 @@ import com.flowfoundation.wallet.wallet.toAddress
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withTimeout
 import org.onflow.flow.infrastructure.Cadence
 
@@ -145,17 +147,23 @@ object WalletDataManager {
         logd(TAG, "Updating current account data: ${currentAccount.userInfo.username}")
 
         // Try to reuse the singleton Wallet instance from WalletManager
-        var wallet = WalletManager.wallet()
+        val existingWallet = WalletManager.wallet()
+        val wallet: Wallet?
+        val canDeriveEoa: Boolean
 
-        if (wallet == null) {
+        if (existingWallet == null) {
             logd(TAG, "WalletManager.wallet() is null, attempting to create temporary instance")
-            wallet = WalletCreationHelper.createWalletFromAccount(currentAccount)
+            val result = WalletCreationHelper.createWalletFromAccount(currentAccount)
+            wallet = result?.wallet
+            canDeriveEoa = result?.canDeriveEoa ?: false
         } else {
             logd(TAG, "Reusing WalletManager instance: ${WalletManager.getCurrentFlowWalletAddress()}")
+            wallet = existingWallet
+            canDeriveEoa = WalletManager.canDeriveEoa()
         }
 
         if (wallet != null) {
-            updateCurrentAccountData(currentAccount, wallet)
+            updateCurrentAccountData(currentAccount, wallet, canDeriveEoa)
         } else {
             logd(TAG, "Failed to obtain wallet instance for current account")
         }
@@ -232,7 +240,7 @@ object WalletDataManager {
     /**
      * Update data for the current account using provided Wallet
      */
-    private suspend fun updateCurrentAccountData(account: Account, wallet: Wallet) {
+    private suspend fun updateCurrentAccountData(account: Account, wallet: Wallet, canDeriveEoa: Boolean) {
         try {
             logd(TAG, "Refreshing wallet accounts for ${account.userInfo.username}...")
             wallet.refreshAccounts()
@@ -252,7 +260,7 @@ object WalletDataManager {
 
             // 3. Merge both sources to avoid losing networks (like Testnet) when indexer is slow
             val allBlockchainData = (indexerBlockchainData + backendBlockchainData)
-                .distinctBy { "${it.address}-${it.chainId}" }
+                .distinctBy { "${it.address.lowercase()}-${it.chainId}" }
                 .filter { it.address.isNotBlank() }
 
             logd(TAG, "Merged blockchain data: ${allBlockchainData.map { "${it.address} (${it.chainId})" }}")
@@ -261,87 +269,114 @@ object WalletDataManager {
             val nodes = mutableListOf<MainWallet>()
 
             logd(TAG, "Fetching data for ${allBlockchainData.size} BlockchainData entries for node construction")
+
+            // Collect all valid addresses before emoji assignment to clean stale entries
+            val validAddresses = mutableSetOf<String>()
+            allBlockchainData.forEach { validAddresses.add(it.address) }
+            // EOA addresses will be added below; existing EOAs are included now
+            account.walletNodes.filterIsInstance<EOAWallet>().forEach { validAddresses.add(it.address) }
+            AccountEmojiManager.cleanStaleEntries(validAddresses)
+
             fun getEmojiInfo(address: String) = AccountEmojiManager.getEmojiByAddress(address)
 
-            // EOA Wallet - WalletCreationHelper.createWalletFromAccount() sets isEoaDisabled
-            // based on key type (Secure Enclave = disabled, others = enabled)
-            if (!WalletManager.isEoaDisabled()) {
-                val eoa = deriveEoaAddress(wallet)
-                logd(TAG, "Generated EOA address: $eoa")
-                if (eoa.isNotEmpty()) {
-                    logd(TAG, "Adding EOA for account: $eoa")
-                    val eoaEmojiInfo = getEmojiInfo(eoa)
-                    nodes.add(EOAWallet(
-                        address = eoa,
-                        name = eoaEmojiInfo.emojiName,
-                        emojiId = eoaEmojiInfo.emojiId
-                    ))
+            // EOA Wallet - canDeriveEoa is determined per-wallet by WalletCreationHelper
+            // based on key type (Secure Enclave / private key = false, seed phrase = true)
+            if (canDeriveEoa) {
+                val existingEOAs = account.walletNodes.filterIsInstance<EOAWallet>()
+                if (existingEOAs.isNotEmpty()) {
+                    // Preserve all existing EOA wallets with their indices
+                    existingEOAs.forEach { existingEoa ->
+                        val eoaEmojiInfo = getEmojiInfo(existingEoa.address)
+                        nodes.add(EOAWallet(
+                            address = existingEoa.address,
+                            name = eoaEmojiInfo.emojiName,
+                            emojiId = eoaEmojiInfo.emojiId,
+                            index = existingEoa.index
+                        ))
+                    }
+                    logd(TAG, "Preserved ${existingEOAs.size} existing EOA wallets")
+                } else {
+                    val eoa = deriveEoaAddress(wallet)
+                    logd(TAG, "Generated EOA address: $eoa")
+                    if (eoa.isNotEmpty()) {
+                        logd(TAG, "Adding EOA for account: $eoa")
+                        val eoaEmojiInfo = getEmojiInfo(eoa)
+                        nodes.add(EOAWallet(
+                            address = eoa,
+                            name = eoaEmojiInfo.emojiName,
+                            emojiId = eoaEmojiInfo.emojiId,
+                            index = 0
+                        ))
+                    }
                 }
             }
 
+            val semaphore = Semaphore(3)
             kotlinx.coroutines.supervisorScope {
                 val deferredFlowNodes = allBlockchainData.map { blockchainData ->
                     val address = blockchainData.address
                     val chainId = blockchainData.chainId
 
                     async {
-                        // Find existing node if any to preserve existing linked wallets
-                        val existingNode = account.walletNodes.filterIsInstance<FlowWallet>()
-                            .firstOrNull { it.address == address && it.chainIdString == chainId }
+                        semaphore.withPermit {
+                            // Find existing node if any to preserve existing linked wallets
+                            val existingNode = account.walletNodes.filterIsInstance<FlowWallet>()
+                                .firstOrNull { it.address.equals(address, ignoreCase = true) && it.chainIdString == chainId }
 
-                        val linkedWallets = mutableListOf<LinkedWallet>()
+                            val linkedWallets = mutableListOf<LinkedWallet>()
 
-                        // Start with existing linked wallets to prevent flickering/loss on error
-                        existingNode?.linkedWallets?.let { linkedWallets.addAll(it) }
+                            // Start with existing linked wallets to prevent flickering/loss on error
+                            existingNode?.linkedWallets?.let { linkedWallets.addAll(it) }
 
-                        try {
-                            // Update Child Accounts
-                            val children = fetchChildAccountsForAddress(address)
-                            // Only update if we successfully fetched something or if we know for sure it's empty
-                            // (Here assuming fetchChildAccountsForAddress returns emptyList on error,
-                            // but we might want to check log logs. For now, strict replacement is risky without error diff.
-                            // Better strategy: replace specific types only if fetch succeeds)
+                            try {
+                                // Update Child Accounts
+                                val children = fetchChildAccountsForAddress(address)
+                                // Only update if we successfully fetched something or if we know for sure it's empty
+                                // (Here assuming fetchChildAccountsForAddress returns emptyList on error,
+                                // but we might want to check log logs. For now, strict replacement is risky without error diff.
+                                // Better strategy: replace specific types only if fetch succeeds)
 
-                            if (children.isNotEmpty()) {
-                                val nonChildLinks = linkedWallets.filter { it !is ChildWallet }
-                                val newChildren = children.map { child ->
-                                    ChildWallet(
-                                        address = child.address,
-                                        name = child.name,
-                                        icon = child.icon,
-                                        emojiId = getEmojiInfo(child.address).emojiId
-                                    )
+                                if (children.isNotEmpty()) {
+                                    val nonChildLinks = linkedWallets.filter { it !is ChildWallet }
+                                    val newChildren = children.map { child ->
+                                        ChildWallet(
+                                            address = child.address,
+                                            name = child.name,
+                                            icon = child.icon,
+                                            emojiId = getEmojiInfo(child.address).emojiId
+                                        )
+                                    }
+                                    linkedWallets.clear()
+                                    linkedWallets.addAll(nonChildLinks + newChildren)
                                 }
-                                linkedWallets.clear()
-                                linkedWallets.addAll(nonChildLinks + newChildren)
+
+                                // Update COA
+                                val coa = fetchEVMAddressForAddress(address)
+                                if (coa != null) {
+                                    val nonCoaLinks = linkedWallets.filter { it !is COAWallet }
+                                    val coaEmojiInfo = getEmojiInfo(coa)
+                                    linkedWallets.clear()
+                                    linkedWallets.addAll(nonCoaLinks + COAWallet(
+                                        address = coa,
+                                        name = coaEmojiInfo.emojiName,
+                                        emojiId = coaEmojiInfo.emojiId
+                                    ))
+                                    logd(TAG, "Updated COA for $address: $coa")
+                                }
+                            } catch (e: Exception) {
+                                logd(TAG, "Error updating linked data for $address: ${e.message}")
+                                // Keep existing linkedWallets on error
                             }
 
-                            // Update COA
-                            val coa = fetchEVMAddressForAddress(address)
-                            if (coa != null) {
-                                val nonCoaLinks = linkedWallets.filter { it !is COAWallet }
-                                val coaEmojiInfo = getEmojiInfo(coa)
-                                linkedWallets.clear()
-                                linkedWallets.addAll(nonCoaLinks + COAWallet(
-                                    address = coa,
-                                    name = coaEmojiInfo.emojiName,
-                                    emojiId = coaEmojiInfo.emojiId
-                                ))
-                                logd(TAG, "Updated COA for $address: $coa")
-                            }
-                        } catch (e: Exception) {
-                            logd(TAG, "Error updating linked data for $address: ${e.message}")
-                            // Keep existing linkedWallets on error
+                            val emojiInfo = getEmojiInfo(address)
+                            FlowWallet(
+                                address = address,
+                                name = emojiInfo.emojiName,
+                                emojiId = emojiInfo.emojiId,
+                                chainIdString = chainId,
+                                linkedWallets = linkedWallets
+                            )
                         }
-
-                        val emojiInfo = getEmojiInfo(address)
-                        FlowWallet(
-                            address = address,
-                            name = emojiInfo.emojiName,
-                            emojiId = emojiInfo.emojiId,
-                            chainIdString = chainId,
-                            linkedWallets = linkedWallets
-                        )
                     }
                 }
                 nodes.addAll(deferredFlowNodes.awaitAll())
@@ -366,7 +401,9 @@ object WalletDataManager {
         return try {
             logd(TAG, "Updating non-current account: ${account.userInfo.username}")
 
-            val wallet = WalletCreationHelper.createWalletFromAccount(account, false)
+            val result = WalletCreationHelper.createWalletFromAccount(account, false)
+            val wallet = result?.wallet
+            val canDeriveEoa = result?.canDeriveEoa ?: false
             if (wallet != null) {
                 logd(TAG, "Refreshing wallet accounts for non-current account ${account.userInfo.username}...")
                 wallet.refreshAccounts()
@@ -375,23 +412,49 @@ object WalletDataManager {
 
                 // Build Wallet Nodes
                 val nodes = mutableListOf<MainWallet>()
-                fun getEmojiInfo(address: String) = AccountEmojiManager.getEmojiByAddress(address)
+                val accountUsername = account.userInfo.username
+                val accountEmojiList = (account.walletEmojiList ?: emptyList()).toMutableList()
 
-                // EOA - WalletCreationHelper.createWalletFromAccount() sets isEoaDisabled
-                // based on key type (Secure Enclave = disabled, others = enabled)
-                if (!WalletManager.isEoaDisabled()) {
-                    val eoa = deriveEoaAddress(wallet)
-                    if (eoa.isNotEmpty()) {
-                        logd(TAG, "Adding EOA for non-current account: $eoa")
-                        val eoaEmojiInfo = getEmojiInfo(eoa)
-                        nodes.add(EOAWallet(
-                            address = eoa,
-                            name = eoaEmojiInfo.emojiName,
-                            emojiId = eoaEmojiInfo.emojiId
-                        ))
+                // Collect valid addresses and clean stale emoji entries before assignment
+                val validAddresses = mutableSetOf<String>()
+                walletList.forEach { validAddresses.add(it.address) }
+                account.walletNodes.filterIsInstance<EOAWallet>().forEach { validAddresses.add(it.address) }
+                AccountEmojiManager.cleanStaleEntriesForAccount(validAddresses, accountUsername, accountEmojiList)
+
+                fun getEmojiInfo(address: String) = AccountEmojiManager.getEmojiByAddressForAccount(
+                    address, accountUsername, accountEmojiList
+                )
+
+                // EOA - canDeriveEoa is determined per-wallet by WalletCreationHelper
+                // based on key type (Secure Enclave / private key = false, seed phrase = true)
+                if (canDeriveEoa) {
+                    val existingEOAs = account.walletNodes.filterIsInstance<EOAWallet>()
+                    if (existingEOAs.isNotEmpty()) {
+                        existingEOAs.forEach { existingEoa ->
+                            val eoaEmojiInfo = getEmojiInfo(existingEoa.address)
+                            nodes.add(EOAWallet(
+                                address = existingEoa.address,
+                                name = eoaEmojiInfo.emojiName,
+                                emojiId = eoaEmojiInfo.emojiId,
+                                index = existingEoa.index
+                            ))
+                        }
+                        logd(TAG, "Preserved ${existingEOAs.size} existing EOA wallets for non-current account")
+                    } else {
+                        val eoa = deriveEoaAddress(wallet)
+                        if (eoa.isNotEmpty()) {
+                            logd(TAG, "Adding EOA for non-current account: $eoa")
+                            val eoaEmojiInfo = getEmojiInfo(eoa)
+                            nodes.add(EOAWallet(
+                                address = eoa,
+                                name = eoaEmojiInfo.emojiName,
+                                emojiId = eoaEmojiInfo.emojiId,
+                                index = 0
+                            ))
+                        }
                     }
                 } else {
-                    logd(TAG, "Skipping EOA for non-current account (isEoaDisabled=${WalletManager.isEoaDisabled()})")
+                    logd(TAG, "Skipping EOA for non-current account (canDeriveEoa=false)")
                 }
 
                 kotlinx.coroutines.supervisorScope {

@@ -24,7 +24,10 @@ class RNBridge {
         @SerializedName("onboarding") ONBOARDING,
         @SerializedName("receive") RECEIVE,
         @SerializedName("activity") ACTIVITY,
-        @SerializedName("keystore-migration") KEYSTORE_MIGRATION
+        @SerializedName("keystore-migration") KEYSTORE_MIGRATION,
+        @SerializedName("migration") MIGRATION,
+        @SerializedName("whatsNew") WHATSNEW,
+        @SerializedName("claimTokens") CLAIMTOKENS
     }
 
     enum class AccountTypeType {
@@ -169,7 +172,9 @@ class RNBridge {
         @SerializedName("INSTABUG_TOKEN")
         val INSTABUG_TOKEN: String,
         @SerializedName("MIXPANEL_TOKEN")
-        val MIXPANEL_TOKEN: String?
+        val MIXPANEL_TOKEN: String?,
+        @SerializedName("CADENCE_INBOX")
+        val CADENCE_INBOX: Boolean
     )
 
     data class Currency(

@@ -76,6 +76,7 @@
             android:name=".reactnative.ReactNativeActivity"
             android:exported="false"
             android:launchMode="singleTop"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize|uiMode"
             android:windowSoftInputMode="adjustResize"
@@ -84,21 +85,25 @@
         <activity
             android:name=".manager.drive.GoogleDriveAuthActivity"
             android:launchMode="singleTop"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.Transparent.FullScreen"/>
 
         <activity
             android:name=".manager.dropbox.DropboxAuthActivity"
             android:launchMode="singleTop"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.Transparent.FullScreen"/>
 
         <activity
             android:name=".page.walletrestore.WalletRestoreActivity"
             android:launchMode="singleTop"
+            android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize"/>
 
         <activity
             android:name=".page.wallet.sync.WalletSyncActivity"
-            android:launchMode="singleTop"/>
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait"/>
 
         <activity
             android:name=".page.wallet.confirm.WalletConfirmActivity"
@@ -111,7 +116,8 @@
             android:name=".page.collection.CollectionActivity"
             android:screenOrientation="portrait"/>
         <activity
-            android:name=".page.nft.search.NFTSearchActivity"/>
+            android:name=".page.nft.search.NFTSearchActivity"
+            android:screenOrientation="portrait"/>
 
         <activity
             android:name=".page.profile.subpage.accountsetting.AccountSettingActivity"
@@ -277,11 +283,13 @@
         <activity
             android:name=".page.browser.subpage.filepicker.FilePickerActivity"
             android:launchMode="singleTop"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.Transparent.FullScreen"/>
 
         <activity
             android:name=".page.security.biometric.BiometricActivity"
             android:launchMode="singleTop"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.Transparent.FullScreen"/>
 
         <activity
@@ -336,6 +344,7 @@
             android:name=".page.component.deeplinking.DeepLinkingActivity"
             android:exported="true"
             android:launchMode="singleTop"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.Transparent.FullScreen">
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW"/>
@@ -412,6 +421,7 @@
         <activity
             android:name=".page.common.NotificationDispatchActivity"
             android:launchMode="singleTop"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.Transparent.FullScreen"/>
 
         <activity

@@ -37,6 +37,7 @@ private val KEY_HIDE_WALLET_BALANCE = booleanPreferencesKey("KEY_HIDE_WALLET_BAL
 private val KEY_FREE_GAS_ENABLE = booleanPreferencesKey("KEY_FREE_GAS_ENABLE")
 
 private val KEY_WRAP_EOA_TX_WITH_CADENCE = booleanPreferencesKey("KEY_WRAP_EOA_TX_WITH_CADENCE")
+private val KEY_HIDE_COA_WITH_ZERO_BALANCE = booleanPreferencesKey("KEY_HIDE_COA_WITH_ZERO_BALANCE")
 
 private const val KEY_IS_STAKING_GUIDE_PAGE_DISPLAYED = "KEY_IS_STAKING_GUIDE_PAGE_DISPLAYED"
 private val KEY_IS_MEOW_DOMAIN_CLAIMED = booleanPreferencesKey("KEY_IS_MEOW_DOMAIN_CLAIMED")
@@ -163,7 +164,12 @@ suspend fun isWrapEOATxWithCadenceEnable(): Boolean = dataStore.data.map { it[KE
 fun setWrapEOATxWithCadenceEnable(isWrap: Boolean) { edit { dataStore.edit { it[KEY_WRAP_EOA_TX_WITH_CADENCE] = isWrap } }
 }
 
+suspend fun isHideCOAWithZeroBalanceEnable(): Boolean =
+    dataStore.data.map { it[KEY_HIDE_COA_WITH_ZERO_BALANCE] ?: true }.first()
 
+fun setHideCOAWithZeroBalanceEnable(isHide: Boolean) {
+    edit { dataStore.edit { it[KEY_HIDE_COA_WITH_ZERO_BALANCE] = isHide } }
+}
 
 fun isStakingGuideDisplayed(): Boolean {
     return sharedPreferencesTraditional.getBoolean(KEY_IS_STAKING_GUIDE_PAGE_DISPLAYED, false)

@@ -73,6 +73,41 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/tv_address"
             app:layout_constraintBottom_toBottomOf="@id/tv_address"/>
+
+        <com.facebook.shimmer.ShimmerFrameLayout
+            android:id="@+id/shimmer_balance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="5dp"
+            android:visibility="visible"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+            <View
+                android:layout_width="130dp"
+                android:layout_height="36dp"
+                android:background="@drawable/bg_round_4dp"
+                android:backgroundTint="@color/bg_icon"/>
+        </com.facebook.shimmer.ShimmerFrameLayout>
+
+        <com.facebook.shimmer.ShimmerFrameLayout
+            android:id="@+id/shimmer_address"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="17dp"
+            android:layout_marginBottom="25dp"
+            android:visibility="visible"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_balance"
+            app:layout_constraintBottom_toBottomOf="parent">
+            <View
+                android:layout_width="160dp"
+                android:layout_height="18dp"
+                android:background="@drawable/bg_round_4dp"
+                android:backgroundTint="@color/bg_icon"/>
+        </com.facebook.shimmer.ShimmerFrameLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 
@@ -270,7 +305,7 @@
         android:id="@+id/tv_token_count"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
+        android:layout_marginStart="16dp"
         android:layout_marginTop="24dp"
         android:fontFamily="@font/inter"
         android:textColor="@color/text_3"
@@ -309,6 +344,41 @@
         </FrameLayout>
 
         <FrameLayout
+            android:id="@+id/fl_inbox"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="12dp"
+            android:visibility="gone"
+            android:background="@drawable/bg_round_corner"
+            android:backgroundTint="@color/text_4"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/fl_add_token"
+            app:layout_constraintTop_toTopOf="parent">
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:scaleType="centerCrop"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_inbox"
+                app:tint="@color/text_3"/>
+            <TextView
+                android:id="@+id/tv_inbox_badge"
+                android:layout_width="wrap_content"
+                android:layout_height="16dp"
+                android:minWidth="16dp"
+                android:layout_gravity="top|end"
+                android:background="@drawable/bg_inbox_badge"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:paddingHorizontal="4dp"
+                android:textColor="@android:color/white"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                tools:text="3"/>
+        </FrameLayout>
+
+        <FrameLayout
             android:id="@+id/fl_manage_token"
             android:layout_width="40dp"
             android:layout_height="40dp"
@@ -316,7 +386,7 @@
             android:background="@drawable/bg_round_corner"
             android:backgroundTint="@color/text_4"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/fl_add_token"
+            app:layout_constraintEnd_toStartOf="@id/fl_inbox"
             app:layout_constraintTop_toTopOf="parent">
             <ImageView
                 android:layout_width="wrap_content"

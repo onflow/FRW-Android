@@ -33,15 +33,14 @@ object WalletManager {
     private const val ADDRESS_CACHE_DURATION = 100L // Cache duration in milliseconds
     private val initializationLock = Object()
 
-    private var _isEoaDisabled = false
+    private var _canDeriveEoa = false
     private var lastRotationCheckTime = 0L
     private const val ROTATION_CHECK_COOLDOWN = 2000L
 
-    fun isEoaDisabled() = _isEoaDisabled
-    fun setEoaDisabled(disabled: Boolean) { _isEoaDisabled = disabled }
+    fun canDeriveEoa() = _canDeriveEoa
 
     /**
-     * Get EOA address
+     * Get the first EOA address (for backward compatibility / single-address scenarios)
      */
     fun getEOAAddress(): String? {
         val eoaWallet = AccountManager.walletNodes()
@@ -56,6 +55,40 @@ object WalletManager {
         return null
     }
 
+    /**
+     * Get all EOA addresses
+     */
+    fun getEOAAddresses(): List<String> {
+        return AccountManager.walletNodes()
+            ?.filterIsInstance<EOAWallet>()
+            ?.map { it.address }
+            ?: emptyList()
+    }
+
+    /**
+     * Get the BIP44 derivation index for the currently selected EOA wallet.
+     * Returns 0 if no EOA is selected or found.
+     */
+    fun getSelectedEOAIndex(): Int {
+        val selectedAddress = selectedWalletAddress()
+        return AccountManager.walletNodes()
+            ?.filterIsInstance<EOAWallet>()
+            ?.firstOrNull { it.address.equals(selectedAddress, ignoreCase = true) }
+            ?.index ?: 0
+    }
+
+    /**
+     * Get the BIP44 derivation index for a specific EOA address.
+     * Use this in DApp contexts where the signing address may differ from the globally selected one.
+     * Returns 0 if the address is not found among EOA wallets.
+     */
+    fun getEOAIndexForAddress(address: String): Int {
+        return AccountManager.walletNodes()
+            ?.filterIsInstance<EOAWallet>()
+            ?.firstOrNull { it.address.equals(address, ignoreCase = true) }
+            ?.index ?: 0
+    }
+
 
     private fun initializeWallet(): Boolean {
         logd(TAG, "initializeWallet() called")
@@ -66,14 +99,15 @@ object WalletManager {
         }
 
         // Use WalletCreationHelper to create wallet from account
-        val newWallet = runBlocking {
+        val result = runBlocking {
             WalletCreationHelper.createWalletFromAccount(account)
         } ?: run {
             logd(TAG, "Failed to create wallet from account")
             return false
         }
 
-        currentWallet = newWallet
+        currentWallet = result.wallet
+        _canDeriveEoa = result.canDeriveEoa
         logd(TAG, "Wallet created successfully: ${getCurrentFlowWalletAddress()}")
 
         val address = getCurrentFlowWalletAddress() ?: run {
@@ -126,15 +160,14 @@ object WalletManager {
                     selectedWalletAddressRef.set(currentNetworkFlowWallet.address)
                     updateSelectedWalletAddress(currentNetworkFlowWallet.address)
                 } else {
-                    // Check if currentSelected is a Flow Main account but NOT the one for the current network
-                    val isSelectedFlowMain = walletNodes.filterIsInstance<FlowWallet>()
-                        .any { it.address.equals(currentSelected, ignoreCase = true) }
+                    // Check if currentSelected is a Flow Main account on a different network
+                    val selectedFlowWallet = walletNodes.filterIsInstance<FlowWallet>()
+                        .firstOrNull { it.address.equals(currentSelected, ignoreCase = true) }
 
-                    if (isSelectedFlowMain) {
-                        if (!currentNetworkFlowWallet.address.equals(currentSelected, ignoreCase = true)) {
-                            selectedWalletAddressRef.set(currentNetworkFlowWallet.address)
-                            updateSelectedWalletAddress(currentNetworkFlowWallet.address)
-                        }
+                    if (selectedFlowWallet != null && !selectedFlowWallet.chainIdString.equals(currentNetwork, ignoreCase = true)) {
+                        logd(TAG, "Selected FlowWallet is on a different network (${selectedFlowWallet.chainIdString} vs $currentNetwork), switching to current network account: ${currentNetworkFlowWallet.address}")
+                        selectedWalletAddressRef.set(currentNetworkFlowWallet.address)
+                        updateSelectedWalletAddress(currentNetworkFlowWallet.address)
                     }
                 }
             }
@@ -143,7 +176,9 @@ object WalletManager {
     }
 
     fun isEVMAccountSelected(): Boolean {
-        return selectedWalletAddress().toAddress().equals(EVMWalletManager.getEVMAddress()?.toAddress(), ignoreCase = true) || selectedWalletAddress().toAddress().equals(getEOAAddress(), ignoreCase = true)
+        val selected = selectedWalletAddress().toAddress()
+        return selected.equals(EVMWalletManager.getEVMAddress()?.toAddress(), ignoreCase = true)
+            || EVMWalletManager.isEOAAddress(selected)
     }
 
     fun isSelfFlowAddress(address: String): Boolean {
@@ -463,6 +498,7 @@ object WalletManager {
             selectedWalletAddressRef.set("")
             currentWallet = null
             lastAddressCheck = 0
+            _canDeriveEoa = false
         }
     }
 }
