@@ -354,9 +354,7 @@
                 <data android:scheme="http"/>
                 <data android:scheme="https"/>
                 <data android:host="wc"/>
-                <data android:host="link.lilico.app"/>
-                <data android:host="frw-link.lilico.app"/>
-                <data android:host="fcw-link.lilico.app"/>
+                <!-- lilico.app hosts removed: Flow does not control that domain. -->
                 <data android:host="link.wallet.flow.com"/>
             </intent-filter>
 
@@ -478,6 +476,24 @@
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="@string/notification_channel_id"/>
+
+        <!-- Firebase project lilico-334404 is gone. Keep every Firebase SDK quiet unless a build with
+             firebaseEnabled=true turns collection back on at runtime (see FirebaseUtils.firebaseInitialize). -->
+        <meta-data
+            android:name="firebase_messaging_auto_init_enabled"
+            android:value="false"/>
+        <meta-data
+            android:name="firebase_analytics_collection_enabled"
+            android:value="false"/>
+        <meta-data
+            android:name="firebase_crashlytics_collection_enabled"
+            android:value="false"/>
+        <meta-data
+            android:name="google_analytics_adid_collection_enabled"
+            android:value="false"/>
+        <meta-data
+            android:name="firebase_inappmessaging_auto_data_collection_enabled"
+            android:value="false"/>
 
         <!--suppress AndroidDomInspection -->
         <meta-data

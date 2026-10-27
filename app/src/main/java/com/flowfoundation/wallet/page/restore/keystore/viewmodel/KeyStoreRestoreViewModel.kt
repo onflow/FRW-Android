@@ -28,6 +28,8 @@ import com.flowfoundation.wallet.page.restore.keystore.PrivateKeyStoreCryptoProv
 import com.flowfoundation.wallet.page.restore.keystore.model.KeyStoreOption
 import com.flowfoundation.wallet.page.restore.keystore.model.KeystoreAddress
 import com.flowfoundation.wallet.page.walletrestore.firebaseLogin
+import com.flowfoundation.wallet.firebase.auth.getSigningJwt
+import com.flowfoundation.wallet.firebase.auth.toSessionTokens
 import com.flowfoundation.wallet.page.walletrestore.getFirebaseUid
 import com.flowfoundation.wallet.utils.error.BackupError
 import com.flowfoundation.wallet.utils.error.ErrorReporter
@@ -69,9 +71,6 @@ import wallet.core.jni.Hash
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.wallet.DERIVATION_PATH
 import com.flowfoundation.wallet.wallet.createWalletFromServer
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
-import com.google.firebase.messaging.FirebaseMessaging
 import org.onflow.flow.ChainId
 import org.onflow.flow.models.hexToBytes
 
@@ -790,12 +789,12 @@ class KeyStoreRestoreViewModel : ViewModel() {
                         val resp = service.import(importRequest)
                         logd("KeyStoreRestoreViewModel", "API import response received - status: ${resp.status}, message: ${resp.message}")
 
-                        if (resp.data?.customToken.isNullOrBlank()) {
+                        if (resp.data.toSessionTokens() == null) {
                             logd("KeyStoreRestoreViewModel", "ERROR: No custom token in import response")
                             callback.invoke(false)
                         } else {
                             logd("KeyStoreRestoreViewModel", "Custom token received, starting Firebase login")
-                            firebaseLogin(resp.data.customToken) { isSuccess ->
+                            firebaseLogin(resp.data.toSessionTokens()) { isSuccess ->
                                 logd("KeyStoreRestoreViewModel", "Firebase login result: $isSuccess")
                                 if (isSuccess) {
                                     logd("KeyStoreRestoreViewModel", "Setting registered and backup flags")
@@ -877,7 +876,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
                     val catching = runCatching {
                         val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
                         val service = retrofit().create(ApiService::class.java)
-                        val jwt = getFirebaseJwt()
+                        val jwt = getSigningJwt()
 
                         val newSignature = getSignature(jwt, privateKey, HashingAlgorithm.SHA2_256, signAlgo)
                         val formattedPublicKey = if (publicKey.startsWith("04")) publicKey.substring(2) else publicKey
@@ -893,7 +892,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
                         )
                         val resp = service.loginV4(loginRequest)
 
-                        if (resp.data?.customToken.isNullOrBlank()) {
+                        if (resp.data.toSessionTokens() == null) {
                             logd("KeyStoreRestoreViewModel", "No custom token in response")
                             loadingLiveData.postValue(false)
                             loginProcessCallback.invoke(false)
@@ -901,7 +900,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
                         }
 
                         logd("KeyStoreRestoreViewModel", "Starting Firebase login with custom token")
-                        firebaseLogin(resp.data.customToken) { isFirebaseSuccess ->
+                        firebaseLogin(resp.data.toSessionTokens()) { isFirebaseSuccess ->
                             logd("KeyStoreRestoreViewModel", "Firebase login result: $isFirebaseSuccess")
                             if (isFirebaseSuccess) {
                                 logd("KeyStoreRestoreViewModel", "Setting registered and backup manually flags")
@@ -1106,7 +1105,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
                     val catching = runCatching {
                         val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
                         val service = retrofit().create(ApiService::class.java)
-                        val jwt = getFirebaseJwt()
+                        val jwt = getSigningJwt()
                         val signature = cryptoProvider.getUserSignature(jwt)
                         val accountKey = AccountKey(
                             publicKey = cryptoProvider.getPublicKey(),
@@ -1119,10 +1118,10 @@ class KeyStoreRestoreViewModel : ViewModel() {
                             deviceInfo = deviceInfoRequest
                         )
                         val resp = service.loginV4(loginRequest)
-                        if (resp.data?.customToken.isNullOrBlank()) {
+                        if (resp.data.toSessionTokens() == null) {
                             callback.invoke(false)
                         } else {
-                            firebaseLogin(resp.data.customToken) { isSuccess ->
+                            firebaseLogin(resp.data.toSessionTokens()) { isSuccess ->
                                 if (isSuccess) {
                                     setRegistered()
                                     setBackupManually()
@@ -1257,7 +1256,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
             val service = retrofit().create(ApiService::class.java)
 
             // Get Firebase JWT for signing (v4 requires signature verification)
-            val firebaseJwt = getFirebaseJwt()
+            val firebaseJwt = getSigningJwt()
             logd("KeyStoreRestoreViewModel", "Got Firebase JWT for v4 registration")
 
             // Sign the Firebase JWT with the crypto provider
@@ -1396,16 +1395,11 @@ class KeyStoreRestoreViewModel : ViewModel() {
     }
 
     private fun registerFirebase(user: RegisterResponse, callback: (isSuccess: Boolean) -> Unit) {
-        FirebaseMessaging.getInstance().deleteToken()
-        Firebase.auth.currentUser?.delete()?.addOnCompleteListener {
-            logd("KeyStoreRestoreViewModel", "delete user finish exception:${it.exception}")
-            if (it.isSuccessful) {
-                firebaseCustomLogin(user.data.customToken) { isSuccessful, _ ->
-                    if (isSuccessful) {
-                        MixpanelManager.identifyUserProfile()
-                        callback(true)
-                    } else callback(false)
-                }
+        // Stores the FRW-Server session from the register response (no Firebase user to delete).
+        firebaseCustomLogin(user.data.toSessionTokens()) { isSuccessful, _ ->
+            if (isSuccessful) {
+                MixpanelManager.identifyUserProfile()
+                callback(true)
             } else callback(false)
         }
     }

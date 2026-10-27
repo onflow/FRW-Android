@@ -17,7 +17,15 @@ fun firebaseInformationCheck() {
 }
 
 fun firebaseInitialize(application: Application) {
-    FirebaseApp.initializeApp(application)
+    if (!FirebaseFlags.enabled) {
+        logd(TAG, "Firebase disabled (FIREBASE_ENABLED=false): skipping FirebaseApp, App Check, Crashlytics, Analytics, Messaging")
+        return
+    }
+    FirebaseApp.initializeApp(application) ?: return
+    // Collection is off by default in the manifest so a build without a live project stays quiet.
+    runCatching { com.google.firebase.crashlytics.FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(true) }
+    runCatching { com.google.firebase.analytics.FirebaseAnalytics.getInstance(application).setAnalyticsCollectionEnabled(true) }
+    runCatching { com.google.firebase.messaging.FirebaseMessaging.getInstance().isAutoInitEnabled = true }
     setupAppCheck()
 }
 

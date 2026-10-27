@@ -18,6 +18,8 @@ import ai.luciq.chat.Replies
 private const val TAG = "FirebaseMessaging"
 
 fun getFirebaseMessagingToken() {
+    // Push is degraded while Firebase is off: no FCM token, so nothing is registered with the scanner.
+    if (!com.flowfoundation.wallet.firebase.FirebaseFlags.enabled) return
     FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
         if (!task.isSuccessful) {
             loge(task.exception)
@@ -50,7 +52,7 @@ fun uploadPushToken(isNewToken: Boolean = false) {
         }
         Replies.setPushNotificationRegistrationToken(token)
         val retrofit =
-            retrofitWithHost(if (isDev()) "https://dev-scanner.lilico.app" else "https://scanner.lilico.app", ignoreAuthorization = false)
+            retrofitWithHost(com.flowfoundation.wallet.network.WalletHosts.SCANNER, ignoreAuthorization = false)
         val service = retrofit.create(ApiService::class.java)
         val params = mapOf(
             "token" to getPushToken(),

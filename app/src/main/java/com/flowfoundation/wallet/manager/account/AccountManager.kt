@@ -7,7 +7,10 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.cache.AccountCacheManager
 import com.flowfoundation.wallet.cache.UserPrefixCacheManager
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
-import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
+import com.flowfoundation.wallet.firebase.auth.abortLogin
+import com.flowfoundation.wallet.firebase.auth.clearAuthSession
+import com.flowfoundation.wallet.firebase.auth.getSigningJwt
+import com.flowfoundation.wallet.firebase.auth.toSessionTokens
 import com.flowfoundation.wallet.firebase.auth.setToAnonymous
 import com.flowfoundation.wallet.firebase.messaging.uploadPushToken
 import com.flowfoundation.wallet.manager.account.model.LocalSwitchAccount
@@ -329,7 +332,7 @@ object AccountManager {
                 switch(nextAccount) {}
             } else {
                 // No remaining accounts — go back to get started screen.
-                setToAnonymous()
+                clearAuthSession()
                 uiScope {
                     clearUserCache()
                     logd(TAG, "Relaunching MainActivity after account reset")
@@ -545,6 +548,8 @@ object AccountManager {
 
     private suspend fun switchAccount(account: Account, callback: (isSuccess: Boolean) -> Unit) {
         try {
+            // Non-destructive: the current session stays stored until the new login succeeds,
+            // so a failed switch leaves the user signed in to the account they had.
             if (!setToAnonymous()) {
                 loge(tag = "SWITCH_ACCOUNT", msg = "set to anonymous failed")
                 ErrorReporter.reportWithMixpanel(AccountError.SET_ANONYMOUS_FAILED)
@@ -557,6 +562,7 @@ object AccountManager {
             if (cryptoProvider == null) {
                 loge(tag = "SWITCH_ACCOUNT", msg = "get cryptoProvider failed")
                 ErrorReporter.reportWithMixpanel(AccountError.GET_CRYPTO_PROVIDER_FAILED)
+                abortLogin()
                 callback.invoke(false)
                 return
             }
@@ -569,10 +575,15 @@ object AccountManager {
             logd(TAG, "  Sign Algorithm: ${cryptoProvider.getSignatureAlgorithm()}")
             logd(TAG, "  Key Weight: ${cryptoProvider.getKeyWeight()}")
 
-            // Use the cached token from the anonymous sign-in done in setToAnonymous().
-            // forceRefresh=true would cause two separate network fetches (here and in HeaderInterceptor),
-            // returning tokens with different iat values, making signature verification fail on the server.
-            val jwt = getFirebaseJwt()
+            // Fresh anonymous token. It is cached as the current Bearer, so the loginV4 request below
+            // (via HeaderInterceptor) carries the same token that is signed here.
+            val jwt = getSigningJwt()
+            if (jwt.isBlank()) {
+                loge(tag = "SWITCH_ACCOUNT", msg = "could not get an anonymous token")
+                abortLogin()
+                callback.invoke(false)
+                return
+            }
             logd(TAG, "Retrieved JWT for account switch (length: ${jwt.length})")
 
             val publicKey = cryptoProvider.getPublicKey()
@@ -609,18 +620,21 @@ object AccountManager {
             )
 
             val resp = service.loginV4(loginRequest)
+            val tokens = resp.data.toSessionTokens()
 
-            if (resp.data?.customToken.isNullOrBlank()) {
-                loge(tag = "SWITCH_ACCOUNT", msg = "get customToken failed :: ${resp.data?.customToken}")
+            if (tokens == null) {
+                loge(tag = "SWITCH_ACCOUNT", msg = "login response has no access_token")
                 loge(tag = "SWITCH_ACCOUNT", msg = "Response status: ${resp.status}, message: ${resp.message}")
+                abortLogin()
                 callback.invoke(false)
             } else {
-                firebaseLogin(resp.data.customToken) { isSuccess ->
+                firebaseLogin(tokens) { isSuccess ->
                     if (isSuccess) {
                         setRegistered()
                         callback.invoke(true)
                     } else {
-                        loge(tag = "SWITCH_ACCOUNT", msg = "get firebase login failed :: ${resp.data.customToken}")
+                        loge(tag = "SWITCH_ACCOUNT", msg = "storing session failed")
+                        abortLogin()
                         callback.invoke(false)
                     }
                 }
@@ -646,10 +660,12 @@ object AccountManager {
             }
 
             loge(tag = "SWITCH_ACCOUNT", msg = "Invoking callback with isSuccess=false due to HTTP ${e.code()}")
+            abortLogin()
             callback.invoke(false)
         } catch (e: Exception) {
             loge(tag = "SWITCH_ACCOUNT", msg = "Exception during account switch: ${e.message}")
             logd(TAG, "Account switch exception: ${e.stackTraceToString()}")
+            abortLogin()
             callback.invoke(false)
         }
     }
@@ -693,6 +709,8 @@ object AccountManager {
 
     private suspend fun switchAccount(switchAccount: LocalSwitchAccount, callback: (isSuccess: Boolean) -> Unit) {
         try {
+            // Non-destructive: the current session stays stored until the new login succeeds,
+            // so a failed switch leaves the user signed in to the account they had.
             if (!setToAnonymous()) {
                 loge(tag = "SWITCH_ACCOUNT", msg = "set to anonymous failed")
                 ErrorReporter.reportWithMixpanel(AccountError.SET_ANONYMOUS_FAILED)
@@ -705,6 +723,7 @@ object AccountManager {
             if (cryptoProvider == null) {
                 loge(tag = "SWITCH_ACCOUNT", msg = "get cryptoProvider failed")
                 ErrorReporter.reportWithMixpanel(AccountError.GET_CRYPTO_PROVIDER_FAILED)
+                abortLogin()
                 callback.invoke(false)
                 return
             }
@@ -717,10 +736,15 @@ object AccountManager {
             logd(TAG, "  Sign Algorithm: ${cryptoProvider.getSignatureAlgorithm()}")
             logd(TAG, "  Key Weight: ${cryptoProvider.getKeyWeight()}")
 
-            // Use the cached token from the anonymous sign-in done in setToAnonymous().
-            // forceRefresh=true would cause two separate network fetches (here and in HeaderInterceptor),
-            // returning tokens with different iat values, making signature verification fail on the server.
-            val jwt = getFirebaseJwt()
+            // Fresh anonymous token. It is cached as the current Bearer, so the loginV4 request below
+            // (via HeaderInterceptor) carries the same token that is signed here.
+            val jwt = getSigningJwt()
+            if (jwt.isBlank()) {
+                loge(tag = "SWITCH_ACCOUNT", msg = "could not get an anonymous token")
+                abortLogin()
+                callback.invoke(false)
+                return
+            }
             logd(TAG, "Retrieved JWT for local account switch (length: ${jwt.length})")
 
             val publicKey = cryptoProvider.getPublicKey()
@@ -758,12 +782,14 @@ object AccountManager {
             )
 
             val resp = service.loginV4(loginRequest)
-            if (resp.data?.customToken.isNullOrBlank()) {
-                loge(tag = "SWITCH_ACCOUNT", msg = "get customToken failed :: ${resp.data?.customToken}")
+            val tokens = resp.data.toSessionTokens()
+            if (tokens == null) {
+                loge(tag = "SWITCH_ACCOUNT", msg = "login response has no access_token")
                 loge(tag = "SWITCH_ACCOUNT", msg = "Response status: ${resp.status}, message: ${resp.message}")
+                abortLogin()
                 callback.invoke(false)
             } else {
-                firebaseLogin(resp.data.customToken) { isSuccess ->
+                firebaseLogin(tokens) { isSuccess ->
                     if (isSuccess) {
                         setRegistered()
                         // Fetch user info and persist the account so it survives MainActivity relaunch.
@@ -798,7 +824,8 @@ object AccountManager {
                             callback.invoke(true)
                         }
                     } else {
-                        loge(tag = "SWITCH_ACCOUNT", msg = "get firebase login failed :: ${resp.data.customToken}")
+                        loge(tag = "SWITCH_ACCOUNT", msg = "storing session failed")
+                        abortLogin()
                         callback.invoke(false)
                     }
                 }
@@ -824,10 +851,12 @@ object AccountManager {
             }
 
             loge(tag = "SWITCH_ACCOUNT", msg = "Invoking callback with isSuccess=false due to HTTP ${e.code()}")
+            abortLogin()
             callback.invoke(false)
         } catch (e: Exception) {
             loge(tag = "SWITCH_ACCOUNT", msg = "Exception during LocalSwitchAccount switch: ${e.message}")
             logd(TAG, "LocalSwitchAccount switch exception: ${e.stackTraceToString()}")
+            abortLogin()
             callback.invoke(false)
         }
     }

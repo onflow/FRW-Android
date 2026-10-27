@@ -20,7 +20,9 @@ fun reportEvent(event: String, params: Map<String, String> = mapOf()) {
         bundle.putString("OS", "Android")
         bundle.putString("brand", android.os.Build.BRAND)
         bundle.putString("system", android.os.Build.VERSION.RELEASE)
-        FirebaseAnalytics.getInstance(Env.getApp()).logEvent(event, bundle)
+        if (com.flowfoundation.wallet.firebase.FirebaseFlags.enabled) {
+            FirebaseAnalytics.getInstance(Env.getApp()).logEvent(event, bundle)
+        }
         if (BuildConfig.DEBUG) {
             logd("report", "$event,params:$params")
         }
