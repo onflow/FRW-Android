@@ -13,6 +13,7 @@ import com.flowfoundation.wallet.page.backup.viewmodel.BackupSeedPhraseViewModel
 import com.flowfoundation.wallet.page.walletcreate.fragments.mnemonic.MnemonicAdapter
 import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.saveBackupMnemonicToPreference
+import com.flowfoundation.wallet.utils.setBackupManually
 import com.flowfoundation.wallet.widgets.itemdecoration.GridSpaceItemDecoration
 import ai.luciq.library.Luciq
 
@@ -58,6 +59,8 @@ class BackupSeedPhraseInfoFragment: Fragment() {
         with(binding.btnNext) {
             setOnClickListener {
                 saveBackupMnemonicToPreference(viewModel.getMnemonic())
+                // Counts as a manual backup, which also stops the Drive-only backup prompt.
+                setBackupManually()
                 this@BackupSeedPhraseInfoFragment.requireActivity().apply {
                     setResult(RESULT_OK)
                     finish()

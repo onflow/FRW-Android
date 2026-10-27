@@ -23,6 +23,7 @@ import com.flowfoundation.wallet.page.wallet.presenter.WalletFragmentPresenter
 import com.flowfoundation.wallet.page.wallet.presenter.WalletHeaderPresenter
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.res2color
+import com.flowfoundation.wallet.manager.drive.GoogleDriveFlags
 import com.flowfoundation.wallet.utils.isBackupGoogleDrive
 import com.flowfoundation.wallet.utils.isBackupManually
 import com.flowfoundation.wallet.utils.isMultiBackupCreated
@@ -115,7 +116,15 @@ class WalletFragment : BaseFragment(), OnNotificationUpdate, OnWallpaperChange {
         }
         isBackupShown = true
         uiScope {
-            if (isBackupGoogleDrive() || isBackupManually() || isMultiBackupCreated()) {
+            if (!GoogleDriveFlags.backupEnabled && isBackupGoogleDrive() && !isBackupManually() && !isMultiBackupCreated()) {
+                // Google Drive was this wallet's only backup and it can no longer be read.
+                // Suggest a recovery phrase backup; the dialog can be dismissed or muted.
+                if (isShowBackupDialog()) {
+                    BackupTipsDialog.showGoogleDriveRetired(childFragmentManager)
+                } else {
+                    isBackupShown = false
+                }
+            } else if (isBackupGoogleDrive() || isBackupManually() || isMultiBackupCreated()) {
                 isBackupShown = false
             } else {
                 val sumCoin = coinList.map { it.token.tokenBalance() }.fold(BigDecimal.ZERO) { sum, balance -> sum + balance }

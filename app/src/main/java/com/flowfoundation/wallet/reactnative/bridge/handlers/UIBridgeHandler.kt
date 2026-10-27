@@ -233,6 +233,10 @@ class UIBridgeHandler(private val reactContext: ReactApplicationContext) {
                 }
 
                 NativeScreen.GOOGLE_DRIVE_RESTORE -> {
+                    if (!com.flowfoundation.wallet.manager.drive.GoogleDriveFlags.backupEnabled) {
+                        logw(TAG, "launchNativeScreen() - Google Drive restore is disabled")
+                        return
+                    }
                     // Launch GoogleDriveRestoreActivity (Google Drive restore flow)
                     GoogleDriveRestoreActivity.launch(currentActivity)
                     logd(TAG, "launchNativeScreen() - launched GoogleDriveRestoreActivity (Google Drive)")
