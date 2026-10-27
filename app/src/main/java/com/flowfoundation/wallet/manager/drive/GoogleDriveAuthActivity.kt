@@ -60,6 +60,12 @@ class GoogleDriveAuthActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (!GoogleDriveFlags.backupEnabled) {
+            // Entry points are hidden; this guards any path that still reaches the activity.
+            loge(TAG, "Google Drive backup is disabled (GOOGLE_DRIVE_BACKUP_ENABLED=false)")
+            finish()
+            return
+        }
         setContentView(View(this))
         UltimateBarX.with(this).color(Color.TRANSPARENT).fitWindow(false).light(false).applyStatusBar()
         UltimateBarX.with(this).fitWindow(false).light(false).applyNavigationBar()

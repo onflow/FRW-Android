@@ -17,8 +17,6 @@ import com.google.android.flexbox.FlexDirection
 import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.google.firebase.ktx.Firebase
-import com.google.firebase.remoteconfig.ktx.remoteConfig
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.flowfoundation.wallet.R
@@ -150,7 +148,7 @@ class DAppListViewModel : ViewModel() {
     }
 
     fun load() {
-        val json = Firebase.remoteConfig.getString("dapp")
+        val json = com.flowfoundation.wallet.firebase.config.remoteConfigString("dapp")
         val dApps = Gson().fromJson<List<DAppModel>>(json, object : TypeToken<List<DAppModel>>() {}.type).filter {
             if (isTestnet()) !it.testnetUrl.isNullOrBlank() else !it.url.isNullOrBlank()
         }

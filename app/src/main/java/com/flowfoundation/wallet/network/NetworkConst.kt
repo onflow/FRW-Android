@@ -16,8 +16,8 @@ import retrofit2.converter.scalars.ScalarsConverterFactory
 import java.util.concurrent.TimeUnit
 
 
-val API_HOST = if (isDev()) "https://dev.lilico.app" else "https://api.lilico.app"
-val BASE_HOST = if (isDev()) "https://web-dev.api.wallet.flow.com" else "https://web.api.wallet.flow.com"
+val API_HOST = WalletHosts.API
+val BASE_HOST = WalletHosts.WEB
 
 fun retrofit(
     disableConverter: Boolean = false,

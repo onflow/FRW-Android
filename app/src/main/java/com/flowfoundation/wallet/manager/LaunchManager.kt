@@ -38,7 +38,9 @@ import com.flowfoundation.wallet.wallet.restoreMnemonicV0
 object LaunchManager {
 
     fun init(application: Application) {
-        application.startServiceSafe(Intent(application, MessagingService::class.java))
+        if (com.flowfoundation.wallet.firebase.FirebaseFlags.enabled) {
+            application.startServiceSafe(Intent(application, MessagingService::class.java))
+        }
         PageLifecycleObserver.init(application)
         safeRun { System.loadLibrary("TrustWalletCore") }
         safeRun { instabugInitialize(application) }

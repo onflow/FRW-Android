@@ -16,8 +16,6 @@ import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.isNightMode
 import com.flowfoundation.wallet.utils.uiScope
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 
 class LocalAccountKeyActivity: BaseActivity()  {
@@ -44,7 +42,7 @@ class LocalAccountKeyActivity: BaseActivity()  {
             val keyList = mutableListOf<Any>()
             keyList.add(R.string.current_account)
             keyList.add(LocalAccountKey(
-                userId = currentAccount.wallet?.id ?: Firebase.auth.currentUser?.uid ?: "",
+                userId = currentAccount.wallet?.id ?: com.flowfoundation.wallet.firebase.auth.firebaseUid() ?: "",
                 userName = currentAccount.userInfo.username,
                 publicKey = currentCryptoProvider.getPublicKey()
             ))

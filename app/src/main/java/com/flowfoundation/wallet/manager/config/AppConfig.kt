@@ -1,8 +1,6 @@
 package com.flowfoundation.wallet.manager.config
 
 import com.flowfoundation.wallet.BuildConfig
-import com.google.firebase.ktx.Firebase
-import com.google.firebase.remoteconfig.ktx.remoteConfig
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.manager.app.isTestnet
@@ -94,12 +92,12 @@ object AppConfig {
     }
 
     private fun reloadNotification() {
-        val text = Firebase.remoteConfig.getString("news")
+        val text = com.flowfoundation.wallet.firebase.config.remoteConfigString("news")
         WalletNotificationManager.setNotificationList(text)
     }
 
     private fun reloadConfig(): Config {
-        val text = Firebase.remoteConfig.getString("a_config")
+        val text = com.flowfoundation.wallet.firebase.config.remoteConfigString("a_config")
         logd("AppConfig", "reloadConfig: $text")
         safeRun {
             config = Gson().fromJson(text, Config::class.java)
@@ -108,7 +106,7 @@ object AppConfig {
     }
 
     private fun reloadCOADomains(): List<String> {
-        val text = Firebase.remoteConfig.getString("coa_domains")
+        val text = com.flowfoundation.wallet.firebase.config.remoteConfigString("coa_domains")
         safeRun {
           coaDomains = Gson().fromJson(text, object : TypeToken<List<String>>() {}.type)
         }
@@ -116,7 +114,7 @@ object AppConfig {
     }
 
     private fun reloadFlowAddressRegistry(): FlowAddressRegistry {
-        val text = Firebase.remoteConfig.getString("contract_address")
+        val text = com.flowfoundation.wallet.firebase.config.remoteConfigString("contract_address")
         safeRun {
             flowAddressRegistry = Gson().fromJson(text, FlowAddressRegistry::class.java)
         }

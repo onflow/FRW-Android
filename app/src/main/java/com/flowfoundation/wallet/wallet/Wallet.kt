@@ -1,10 +1,8 @@
 package com.flowfoundation.wallet.wallet
 
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.flowfoundation.wallet.firebase.auth.isAnonymousSignIn
+import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.flowfoundation.wallet.utils.DATA_PATH
 import com.flowfoundation.wallet.utils.getWalletStoreNameAesKey
 import com.flowfoundation.wallet.utils.logd
@@ -139,4 +137,6 @@ private fun storeNameAesKey(): String {
 
 private fun randomString(length: Int = 16): String = UUID.randomUUID().toString().take(length)
 
-private fun uid() = if (isAnonymousSignIn()) null else Firebase.auth.currentUser?.uid
+// Server UID of the signed-in user (same value Firebase used), or the active local account
+// before the first post-upgrade login. Null while a login is in flight.
+private fun uid() = firebaseUid()

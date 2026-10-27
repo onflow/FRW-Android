@@ -30,14 +30,14 @@ import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.logw
 import com.flowfoundation.wallet.utils.uiScope
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
 import com.flow.wallet.keys.SeedPhraseKey
 import com.flow.wallet.storage.InMemoryStorage
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.flowfoundation.wallet.firebase.auth.isAnonymousSignIn
-import com.flowfoundation.wallet.firebase.auth.signInAnonymously
+import com.flowfoundation.wallet.firebase.auth.SessionTokens
+import com.flowfoundation.wallet.firebase.auth.getSigningJwt
+import com.flowfoundation.wallet.firebase.auth.setToAnonymous
 import com.flowfoundation.wallet.wallet.DERIVATION_PATH
 import org.onflow.flow.models.toHexString
 import org.onflow.flow.models.DomainTag
@@ -282,23 +282,16 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
         logd(TAG, "getV4RegistrationSignatures() called")
         ioScope {
             try {
-                // Step 1: Sign in anonymously to Firebase if not already signed in
-                if (!isAnonymousSignIn()) {
-                    logd(TAG, "getV4RegistrationSignatures() - Signing in anonymously...")
-                    Firebase.auth.signOut()
-                    val signedIn = signInAnonymously()
-                    if (!signedIn) {
-                        throw IllegalStateException("Failed to sign in anonymously to Firebase")
-                    }
-                    logd(TAG, "getV4RegistrationSignatures() - Signed in anonymously")
-                }
-
-                // Step 2: Get Firebase JWT
-                val firebaseJwt = getFirebaseJwt()
+                // Step 1+2: start a signed login and mint a fresh anonymous token from FRW-Server.
+                // It is cached as the current Bearer, so RN's registerV4 call (getJWT) sends the same
+                // token that is signed here. The existing session (if any) is kept until the new
+                // session is stored.
+                setToAnonymous()
+                val firebaseJwt = getSigningJwt()
                 if (firebaseJwt.isBlank()) {
-                    throw IllegalStateException("Failed to get Firebase JWT")
+                    throw IllegalStateException("Failed to get an anonymous token from the auth server")
                 }
-                logd(TAG, "getV4RegistrationSignatures() - Got Firebase JWT")
+                logd(TAG, "getV4RegistrationSignatures() - Got anonymous token")
 
                 // Step 3: Derive private key from mnemonic
                 val inMemoryStorage = InMemoryStorage()
@@ -353,11 +346,10 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
         logd(TAG, "signInWithCustomToken() called")
         ioScope {
             try {
-                com.flowfoundation.wallet.firebase.auth.firebaseCustomLogin(customToken) { isSuccessful, exception ->
+                // RN now passes the session JSON from the register/login response
+                // ({"id","access_token","refresh_token",...}) in place of the Firebase custom token.
+                com.flowfoundation.wallet.firebase.auth.firebaseCustomLogin(SessionTokens.fromJson(customToken)) { isSuccessful, exception ->
                     if (isSuccessful) {
-                        // firebaseCustomLogin already calls getIdToken(true) internally before invoking this callback,
-                        // so the Firebase ID token is already refreshed at this point.
-                        // Calling getFirebaseJwt(forceRefresh=true) repeatedly here would trigger App Check rate limiting.
                         logd(TAG, "signInWithCustomToken() - Custom token authentication successful, validating with backend...")
                         ioScope {
                             var backendValidated = false
@@ -429,15 +421,11 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                     onSuccess = {
                         ioScope {
                             try {
-                                // authenticateWithFirebase -> firebaseCustomLogin already calls getIdToken(true) before
-                                // invoking this callback, so the token is already refreshed. Calling
-                                // getFirebaseJwt(forceRefresh=true) in a loop here would trigger App Check rate limiting.
-                                val currentFirebaseUser = Firebase.auth.currentUser
-                                val currentUid = currentFirebaseUser?.uid
-                                if (currentFirebaseUser == null || currentFirebaseUser.isAnonymous) {
-                                    throw IllegalStateException("Firebase auth failed: user is still anonymous after custom token login")
+                                val currentUid = firebaseUid()
+                                if (currentUid.isNullOrBlank()) {
+                                    throw IllegalStateException("Session login failed: no uid after storing the session")
                                 }
-                                logd(TAG, "saveMnemonic() - Firebase authenticated, UID: $currentUid")
+                                logd(TAG, "saveMnemonic() - session stored, UID: $currentUid")
 
                                 // Fetch user info from backend
                                 val service = com.flowfoundation.wallet.network.retrofit()
@@ -615,47 +603,28 @@ private fun authenticateWithFirebase(
         onSuccess: () -> Unit,
         onFailure: (String) -> Unit
     ) {
-        logd(TAG, "authenticateWithFirebase() - Checking current Firebase auth state...")
-
-        // getV4RegistrationSignatures() ensures anonymous sign-in before saveMnemonic() is called,
-        // so currentUser is always non-null here. Mirror the registerFirebase() pattern in UserRegisterUtils.
-        val currentUser = Firebase.auth.currentUser
-        logd(TAG, "authenticateWithFirebase() - Current user: UID=${currentUser?.uid}, isAnonymous=${currentUser?.isAnonymous}")
-
-        fun doLogin() {
-            logd(TAG, "authenticateWithFirebase() - Signing in with new custom token...")
-            com.flowfoundation.wallet.firebase.auth.firebaseCustomLogin(customToken) { isSuccessful, exception ->
-                if (isSuccessful) {
-                    logd(TAG, "authenticateWithFirebase() - Firebase authentication successful, new UID: ${Firebase.auth.currentUser?.uid}")
-                    onSuccess()
-                } else {
-                    val errorMessage = exception?.message ?: "Firebase authentication failed"
-                    loge(TAG, "authenticateWithFirebase() - Failed: $errorMessage")
-                    onFailure(errorMessage)
-                }
-            }
+        // customToken is now the session JSON from the register response (see signInWithCustomToken).
+        // If saveMnemonic runs after signInWithCustomToken already stored the session, the JSON is
+        // stored again, which is harmless.
+        val tokens = SessionTokens.fromJson(customToken)
+        if (tokens != null && tokens.uid == firebaseUid()) {
+            // Already stored by signInWithCustomToken; storing again would re-run clearUserCache().
+            onSuccess()
+            return
         }
-
-        if (currentUser == null || !currentUser.isAnonymous) {
-            // No user, or non-anonymous user: signOut() is synchronous, safe to call directly before login
-            if (currentUser != null) {
-                logd(TAG, "authenticateWithFirebase() - Signing out non-anonymous user before login...")
-                Firebase.auth.signOut()
-            }
-            com.google.firebase.messaging.FirebaseMessaging.getInstance().deleteToken()
-            doLogin()
-        } else {
-            // Anonymous user: await delete() before signing in - same pattern as registerFirebase()
-            // delete() is async; calling signInWithCustomToken without waiting would race with it
-            logd(TAG, "authenticateWithFirebase() - Deleting anonymous user before login...")
-            com.google.firebase.messaging.FirebaseMessaging.getInstance().deleteToken()
-            currentUser.delete().addOnCompleteListener { task ->
-                logd(TAG, "authenticateWithFirebase() - Anonymous user delete finished, exception: ${task.exception}")
-                if (task.isSuccessful) {
-                    doLogin()
-                } else {
-                    onFailure("Failed to delete anonymous user: ${task.exception?.message}")
-                }
+        if (tokens == null && !firebaseUid().isNullOrBlank()) {
+            logd(TAG, "authenticateWithFirebase() - no session JSON passed, using the stored session")
+            onSuccess()
+            return
+        }
+        com.flowfoundation.wallet.firebase.auth.firebaseCustomLogin(tokens) { isSuccessful, exception ->
+            if (isSuccessful) {
+                logd(TAG, "authenticateWithFirebase() - session stored, UID: ${firebaseUid()}")
+                onSuccess()
+            } else {
+                val errorMessage = exception?.message ?: "Session login failed"
+                loge(TAG, "authenticateWithFirebase() - Failed: $errorMessage")
+                onFailure(errorMessage)
             }
         }
     }

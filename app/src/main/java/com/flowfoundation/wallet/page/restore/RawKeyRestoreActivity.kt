@@ -8,7 +8,9 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.databinding.ActivityRawKeyRestoreBinding
 import com.flowfoundation.wallet.manager.app.isTestnet
+import com.flowfoundation.wallet.manager.drive.GoogleDriveFlags
 import com.flowfoundation.wallet.page.restore.keystore.KeyStoreRestoreActivity
+import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.isNightMode
 import com.flowfoundation.wallet.widgets.DialogType
 import com.flowfoundation.wallet.widgets.SwitchNetworkDialog
@@ -26,6 +28,7 @@ class RawKeyRestoreActivity: BaseActivity() {
         UltimateBarX.with(this).fitWindow(true).colorRes(R.color.bg_2).light(!isNightMode(this)).applyStatusBar()
         with(binding) {
 
+            clImportFromGoogleDrive.setVisible(GoogleDriveFlags.backupEnabled)
             clImportFromGoogleDrive.setOnClickListener {
                 if (isTestnet()) {
                     SwitchNetworkDialog(this@RawKeyRestoreActivity, DialogType.RESTORE).show()

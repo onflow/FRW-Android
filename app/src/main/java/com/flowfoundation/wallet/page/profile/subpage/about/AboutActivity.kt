@@ -29,7 +29,7 @@ class AboutActivity : BaseActivity() {
             versionView.text = getString(R.string.about_version, BuildConfig.VERSION_NAME)
             discordButton.setOnClickListener { "https://discord.com/invite/J6fFnh2xx6".openInSystemBrowser(this@AboutActivity, ignoreInAppBrowser = true) }
             twitterButton.setOnClickListener { "https://twitter.com/flow_blockchain".openInSystemBrowser(this@AboutActivity, ignoreInAppBrowser = true) }
-            emailButton.setOnClickListener { sendEmail(this@AboutActivity, email = "hi@lilico.app") }
+            emailButton.setOnClickListener { sendEmail(this@AboutActivity, email = "wallet@flow.com") }
             madeByView.movementMethod = LinkMovementMethod.getInstance()
         }
         setupToolbar()

@@ -4,6 +4,8 @@ package com.flowfoundation.wallet.page.component.deeplinking
  * Enum for Universal Link hosts
  */
 enum class UniversalLinkHost(val host: String) {
+    // Legacy lilico.app hosts: no longer in the manifest intent filter (Flow doesn't control the
+    // domain), kept only so links scanned or pasted inside the app still parse. Nothing is fetched from them.
     LILICO("link.lilico.app"),
     FRW_LINK("frw-link.lilico.app"),
     FCW_LINK("fcw-link.lilico.app"),
