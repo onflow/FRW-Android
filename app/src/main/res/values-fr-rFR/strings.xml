@@ -251,7 +251,7 @@
     <string name="reset_wallet">Réinitialiser le portefeuille</string>
     <string name="reset_wallet_confirm_title">Êtes-vous sûr de vouloir réinitialiser votre portefeuille ?</string>
     <string name="reset_wallet_tips">La suppression du portefeuille de Flow Wallet ne supprime pas le portefeuille
-        de la blockchain Flow. Vous pouvez réimporter votre portefeuille à l\'aide de votre phrase de récupération ou de votre sauvegarde Google Drive.</string>
+        de la blockchain Flow. Vous pouvez réimporter votre portefeuille à l\'aide de votre phrase de récupération ou d\'une sauvegarde multiple.</string>
     <string name="reset">Remise à zéro</string>
     <string name="skip">Sauter</string>
     <string name="start">Démarrage</string>
@@ -491,11 +491,11 @@
     <string name="key_store_password_hint">Entrez le mot de passe pour le fichier JSON</string>
     <string name="key_store_address_hint">Entrez votre adresse de FLOW (facultatif)</string>
     <string name="from_multi_backup">A partir de Multi Backup</string>
-    <string name="from_multi_backup_note">Google Drive/ Passkey/ Phrase de récupération</string>
+    <string name="from_multi_backup_note">Dropbox/ Passkey/ Phrase de récupération</string>
     <string name="from_recovery_phrase">Autres</string>
     <string name="from_recovery_phrase_note">Restauration à l\'aide d\'une phrase de récupération héritée (pas de multi-sauvegarde)</string>
     <string name="from_raw_key">Autres</string>
-    <string name="from_raw_key_note">Prise en charge des anciennes Google Drive, Seed Phrase, Key Store et Clé Privée</string>
+    <string name="from_raw_key_note">Prise en charge de Seed Phrase, Key Store et Clé Privée</string>
     <string name="import_raw_key_note">Depuis Flow Wallet ancienne sauvegarde, Seed Phrase, Key Store et Private Key.</string>
     <string name="multi_restore">Multi-Restauration</string>
     <string name="multi_restore_title">A partir de Multi-Backup</string>
@@ -507,7 +507,7 @@
     <string name="create_device_backup_title">Synchronisez votre portefeuille entre vos appareils</string>
     <string name="device_backup_note">Scannez le code QR affiché par l\'extension du navigateur Flow Wallet pour synchroniser votre portefeuille entre vos appareils</string>
     <string name="create_device_backup_note">Remarque : votre sauvegarde Google Drive ne passera JAMAIS par le serveur de Flow Wallet. Elle est cryptée de bout en bout et nous ne pouvons jamais la lire.</string>
-    <string name="create_multi_backup_note">Créez une sauvegarde dans le Cloud avec des fournisseurs de confiance comme Google Drive, Passkey et Sécurisez votre phrase de récupération</string>
+    <string name="create_multi_backup_note">Créez une sauvegarde dans le Cloud avec des fournisseurs de confiance comme Dropbox, Passkey et Sécurisez votre phrase de récupération</string>
     <string name="create_seed_phrase_backup_note">Créer une phrase de récupération de 12 mots</string>
     <string name="scan_desktop_device">Numériser l\'appareil de bureau</string>
     <string name="backup_detail">Détail de la sauvegarde</string>
@@ -632,9 +632,9 @@
     <string name="recommended">Configuration recommandée</string>
     <string name="backup_start_about_title">Qu\'est-ce qu\'un</string>
     <string name="backup_start_about_content">Multi-sauvegarde</string>
-    <string name="backup_start_about_note">Une sauvegarde multiple stocke plusieurs clés de poids partiel sur vos comptes sur des fournisseurs de confiance comme Google Drive et iCloud, ou une phrase de récupération. \n \nDeux clés de poids partiel doivent être utilisées ensemble pour récupérer l\'accès à votre compte. Chaque clé individuellement ne peut pas être utilisée. \n \nCela signifie que pour récupérer l\'accès à votre compte, Flow Wallet nécessite l\'accès à deux de vos sauvegardes. \n \nVos sauvegardes sont chiffrées à l\'aide du code PIN de votre portefeuille. Vous devez mémoriser ou noter votre code PIN et le stocker dans un endroit sûr.</string>
+    <string name="backup_start_about_note">Une sauvegarde multiple stocke plusieurs clés de poids partiel sur vos comptes sur des fournisseurs de confiance comme Dropbox et iCloud, ou une phrase de récupération. \n \nDeux clés de poids partiel doivent être utilisées ensemble pour récupérer l\'accès à votre compte. Chaque clé individuellement ne peut pas être utilisée. \n \nCela signifie que pour récupérer l\'accès à votre compte, Flow Wallet nécessite l\'accès à deux de vos sauvegardes. \n \nVos sauvegardes sont chiffrées à l\'aide du code PIN de votre portefeuille. Vous devez mémoriser ou noter votre code PIN et le stocker dans un endroit sûr.</string>
     <string name="what_is_multi_backup">Qu\'est-ce que Multi-Backup?</string>
-    <string name="backup_start_about_tip">Flow Wallet crée plusieurs clés de poids partiel (500 poids) et les stocke sur les plates-formes souhaitées, iCloud, Google Drive ou Seed Phrase</string>
+    <string name="backup_start_about_tip">Flow Wallet crée plusieurs clés de poids partiel (500 poids) et les stocke sur les plates-formes souhaitées, iCloud, Dropbox ou Seed Phrase</string>
     <string name="secured_by_key_store">Sécurisé par KeyStore</string>
     <string name="secured_note">Flow Wallet utilise le KeyStore de votre appareil pour protéger votre compte
         et vos actifs. Cette clé privée ne peut pas être récupérée. \n \nKeyStore protège votre clé privée

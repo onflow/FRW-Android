@@ -251,7 +251,7 @@
     <string name="reset_wallet">Сбросить кошелек</string>
     <string name="reset_wallet_confirm_title">Вы уверены, что хотите сбросить кошелек?</string>
     <string name="reset_wallet_tips">Удаление кошелька из Flow Wallet не приводит к удалению кошелька
-        из блокчейна Flow. Вы можете импортировать кошелек снова, используя фразу восстановления или резервную копию Google Drive.</string>
+        из блокчейна Flow. Вы можете импортировать кошелек снова, используя фразу восстановления или мульти-резервную копию.</string>
     <string name="reset">Сброс</string>
     <string name="skip">Скип</string>
     <string name="start">Начало</string>
@@ -491,11 +491,11 @@
     <string name="key_store_password_hint">Введите пароль для файла JSON</string>
     <string name="key_store_address_hint">Введите ваш адрес FLOW (необязательно)</string>
     <string name="from_multi_backup">Из Multi Backup</string>
-    <string name="from_multi_backup_note">Google Диск / Ключ доступа / Фраза для восстановления</string>
+    <string name="from_multi_backup_note">Dropbox / Ключ доступа / Фраза для восстановления</string>
     <string name="from_recovery_phrase">Другой</string>
     <string name="from_recovery_phrase_note">Восстановление с помощью устаревшей фразы восстановления (не мультирезервное копирование)</string>
     <string name="from_raw_key">Другое</string>
-    <string name="from_raw_key_note">Поддержка устаревших Google Drive, Seed Phrase, Хранилище ключей и закрытый ключ</string>
+    <string name="from_raw_key_note">Поддержка Seed Phrase, Хранилище ключей и закрытый ключ</string>
     <string name="import_raw_key_note">С Flow Wallet старая резервная копия, Seed Phrase, Key Store и приватный ключ.</string>
     <string name="multi_restore">Мультивосстановление</string>
     <string name="multi_restore_title">Из мультирезервного копирования</string>
@@ -507,7 +507,7 @@
     <string name="create_device_backup_title">Синхронизируйте свой кошелек между устройствами</string>
     <string name="device_backup_note">Отсканируйте QR-код, отображаемый расширением кошелька Flow для синхронизации вашего кошелька между устройствами</string>
     <string name="create_device_backup_note">Используйте свое устройство в качестве резервного кошелька для защиты и восстановления цифровых активов с легкостью</string>
-    <string name="create_multi_backup_note">Создайте резервную копию в облаке с помощью надежных поставщиков, таких как Google Drive, и защитите свою фразу для восстановления</string>
+    <string name="create_multi_backup_note">Создайте резервную копию в облаке с помощью надежных поставщиков, таких как Dropbox, и защитите свою фразу для восстановления</string>
     <string name="create_seed_phrase_backup_note">Создать ключевое словосочетание из 12 слов</string>
     <string name="scan_desktop_device">Сканирование настольного устройства</string>
     <string name="backup_detail">Деталь резервного копирования</string>
@@ -632,9 +632,9 @@
     <string name="recommended">Рекомендуемые</string>
     <string name="backup_start_about_title">Что такое</string>
     <string name="backup_start_about_content">Мультирезервное копирование</string>
-    <string name="backup_start_about_note">Мульти-резервное копирование хранит несколько частичных ключей для ваших аккаунтов доверенных провайдеров, таких как Google Drive и iCloud, или восстановительная фраза. \n \nДва ключа частичного веса должны использоваться совместно для восстановления доступа к вашей учетной записи. Каждый ключ не может быть использован. \n \nЭто означает, что для восстановления доступа к вашей учетной записи, Flow Wallet требует доступа к двум из ваших резервных копий. \n \nВаши резервные копии зашифрованы с помощью PIN-кода кошелька. Вы должны помнить или записать PIN-код и хранить его в надежном месте.</string>
+    <string name="backup_start_about_note">Мульти-резервное копирование хранит несколько частичных ключей для ваших аккаунтов доверенных провайдеров, таких как Dropbox и iCloud, или восстановительная фраза. \n \nДва ключа частичного веса должны использоваться совместно для восстановления доступа к вашей учетной записи. Каждый ключ не может быть использован. \n \nЭто означает, что для восстановления доступа к вашей учетной записи, Flow Wallet требует доступа к двум из ваших резервных копий. \n \nВаши резервные копии зашифрованы с помощью PIN-кода кошелька. Вы должны помнить или записать PIN-код и хранить его в надежном месте.</string>
     <string name="what_is_multi_backup">Что такое Мульти-резервное копирование?</string>
-    <string name="backup_start_about_tip">Мульти-резервное копирование - это место, где Flow Wallet создает несколько ключей частичного веса (500 веса) и сохраняет их на желаемых платформах, iCloud, Google Drive или Seed Phrase</string>
+    <string name="backup_start_about_tip">Мульти-резервное копирование - это место, где Flow Wallet создает несколько ключей частичного веса (500 веса) и сохраняет их на желаемых платформах, iCloud, Dropbox или Seed Phrase</string>
     <string name="secured_by_key_store">Защищено KeyStore</string>
     <string name="secured_note">Flow Wallet использует KeyStore вашего устройства для защиты вашего аккаунта
         и активов. Этот закрытый ключ не может быть получен. \n \nХранилище ключей защищает ваш приватный ключ

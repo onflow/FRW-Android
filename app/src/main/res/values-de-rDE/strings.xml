@@ -251,7 +251,7 @@
     <string name="reset_wallet">Brieftasche zurücksetzen</string>
     <string name="reset_wallet_confirm_title">Sind Sie sicher, dass Sie Ihre Brieftasche zurücksetzen wollen?</string>
     <string name="reset_wallet_tips">Das Entfernen der Wallet aus Flow Wallet entfernt die Wallet
-        nicht aus der Flow-Blockchain. Sie können Ihre Wallet mit Ihrer Recovery Phrase oder Google Drive Backup wieder importieren.</string>
+        nicht aus der Flow-Blockchain. Sie können Ihre Wallet mit Ihrer Recovery Phrase oder einem Multi-Backup wieder importieren.</string>
     <string name="reset">Zurücksetzen</string>
     <string name="skip">Überspringen</string>
     <string name="start">Start</string>
@@ -491,11 +491,11 @@
     <string name="key_store_password_hint">Passwort für JSON-Datei eingeben</string>
     <string name="key_store_address_hint">Geben Sie Ihre Flow Adresse ein (optional)</string>
     <string name="from_multi_backup">Von Multi Backup</string>
-    <string name="from_multi_backup_note">Google Drive/ Passkey/ Recovery Phrase</string>
+    <string name="from_multi_backup_note">Dropbox/ Passkey/ Recovery Phrase</string>
     <string name="from_recovery_phrase">Sonstige</string>
     <string name="from_recovery_phrase_note">Wiederherstellung unter Verwendung eines alten Wiederherstellungssatzes (keine Mehrfachsicherungen)</string>
     <string name="from_raw_key">Andere</string>
-    <string name="from_raw_key_note">Unterstütze alte Google Drive, Seed Phrase, Key Store und privaten Schlüssel</string>
+    <string name="from_raw_key_note">Unterstütze Seed Phrase, Key Store und privaten Schlüssel</string>
     <string name="import_raw_key_note">Von Flow Wallet Legacy Backup, Seed Phrase, Key Store und Private Key.</string>
     <string name="multi_restore">Multi-Restore</string>
     <string name="multi_restore_title">Von Multi-Backup</string>
@@ -507,7 +507,7 @@
     <string name="create_device_backup_title">Synchronisieren Sie Ihre Brieftasche zwischen Ihren Geräten</string>
     <string name="device_backup_note">Scannen Sie den QR-Code, der von der Flow Wallet-Browser-Erweiterung angezeigt wird, um Ihre Wallet zwischen Ihren Geräten zu synchronisieren</string>
     <string name="create_device_backup_note">Hinweis: Ihr Google Drive-Backup wird NIEMALS über den Server von Flow Wallet laufen. Es ist Ende-zu-Ende verschlüsselt und wir können es niemals lesen.</string>
-    <string name="create_multi_backup_note">Erstellen Sie eine Cloudsicherung mit vertrauenswürdigen Anbietern wie Google Drive, Passwort und Sichern Sie Ihre Wiederherstellungsphrase</string>
+    <string name="create_multi_backup_note">Erstellen Sie eine Cloudsicherung mit vertrauenswürdigen Anbietern wie Dropbox, Passwort und Sichern Sie Ihre Wiederherstellungsphrase</string>
     <string name="create_seed_phrase_backup_note">Erstelle eine 12-Wort-Wiederherstellungsphrase</string>
     <string name="scan_desktop_device">Desktop-Gerät scannen</string>
     <string name="backup_detail">Sicherung Detail</string>
@@ -635,9 +635,9 @@
     <string name="recommended">Erforderlich</string>
     <string name="backup_start_about_title">Was ist</string>
     <string name="backup_start_about_content">Mehrfachsicherungen</string>
-    <string name="backup_start_about_note">Ein Mehrfach-Backup speichert mehrere Teilgewichtsschlüssel auf Ihren Konten bei vertrauenswürdigen Anbietern wie Google Drive und iCloud oder einer Wiederherstellungsphrase. \n \nZwei Teilgewichtsschlüssel müssen zusammen verwendet werden, um den Zugriff auf Ihr Konto wiederherzustellen. Jeder Schlüssel kann nicht einzeln verwendet werden. \n \nDies bedeutet, dass Flow Wallet Zugriff auf zwei Ihrer Sicherungen benötigt, um den Zugriff auf Ihr Konto wiederherzustellen. \n \nIhre Sicherungen werden mit Ihrem PIN-Code verschlüsselt. Sie müssen Ihren PIN-Code merken oder schreiben und ihn an einem sicheren Ort speichern.</string>
+    <string name="backup_start_about_note">Ein Mehrfach-Backup speichert mehrere Teilgewichtsschlüssel auf Ihren Konten bei vertrauenswürdigen Anbietern wie Dropbox und iCloud oder einer Wiederherstellungsphrase. \n \nZwei Teilgewichtsschlüssel müssen zusammen verwendet werden, um den Zugriff auf Ihr Konto wiederherzustellen. Jeder Schlüssel kann nicht einzeln verwendet werden. \n \nDies bedeutet, dass Flow Wallet Zugriff auf zwei Ihrer Sicherungen benötigt, um den Zugriff auf Ihr Konto wiederherzustellen. \n \nIhre Sicherungen werden mit Ihrem PIN-Code verschlüsselt. Sie müssen Ihren PIN-Code merken oder schreiben und ihn an einem sicheren Ort speichern.</string>
     <string name="what_is_multi_backup">Was ist Multi-Backup?</string>
-    <string name="backup_start_about_tip">Multi-Backup ist der Ort, an dem Flow Wallet mehrere Teilgewichtstasten (500 Gewichte) erstellt und diese auf Ihren gewünschten Plattformen, iCloud, Google Drive oder Seed Phrase speichert</string>
+    <string name="backup_start_about_tip">Multi-Backup ist der Ort, an dem Flow Wallet mehrere Teilgewichtstasten (500 Gewichte) erstellt und diese auf Ihren gewünschten Plattformen, iCloud, Dropbox oder Seed Phrase speichert</string>
     <string name="secured_by_key_store">Über KeyStore gesichert</string>
     <string name="secured_note">Flow Wallet verwendet den KeyStore Ihres Geräts, um Ihr Konto
         und Assets zu schützen. Dieser private Schlüssel kann nicht abgerufen werden. \n \nKeyStore schützt Ihren privaten Schlüssel
