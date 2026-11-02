@@ -52,7 +52,7 @@ private fun authn(address: String, keyId: Int): String {
 {
     "f_type": "Service",
     "method": "WC/RPC",
-    "uid": "https://frw-link.lilico.app/wc",
+    "uid": "https://link.wallet.flow.com/wc",
     "provider": {
         "f_type": "ServiceProvider",
         "f_vsn": "1.0.0",
@@ -61,7 +61,7 @@ private fun authn(address: String, keyId: Int): String {
         "description": "Flow Wallet is built from the ground up for Flow Blockchain!",
         "color": "#41CC5D",
         "supportEmail": "wallet@flow.com",
-        "website": "https://frw-link.lilico.app/wc",
+        "website": "https://link.wallet.flow.com/wc",
         "icon": "https://web.api.wallet.flow.com/logo_mobile.png"
     },
     "id": "$address",
@@ -79,7 +79,7 @@ private fun authz(address: String, keyId: Int): String {
 {
     "f_type": "Service",
     "method": "WC/RPC",
-    "uid": "https://frw-link.lilico.app/wc",
+    "uid": "https://link.wallet.flow.com/wc",
     "f_vsn": "1.0.0",
     "endpoint": "flow_authz",
     "type": "authz",
@@ -94,7 +94,7 @@ private fun userSign(address: String, keyId: Int): String {
 {
     "f_type": "Service",
     "method": "WC/RPC",
-    "uid": "https://frw-link.lilico.app/wc",
+    "uid": "https://link.wallet.flow.com/wc",
     "f_vsn": "1.0.0",
     "endpoint": "flow_user_sign",
     "type": "user-signature",
@@ -111,7 +111,7 @@ private fun preAuthz(address: String, keyId: Int): String {
     "f_type": "Service",
     "f_vsn": "1.0.0",
     "type": "pre-authz",
-    "uid": "https://frw-link.lilico.app/wc",
+    "uid": "https://link.wallet.flow.com/wc",
     "endpoint": "${BASE_HOST}/api/wc/pre-authz",
     "method": "HTTP/POST",
     "params": {
@@ -139,7 +139,7 @@ private suspend fun accountProof(address: String, keyId: Int, nonce: String?, ap
         "f_type": "Service",
         "f_vsn": "1.0.0",
         "type": "account-proof",
-        "uid": "https://frw-link.lilico.app/wc",
+        "uid": "https://link.wallet.flow.com/wc",
         "endpoint": "${WalletConnectMethod.ACCOUNT_PROOF.value}",
         "method": "WC/RPC",
         "network": "${chainNetWorkString()}",

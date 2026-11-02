@@ -21,10 +21,10 @@ private const val TAG = "FirebaseFunctions"
 const val FUNCTION_SIGN_AS_PAYER = "/api/signAsFeePayer"  // Need leading slash for BASE_HOST
 const val FUNCTION_SIGN_AS_BRIDGE_PAYER = "/api/signAsBridgePayer"
 
-// https://us-central1-lilico-dev.cloudfunctions.net/moonPaySignature?url=https://buy-sandbox.moonpay.com?apiKey=pk_test_F0Y1SznEgbvGOWxFYJqStfjLeZ7XT&defaultCurrencyCode=FLOW&colorCode=%23FC814A&walletAddress=0x7d2b880d506db7cc
+// {WalletHosts.FUNCTIONS}moonPaySignature?url=https://buy-sandbox.moonpay.com?apiKey=pk_test_F0Y1SznEgbvGOWxFYJqStfjLeZ7XT&defaultCurrencyCode=FLOW&colorCode=%23FC814A&walletAddress=0x7d2b880d506db7cc
 const val FUNCTION_MOON_PAY_SIGN = "moonPaySignature"
 
-private val HOST = if (isDev()) "https://us-central1-lilico-dev.cloudfunctions.net/" else "https://us-central1-lilico-334404.cloudfunctions.net/"
+private val HOST = com.flowfoundation.wallet.network.WalletHosts.FUNCTIONS
 
 
 /**
@@ -44,12 +44,16 @@ private suspend fun executeHttp(host: String, functionName: String, data: Any? =
         readTimeout(10, TimeUnit.SECONDS)
         writeTimeout(10, TimeUnit.SECONDS)
 
+        // Luciq records the request it receives, so it runs before the Authorization header is added
+        addInterceptor(LuciqOkHttpInterceptor())
         addInterceptor(HeaderInterceptor())
         addInterceptor(PayerServiceInterceptor())
-        addInterceptor(LuciqOkHttpInterceptor())
         eventListenerFactory(LuciqOkHttpEventListener.Factory())
         if (isTesting()) {
-            addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY })
+            addInterceptor(HttpLoggingInterceptor().apply {
+                level = HttpLoggingInterceptor.Level.BODY
+                redactHeader("Authorization")
+            })
         }
     }.build()
     val body = if (data == null) data else (data as? String ?: GsonBuilder().serializeNulls().create().toJson(data))

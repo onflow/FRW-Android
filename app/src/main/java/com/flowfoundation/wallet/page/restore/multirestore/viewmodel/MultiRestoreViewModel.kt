@@ -38,6 +38,8 @@ import com.flowfoundation.wallet.page.restore.multirestore.model.RestoreGoogleDr
 import com.flowfoundation.wallet.page.restore.multirestore.model.RestoreOption
 import com.flowfoundation.wallet.page.restore.multirestore.model.RestoreOptionModel
 import com.flowfoundation.wallet.page.walletrestore.firebaseLogin
+import com.flowfoundation.wallet.firebase.auth.getSigningJwt
+import com.flowfoundation.wallet.firebase.auth.toSessionTokens
 import com.flowfoundation.wallet.page.walletrestore.getFirebaseUid
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.error.BackupError
@@ -364,7 +366,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                         val publicKey = cryptoProvider.getPublicKey()
 
                         // Sign JWT with the new private key using detected algorithms
-                        val jwt = getFirebaseJwt()
+                        val jwt = getSigningJwt()
                         val signature = cryptoProvider.getUserSignature(jwt)
 
                         val accountKey = AccountKey(
@@ -378,10 +380,10 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                             deviceInfo = deviceInfoRequest
                         )
                         val resp = service.loginV4(loginRequest)
-                        if (resp.data?.customToken.isNullOrBlank()) {
+                        if (resp.data.toSessionTokens() == null) {
                             callback.invoke(false)
                         } else {
-                            firebaseLogin(resp.data.customToken) { isSuccess ->
+                            firebaseLogin(resp.data.toSessionTokens()) { isSuccess ->
                                 if (isSuccess) {
                                     setRegistered()
                                     setMultiBackupCreated()

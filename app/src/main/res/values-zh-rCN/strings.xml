@@ -249,7 +249,7 @@
     <string name="reset_wallet">重置钱包</string>
     <string name="reset_wallet_confirm_title">确定要重置你的钱包吗？</string>
     <string name="reset_wallet_tips">从 Flow 钱包中删除钱包并不会从 Flow 区块链中删除钱包
-        。您可以使用助记词或 Google Drive 备份再次导入钱包。</string>
+        。您可以使用助记词或多重备份再次导入钱包。</string>
     <string name="reset">重置</string>
     <string name="skip">跳过</string>
     <string name="start">开始</string>
@@ -489,11 +489,11 @@
     <string name="key_store_password_hint">输入 JSON 文件的密码</string>
     <string name="key_store_address_hint">输入您的流地址(可选)</string>
     <string name="from_multi_backup">从多重备份恢复</string>
-    <string name="from_multi_backup_note">谷歌硬盘/密钥/助记词</string>
+    <string name="from_multi_backup_note">Dropbox/密钥/助记词</string>
     <string name="from_recovery_phrase">其他</string>
     <string name="from_recovery_phrase_note">使用传统恢复短语恢复（不是多重备份）</string>
     <string name="from_raw_key">其他</string>
-    <string name="from_raw_key_note">支持旧版Google Drive，种子短语，密钥商店和私钥</string>
+    <string name="from_raw_key_note">支持种子短语，密钥商店和私钥</string>
     <string name="import_raw_key_note">从 Flow Wallet 旧版备份、 种子、密钥商店和私钥。</string>
     <string name="multi_restore">多重还原</string>
     <string name="multi_restore_title">从多重备份</string>
@@ -505,7 +505,7 @@
     <string name="create_device_backup_title">在设备间同步您的钱包</string>
     <string name="device_backup_note">扫描 Flow Wallet 浏览器扩展程序显示的二维码，在设备之间同步钱包</string>
     <string name="create_device_backup_note">将设备用作备份钱包，轻松保护和恢复数字资产</string>
-    <string name="create_multi_backup_note">使用 Google Drive、Passkey 等可信提供商创建云备份，并确保助记词的安全</string>
+    <string name="create_multi_backup_note">使用 Dropbox、Passkey 等可信提供商创建云备份，并确保助记词的安全</string>
     <string name="create_seed_phrase_backup_note">创建一个12个单词恢复密语</string>
     <string name="scan_desktop_device">扫描桌面设备</string>
     <string name="backup_detail">备份详情</string>
@@ -630,7 +630,7 @@
     <string name="recommended">推荐</string>
     <string name="backup_start_about_title">什么是</string>
     <string name="backup_start_about_content">多重备份</string>
-    <string name="backup_start_about_note">多重备份将您帐户中的多个部分权重密钥存储在受信任的提供商（例如 Google Drive 和 iCloud）或恢复短语上。
+    <string name="backup_start_about_note">多重备份将您帐户中的多个部分权重密钥存储在受信任的提供商（例如 Dropbox 和 iCloud）或恢复短语上。
 
 必须一起使用两个部分权重密钥才能恢复对您帐户的访问权限。每个键不能单独使用。
 
@@ -638,7 +638,7 @@
 
 您的备份使用您的钱包 PIN 码进行加密。您必须记住或写下您的 PIN 码并将其存放在安全的地方。</string>
     <string name="what_is_multi_backup">什么是多备份？</string>
-    <string name="backup_start_about_tip">多备份是指流钱包创建多个部分重量密钥(500重量)并将它们存储到您所需的平台、iCloud、Google Drive或种子词组的地方。</string>
+    <string name="backup_start_about_tip">多备份是指流钱包创建多个部分重量密钥(500重量)并将它们存储到您所需的平台、iCloud、Dropbox或种子词组的地方。</string>
     <string name="secured_by_key_store">密钥店保护</string>
     <string name="secured_note">Flow Wallet 使用您设备的 KeyStore 来保护您的帐户和资产。此私钥无法检索。\n \nKeyStore 使用您设备的硬件级安全性来保护您的私钥，从而无需种子短语。\n \n请为您的钱包创建备份，以确保您在丢失设备时仍能访问您的 Flow 帐户和资产。</string>
     <string name="backup_seed_phrase_warning">您已选择使用 12 字恢复短语备份。\n\n此恢复短语备份将完全控制您的帐户。</string>

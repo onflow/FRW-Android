@@ -25,6 +25,7 @@ import com.flowfoundation.wallet.manager.backup.ACTION_GOOGLE_DRIVE_VIEW_FINISH
 import com.flowfoundation.wallet.manager.backup.BackupItem
 import com.flowfoundation.wallet.manager.drive.EXTRA_CONTENT
 import com.flowfoundation.wallet.manager.drive.GoogleDriveAuthActivity
+import com.flowfoundation.wallet.manager.drive.GoogleDriveFlags
 import com.flowfoundation.wallet.manager.dropbox.ACTION_DROPBOX_VIEW_FINISH
 import com.flowfoundation.wallet.manager.dropbox.DropboxAuthActivity
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
@@ -144,7 +145,7 @@ class BackupDetailActivity : BaseActivity(), OnMapReadyCallback, OnTransactionSt
                 tvStatusLabel.text = statusType
                 tvStatusLabel.backgroundTintList = ColorStateList.valueOf(statusColor)
                 tvStatusLabel.setTextColor(statusColor)
-                btnRecoveryPhrase.setVisible(backupType == BackupType.GOOGLE_DRIVE.index || backupType == BackupType.DROPBOX.index)
+                btnRecoveryPhrase.setVisible((backupType == BackupType.GOOGLE_DRIVE.index && GoogleDriveFlags.backupEnabled) || backupType == BackupType.DROPBOX.index)
             }
             backupKey?.info?.device?.let { deviceModel ->
                 tvDeviceApplication.text = deviceModel.user_agent

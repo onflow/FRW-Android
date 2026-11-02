@@ -4,8 +4,6 @@ import android.annotation.SuppressLint
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.google.firebase.ktx.Firebase
-import com.google.firebase.remoteconfig.ktx.remoteConfig
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.flowfoundation.wallet.R
@@ -69,7 +67,7 @@ class ExploreViewModel : ViewModel() {
 
 
     private fun refreshDApps() {
-        val json = Firebase.remoteConfig.getString("dapp")
+        val json = com.flowfoundation.wallet.firebase.config.remoteConfigString("dapp")
         val dApps = Gson().fromJson<List<DAppModel>>(json, object : TypeToken<List<DAppModel>>() {}.type).filter {
             if (isTestnet()) !it.testnetUrl.isNullOrBlank() else !it.url.isNullOrBlank()
         }

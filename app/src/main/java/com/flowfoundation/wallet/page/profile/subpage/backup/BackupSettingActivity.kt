@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
 import android.view.MenuItem
+import android.view.View
 import android.widget.Toast
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
@@ -19,6 +20,7 @@ import com.flowfoundation.wallet.manager.drive.DriveItem
 import com.flowfoundation.wallet.manager.drive.EXTRA_CONTENT
 import com.flowfoundation.wallet.manager.drive.EXTRA_SUCCESS
 import com.flowfoundation.wallet.manager.drive.GoogleDriveAuthActivity
+import com.flowfoundation.wallet.manager.drive.GoogleDriveFlags
 import com.flowfoundation.wallet.page.security.recovery.SecurityRecoveryActivity
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.isBackupGoogleDrive
@@ -84,6 +86,10 @@ class BackupSettingActivity : BaseActivity() {
             }
         }
 
+        if (!GoogleDriveFlags.backupEnabled) {
+            binding.drivePreference.visibility = View.GONE
+            return
+        }
         binding.drivePreference.showProgress()
         GoogleDriveAuthActivity.restoreMnemonic(this)
         LocalBroadcastManager.getInstance(this).registerReceiver(driveRestoreReceiver, IntentFilter(ACTION_GOOGLE_DRIVE_RESTORE_FINISH))

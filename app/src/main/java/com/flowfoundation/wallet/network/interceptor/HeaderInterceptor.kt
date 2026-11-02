@@ -7,7 +7,6 @@ import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.utils.extensions.capitalizeV2
 import com.flowfoundation.wallet.utils.extensions.res2String
-import com.flowfoundation.wallet.utils.logd
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.Response
@@ -33,7 +32,6 @@ class HeaderInterceptor(
 
         val jwt = runBlocking { getFirebaseJwt() }
 
-        logd("HeaderInterceptor", "jwt:$jwt")
         val request = chain.request().newBuilder()
             .addHeader("Authorization", "Bearer $jwt")
             .addHeader("User-Agent", userAgent)

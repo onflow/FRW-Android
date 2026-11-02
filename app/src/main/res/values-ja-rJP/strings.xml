@@ -250,7 +250,7 @@
     <string name="reset_wallet">リセットウォレット</string>
     <string name="reset_wallet_confirm_title">本当に財布をリセットしますか？</string>
     <string name="reset_wallet_tips">Flowウォレットからウォレットを削除しても、Flowブロックチェーンからウォレット
-        は削除されません。リカバリーフレーズまたはGoogleドライブバックアップを使用して、ウォレットを再度インポートすることができます。</string>
+        は削除されません。リカバリーフレーズまたはマルチバックアップを使用して、ウォレットを再度インポートすることができます。</string>
     <string name="reset">リセット</string>
     <string name="skip">スキップ</string>
     <string name="start">スタート</string>
@@ -490,11 +490,11 @@
     <string name="key_store_password_hint">JSON ファイルのパスワードを入力してください</string>
     <string name="key_store_address_hint">フローアドレスを入力してください（オプション）</string>
     <string name="from_multi_backup">マルチバックアップより</string>
-    <string name="from_multi_backup_note">グーグルドライブ／パスキー／リカバリーフレーズ</string>
+    <string name="from_multi_backup_note">Dropbox／パスキー／リカバリーフレーズ</string>
     <string name="from_recovery_phrase">その他</string>
     <string name="from_recovery_phrase_note">レガシーリカバリーフレーズを使用したリストア（マルチバックアップではない）</string>
     <string name="from_raw_key">その他</string>
-    <string name="from_raw_key_note">従来のGoogleドライブ、シードフレーズ、キーストア、プライベートキーをサポート</string>
+    <string name="from_raw_key_note">シードフレーズ、キーストア、プライベートキーをサポート</string>
     <string name="import_raw_key_note">Flow Walletのレガシーバックアップ、シードフレーズ、キーストア、プライベートキーから。</string>
     <string name="multi_restore">マルチ復元</string>
     <string name="multi_restore_title">マルチバックアップから</string>
@@ -506,7 +506,7 @@
     <string name="create_device_backup_title">デバイス間で財布を同期</string>
     <string name="device_backup_note">フローウォレットのブラウザ拡張機能に表示されているQRコードをスキャンして、デバイス間でウォレットを同期します</string>
     <string name="create_device_backup_note">デバイスをバックアップウォレットとして活用し、デジタル資産を簡単に保護・復元する</string>
-    <string name="create_multi_backup_note">Google Drive、Passkey、iCloudなどの信頼できるプロバイダーでクラウド・バックアップを作成し、リカバリ・フレーズを保護する。</string>
+    <string name="create_multi_backup_note">Dropbox、Passkey、iCloudなどの信頼できるプロバイダーでクラウド・バックアップを作成し、リカバリ・フレーズを保護する。</string>
     <string name="create_seed_phrase_backup_note">12 の単語の復元フレーズを作成します</string>
     <string name="scan_desktop_device">スキャンデスクトップデバイス</string>
     <string name="backup_detail">バックアップの詳細</string>
@@ -631,7 +631,7 @@
     <string name="recommended">おすすめ</string>
     <string name="backup_start_about_title">何が</string>
     <string name="backup_start_about_content">マルチバックアップ</string>
-    <string name="backup_start_about_note">マルチバックアップでは、Google ドライブや iCloud などの信頼できるプロバイダー上のアカウント全体に複数の部分加重キー、またはリカバリ フレーズが保存されます。
+    <string name="backup_start_about_note">マルチバックアップでは、Dropbox や iCloud などの信頼できるプロバイダー上のアカウント全体に複数の部分加重キー、またはリカバリ フレーズが保存されます。
 
 アカウントへのアクセスを回復するには、2 つの部分加重キーを一緒に使用する必要があります。各キーを個別に使用することはできません。
 
@@ -639,7 +639,7 @@
 
 バックアップはウォレットの PIN コードを使用して暗号化されます。 PIN コードを覚えておくか書き留めて、安全な場所に保管する必要があります。</string>
     <string name="what_is_multi_backup">マルチバックアップとは何ですか?</string>
-    <string name="backup_start_about_tip">マルチバックアップはフローウォレットが複数の部分重量キー(500重量)を作成し、ご希望のプラットフォーム、iCloud、Googleドライブ、またはシードフレーズに保存します。</string>
+    <string name="backup_start_about_tip">マルチバックアップはフローウォレットが複数の部分重量キー(500重量)を作成し、ご希望のプラットフォーム、iCloud、Dropbox、またはシードフレーズに保存します。</string>
     <string name="secured_by_key_store">キーストアで保護</string>
     <string name="secured_note">Flow Wallet はデバイスの Secure Enclave を使用してアカウントと資産を保護します。この秘密キーは取得できません。
 Secure Enclave は、デバイスのハードウェア レベルのセキュリティを使用して秘密キーを保護し、シード フレーズの必要性を排除します。\nデバイスを紛失した場合でも、Flow アカウントと資産へのアクセスを確実に維持できるように、ウォレットのバックアップを作成してください。</string>

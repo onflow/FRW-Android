@@ -16,16 +16,17 @@ import retrofit2.converter.scalars.ScalarsConverterFactory
 import java.util.concurrent.TimeUnit
 
 
-val API_HOST = if (isDev()) "https://dev.lilico.app" else "https://api.lilico.app"
-val BASE_HOST = if (isDev()) "https://web-dev.api.wallet.flow.com" else "https://web.api.wallet.flow.com"
+val API_HOST = WalletHosts.API
+val BASE_HOST = WalletHosts.WEB
 
 fun retrofit(
     disableConverter: Boolean = false,
     network: String? = null,
 ): Retrofit {
     val client = OkHttpClient.Builder().apply {
-        addInterceptor(HeaderInterceptor(network = network))
+        // Luciq records the request it receives, so it runs before the Authorization header is added
         addInterceptor(LuciqOkHttpInterceptor())
+        addInterceptor(HeaderInterceptor(network = network))
         eventListenerFactory(LuciqOkHttpEventListener.Factory())
 
         callTimeout(20, TimeUnit.SECONDS)
@@ -34,7 +35,10 @@ fun retrofit(
         writeTimeout(20, TimeUnit.SECONDS)
 
         if (isTesting() || isDev()) {
-            addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY })
+            addInterceptor(HttpLoggingInterceptor().apply {
+                level = HttpLoggingInterceptor.Level.BODY
+                redactHeader("Authorization")
+            })
         }
     }.build()
 
@@ -53,9 +57,10 @@ fun retrofitApi(): Retrofit {
 
 fun cadenceScriptApi(): Retrofit {
     val client = OkHttpClient.Builder().apply {
+        // Luciq records the request it receives, so it runs before the Authorization header is added
+        addInterceptor(LuciqOkHttpInterceptor())
         addInterceptor(HeaderInterceptor(false))
         addInterceptor(PayerServiceInterceptor())
-        addInterceptor(LuciqOkHttpInterceptor())
         eventListenerFactory(LuciqOkHttpEventListener.Factory())
         addInterceptor(GzipRequestInterceptor())
         addInterceptor(GzipResponseInterceptor())
@@ -65,7 +70,10 @@ fun cadenceScriptApi(): Retrofit {
         writeTimeout(20, TimeUnit.SECONDS)
 
         if (isTesting() || isDev()) {
-            addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY })
+            addInterceptor(HttpLoggingInterceptor().apply {
+                level = HttpLoggingInterceptor.Level.BODY
+                redactHeader("Authorization")
+            })
         }
     }.build()
 
@@ -76,8 +84,9 @@ fun cadenceScriptApi(): Retrofit {
 
 fun retrofitWithHost(host: String, disableConverter: Boolean = false, ignoreAuthorization: Boolean = true): Retrofit {
     val client = OkHttpClient.Builder().apply {
-        addInterceptor(HeaderInterceptor(ignoreAuthorization))
+        // Luciq records the request it receives, so it runs before the Authorization header is added
         addInterceptor(LuciqOkHttpInterceptor())
+        addInterceptor(HeaderInterceptor(ignoreAuthorization))
         eventListenerFactory(LuciqOkHttpEventListener.Factory())
         callTimeout(20, TimeUnit.SECONDS)
         connectTimeout(20, TimeUnit.SECONDS)
@@ -85,7 +94,10 @@ fun retrofitWithHost(host: String, disableConverter: Boolean = false, ignoreAuth
         writeTimeout(20, TimeUnit.SECONDS)
 
         if (isTesting() || isDev()) {
-            addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY })
+            addInterceptor(HttpLoggingInterceptor().apply {
+                level = HttpLoggingInterceptor.Level.BODY
+                redactHeader("Authorization")
+            })
         }
     }.build()
 

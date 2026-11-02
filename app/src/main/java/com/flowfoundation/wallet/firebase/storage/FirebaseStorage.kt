@@ -10,6 +10,12 @@ import java.io.ByteArrayOutputStream
 
 
 fun uploadAvatarToFirebase(image: Bitmap, callback: (url: String?) -> Unit) {
+    // Firebase Storage (lilico-334404.appspot.com) is gone; avatar upload is unavailable until it
+    // moves to S3. Returning null shows the existing failure path instead of crashing.
+    if (!com.flowfoundation.wallet.firebase.FirebaseFlags.enabled) {
+        callback.invoke(null)
+        return
+    }
     val baos = ByteArrayOutputStream()
     image.compress(Bitmap.CompressFormat.JPEG, 100, baos)
     val data = baos.toByteArray()
@@ -18,10 +24,13 @@ fun uploadAvatarToFirebase(image: Bitmap, callback: (url: String?) -> Unit) {
     val uploadTask = ref.putBytes(data)
     uploadTask.continueWithTask { _ -> ref.downloadUrl }
         .addOnCompleteListener { task ->
-            callback.invoke(task.result.toString().removeUrlParams().firebaseImage())
-        }.addOnFailureListener {
-            loge(it)
-            callback.invoke(null)
+            // task.result throws on failure; that used to crash the app.
+            if (task.isSuccessful) {
+                callback.invoke(task.result.toString().removeUrlParams().firebaseImage())
+            } else {
+                loge(task.exception)
+                callback.invoke(null)
+            }
         }
 }
 

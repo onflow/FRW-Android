@@ -275,7 +275,7 @@
     <string name="reset_wallet">Reset Profile</string>
     <string name="reset_wallet_confirm_title">Are you sure you want to reset your wallet?</string>
     <string name="reset_wallet_tips">Removing the wallet from Flow Wallet does not remove the wallet
-        from Flow blockchain. You can import your wallet again using your Recovery Phrase or Google Drive Backup.</string>
+        from Flow blockchain. You can import your wallet again using your Recovery Phrase or Multi-Backup.</string>
     <string name="reset">Reset</string>
     <string name="skip">Skip</string>
     <string name="start">Start</string>
@@ -508,6 +508,8 @@
     <string name="device_backup">Device Backup</string>
     <string name="other_devices">Other Devices</string>
     <string name="multi_backup_tip">Please Select 2 or More Backup Options</string>
+    <string name="google_drive_backup_retired_title">Back up your recovery phrase</string>
+    <string name="google_drive_backup_retired_desc">Google Drive backup is no longer available, so your Drive backup can\'t be used to restore this wallet. Your wallet is still safe on this device. Back up your recovery phrase so you can restore it if you lose this phone.</string>
     <string name="upload_key_to_google_drive">Upload Key to Google Drive</string>
     <string name="upload_key_to_dropbox">Upload Key to Dropbox</string>
     <string name="registration_key_list">Registration KeyList</string>
@@ -532,11 +534,11 @@
     <string name="key_store_password_hint">Enter password for JSON file</string>
     <string name="key_store_address_hint">Enter your Flow address (Optional)</string>
     <string name="from_multi_backup">From Multi Backup</string>
-    <string name="from_multi_backup_note">Google Drive/ Passkey/ Recovery Phrase</string>
+    <string name="from_multi_backup_note">Dropbox/ Passkey/ Recovery Phrase</string>
     <string name="from_recovery_phrase">Other</string>
     <string name="from_recovery_phrase_note">Restore using a legacy recovery phrase (not multi-backup)</string>
     <string name="from_raw_key">Other</string>
-    <string name="from_raw_key_note">Support legacy Google Drive, Seed Phrase, Key Store and Private Key</string>
+    <string name="from_raw_key_note">Support Seed Phrase, Key Store and Private Key</string>
     <string name="import_raw_key_note">From Flow Wallet legacy backup, Seed Phrase, Key Store and Private Key.</string>
     <string name="multi_restore">Multi-Restore</string>
     <string name="multi_restore_title">From Multi-Backup</string>
@@ -548,7 +550,7 @@
     <string name="create_device_backup_title">Sync your wallet between your devices</string>
     <string name="device_backup_note">Scan the QR code shown by the Flow Wallet browser extension to sync your wallet between your devices</string>
     <string name="create_device_backup_note">Utilise Your Device as a Backup Wallet to Safeguard and Restore Your Digital Assets with Ease</string>
-    <string name="create_multi_backup_note">Create a Cloud Backup with Trusted Providers like Google Drive, Passkey and Secure Your Recovery Phrase</string>
+    <string name="create_multi_backup_note">Create a Cloud Backup with Trusted Providers like Dropbox, Passkey and Secure Your Recovery Phrase</string>
     <string name="create_seed_phrase_backup_note">Create a 12 word recovery phrase</string>
     <string name="scan_desktop_device">Scan Desktop Device</string>
     <string name="backup_detail">Backup Detail</string>
@@ -680,9 +682,9 @@
     <string name="recommended">Recommended</string>
     <string name="backup_start_about_title">What is a</string>
     <string name="backup_start_about_content">Multi-Backup</string>
-    <string name="backup_start_about_note">A multi-backup stores multiple partial-weight keys across your accounts on trusted providers like Google Drive and iCloud, or a Recovery Phrase. \n \nTwo partial-weight keys must be used together to recover access to your account. Each key individually cannot be used. \n \nThis means, that to recover access to your account, Flow Wallet requires access to two of your backups. \n \nYour backups are encrypted using your wallet PIN code. You must remember or write down your PIN code and store it in a safe place.</string>
+    <string name="backup_start_about_note">A multi-backup stores multiple partial-weight keys across your accounts on trusted providers like Dropbox and iCloud, or a Recovery Phrase. \n \nTwo partial-weight keys must be used together to recover access to your account. Each key individually cannot be used. \n \nThis means, that to recover access to your account, Flow Wallet requires access to two of your backups. \n \nYour backups are encrypted using your wallet PIN code. You must remember or write down your PIN code and store it in a safe place.</string>
     <string name="what_is_multi_backup">What is Multi-Backup?</string>
-    <string name="backup_start_about_tip">Multi-backup is where Flow Wallet creates multiple partial-weight keys (500 weight) and stores them across your desired platforms, iCloud, Google Drive or Seed Phrase</string>
+    <string name="backup_start_about_tip">Multi-backup is where Flow Wallet creates multiple partial-weight keys (500 weight) and stores them across your desired platforms, iCloud, Dropbox or Seed Phrase</string>
     <string name="secured_by_key_store">Secured by KeyStore</string>
     <string name="secured_note">Flow Wallet uses your device\'s KeyStore to protect your account
         and assets. This private key cannot be retrieved. \n \nKeyStore protects your Private Key

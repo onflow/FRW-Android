@@ -10,7 +10,9 @@ import com.flow.wallet.wallet.WalletFactory
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.firebase.auth.firebaseCustomLogin
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
-import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
+import com.flowfoundation.wallet.firebase.auth.abortLogin
+import com.flowfoundation.wallet.firebase.auth.getSigningJwt
+import com.flowfoundation.wallet.firebase.auth.toSessionTokens
 import com.flowfoundation.wallet.firebase.auth.setToAnonymous
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
@@ -505,6 +507,7 @@ private suspend fun registerOutblockUserInternal(
         val user = registerServer(username, prefix)
 
         if (user.status > 400) {
+            abortLogin()
             callback(false, prefix)
             return
         }
@@ -514,6 +517,7 @@ private suspend fun registerOutblockUserInternal(
             callback.invoke(isSuccess, prefix)
         }
     } catch (e: Exception) {
+        abortLogin()
         if (e is IllegalStateException) {
             ErrorReporter.reportCriticalWithMixpanel(WalletError.KEY_STORE_FAILED, e)
         } else {
@@ -524,10 +528,8 @@ private suspend fun registerOutblockUserInternal(
 }
 
 private fun registerFirebase(user: RegisterResponse, callback: (isSuccess: Boolean) -> Unit) {
-    // signInWithCustomToken atomically replaces the current anonymous user without going through
-    // null. The prior delete() call created a null window that raced with background
-    // getFirebaseJwt() → signInAnonymously() calls. FCM token is refreshed by firebaseCustomLogin.
-    firebaseCustomLogin(user.data.customToken) { isSuccessful, _ ->
+    // Stores the FRW-Server session from the register response (replaces signInWithCustomToken).
+    firebaseCustomLogin(user.data.toSessionTokens()) { isSuccessful, _ ->
         if (isSuccessful) {
             MixpanelManager.identifyUserProfile()
             callback(true)
@@ -543,7 +545,8 @@ private suspend fun registerServer(username: String, prefix: String): RegisterRe
     try {
         val cryptoProvider = AndroidKeystoreCryptoProvider(prefix)
 
-        val firebaseJwt = getFirebaseJwt()
+        // Fresh anonymous token: the signed message and the Bearer of the register request.
+        val firebaseJwt = getSigningJwt()
 
         // Create v4 registration request with FlowAccountInfo containing signature
         val flowAccountInfo = com.flowfoundation.wallet.network.model.FlowAccountInfo(
@@ -593,51 +596,12 @@ fun generatePrefix(text: String): String {
 }
 
 // create user failed, resume account
+// The previous session is no longer destroyed when registration starts (setToAnonymous is
+// non-destructive), so resuming is just ending the in-flight login.
 private suspend fun resumeAccount() {
-    if (!setToAnonymous()) {
-        toast(msgRes = R.string.resume_login_error, duration = Toast.LENGTH_LONG)
-        return
-    }
-    val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
-    val service = retrofit().create(ApiService::class.java)
-    val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
-    if (cryptoProvider == null) {
-        toast(msgRes = R.string.resume_login_error, duration = Toast.LENGTH_LONG)
-        return
-    }
-
-    val firebaseJwt = getFirebaseJwt()
-    val flowSignature = cryptoProvider.getUserSignature(firebaseJwt)
-    val accountKey = AccountKey(
-        publicKey = cryptoProvider.getPublicKey(),
-        hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
-        signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
-    )
-
-    // Build EVM account info if provider has mnemonic (HDWallet accounts)
-    val evmAccountInfo = (cryptoProvider as? HDWalletCryptoProvider)?.getEvmAccountInfo(firebaseJwt)
-
-    val loginRequest = LoginV4Request(
-        flowAccountInfo = FlowAccountInfo(accountKey = accountKey, signature = flowSignature),
-        evmAccountInfo = evmAccountInfo,
-        deviceInfo = deviceInfoRequest
-    )
-
-    val resp = service.loginV4(loginRequest)
-    if (resp.data?.customToken.isNullOrBlank()) {
-        toast(msgRes = R.string.resume_login_error, duration = Toast.LENGTH_LONG)
-        return
-    }
-    firebaseLogin(resp.data?.customToken!!) { isSuccess ->
-        if (isSuccess) {
-            setRegistered()
-            if (AccountManager.get()?.prefix == null && AccountManager.get()?.keyStoreInfo == null) {
-                Wallet.store().resume()
-            }
-        } else {
-            toast(msgRes = R.string.resume_login_error, duration = Toast.LENGTH_LONG)
-            return@firebaseLogin
-        }
+    abortLogin()
+    if (AccountManager.get() != null && AccountManager.get()?.prefix == null && AccountManager.get()?.keyStoreInfo == null) {
+        Wallet.store().resume()
     }
 }
 

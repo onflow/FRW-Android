@@ -29,6 +29,8 @@ import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.page.wallet.confirm.WalletConfirmActivity
 import com.flowfoundation.wallet.page.wallet.sync.WalletSyncActivity
 import com.flowfoundation.wallet.page.walletrestore.firebaseLogin
+import com.flowfoundation.wallet.firebase.auth.getSigningJwt
+import com.flowfoundation.wallet.firebase.auth.toSessionTokens
 import com.flowfoundation.wallet.page.walletrestore.getFirebaseUid
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.ioScope
@@ -187,7 +189,7 @@ internal class WalletDappDelegate : SignClient.DappDelegate {
                     val catching = runCatching {
                         val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
                         val service = retrofit().create(ApiService::class.java)
-                        val jwt = getFirebaseJwt()
+                        val jwt = getSigningJwt()
                         val signature = cryptoProvider.getUserSignature(jwt)
                         val accountKey = AccountKey(
                             publicKey = cryptoProvider.getPublicKey(),
@@ -200,14 +202,14 @@ internal class WalletDappDelegate : SignClient.DappDelegate {
                             deviceInfo = deviceInfoRequest
                         )
                         val resp = service.loginV4(loginRequest)
-                        if (resp.data?.customToken.isNullOrBlank()) {
+                        if (resp.data.toSessionTokens() == null) {
                             if (resp.status == 404) {
                                 callback.invoke(false)
                             } else {
                                 callback.invoke(false)
                             }
                         } else {
-                            firebaseLogin(resp.data.customToken) { isSuccess ->
+                            firebaseLogin(resp.data.toSessionTokens()) { isSuccess ->
                                 if (isSuccess) {
                                     setRegistered()
                                     ioScope {

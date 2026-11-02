@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.databinding.FragmentRestoreStartBinding
+import com.flowfoundation.wallet.manager.drive.GoogleDriveFlags
 import com.flowfoundation.wallet.page.restore.multirestore.model.RestoreOption
 import com.flowfoundation.wallet.page.restore.multirestore.viewmodel.MultiRestoreViewModel
 import com.flowfoundation.wallet.utils.extensions.setVisible
@@ -32,6 +33,7 @@ class RestoreStartFragment: Fragment() {
         super.onViewCreated(view, savedInstanceState)
         with(binding) {
             btnNext.setVisible(false)
+            oiGoogleDrive.setVisible(GoogleDriveFlags.backupEnabled)
             oiGoogleDrive.setOnClickListener {
                 restoreViewModel.selectOption(RestoreOption.RESTORE_FROM_GOOGLE_DRIVE) { isSelected ->
                     oiGoogleDrive.changeItemStatus(isSelected)

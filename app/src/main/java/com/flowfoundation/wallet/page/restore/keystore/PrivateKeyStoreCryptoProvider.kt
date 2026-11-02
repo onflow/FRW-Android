@@ -131,7 +131,6 @@ class PrivateKeyStoreCryptoProvider(private val keystoreInfo: String) : CryptoPr
         logd(TAG, "Raw signature from privateKey.sign(): size=${signatureBytes.size} bytes")
 
         val hexSignature = signatureBytes.joinToString("") { String.format("%02x", it) }
-        logd(TAG, "Final signature generated: $hexSignature")
         logd(TAG, "Final signature length: ${hexSignature.length} chars (${signatureBytes.size} bytes)")
         return hexSignature
     }

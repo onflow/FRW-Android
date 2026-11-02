@@ -1,10 +1,11 @@
 package com.flowfoundation.wallet.page.walletrestore
 
 import androidx.annotation.WorkerThread
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 import com.flowfoundation.wallet.firebase.auth.firebaseCustomLogin
-import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
+import com.flowfoundation.wallet.firebase.auth.SessionTokens
+import com.flowfoundation.wallet.firebase.auth.abortLogin
+import com.flowfoundation.wallet.firebase.auth.getSigningJwt
+import com.flowfoundation.wallet.firebase.auth.toSessionTokens
 import com.flowfoundation.wallet.firebase.auth.setToAnonymous
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
@@ -152,8 +153,8 @@ fun requestWalletRestoreLogin(
                         val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
                         val service = retrofit().create(ApiService::class.java)
 
-                        // Fetch JWT once; reuse for both Flow and EVM signatures.
-                        val jwt = getFirebaseJwt()
+                        // Fresh anonymous token; it is both the signed message and the Bearer of this request.
+                        val jwt = getSigningJwt()
 
                         val flowSignature = try {
                             cryptoProvider.getUserSignature(jwt)
@@ -180,14 +181,16 @@ fun requestWalletRestoreLogin(
                             deviceInfo = deviceInfoRequest
                         )
                         val resp = service.loginV4(loginRequest)
-                        if (resp.data?.customToken.isNullOrBlank()) {
+                        val tokens = resp.data.toSessionTokens()
+                        if (tokens == null) {
+                            abortLogin()
                             if (resp.status == 404) {
                                 callback.invoke(false, ERROR_ACCOUNT_NOT_FOUND)
                             } else {
                                 callback.invoke(false, ERROR_CUSTOM_TOKEN)
                             }
                         } else {
-                            firebaseLogin(resp.data.customToken) { isSuccess ->
+                            firebaseLogin(tokens) { isSuccess ->
                                 if (isSuccess) {
                                     setRegistered()
                                     Wallet.store().reset(mnemonic)
@@ -216,6 +219,7 @@ fun requestWalletRestoreLogin(
                     }
 
                     if (catching.isFailure) {
+                        abortLogin()
                         loge(TAG, "Login request failed: ${catching.exceptionOrNull()?.message}")
                         loge(catching.exceptionOrNull())
                         callback.invoke(false, ERROR_NETWORK)
@@ -230,45 +234,30 @@ fun requestWalletRestoreLogin(
     }
 }
 
+/**
+ * Stores the session from a login/register/import response (replaces Firebase signInWithCustomToken).
+ * A null [tokens] means the response had no access_token: the login fails and the previous session stays.
+ */
 @WorkerThread
-suspend fun firebaseLogin(customToken: String, callback: (isSuccess: Boolean) -> Unit) {
-    logd(TAG, "=== firebaseLogin START ===")
-    logd(TAG, "Custom token received, length: ${customToken.length}")
-    logd(TAG, "Current user UID: ${Firebase.auth.currentUser?.uid}")
-
-    // signInWithCustomToken atomically replaces the current user (anonymous or otherwise)
-    // without going through a null state. Prior delete/signOut calls created a null window
-    // that raced with background getFirebaseJwt() → signInAnonymously() calls.
-    firebaseCustomLogin(customToken) { isSuccessful, errorMsg ->
-        logd(TAG, "Firebase custom login completed - success: $isSuccessful, error: $errorMsg")
+suspend fun firebaseLogin(tokens: SessionTokens?, callback: (isSuccess: Boolean) -> Unit) {
+    logd(TAG, "=== session login START === hasTokens=${tokens != null}")
+    firebaseCustomLogin(tokens) { isSuccessful, errorMsg ->
         if (isSuccessful) {
-            logd(TAG, "Firebase login successful, new UID: ${Firebase.auth.currentUser?.uid}")
+            logd(TAG, "session login successful, uid: ${tokens?.uid}")
             MixpanelManager.identifyUserProfile()
             callback(true)
         } else {
-            logd(TAG, "ERROR: Firebase custom login failed - $errorMsg")
+            logd(TAG, "ERROR: session login failed - $errorMsg")
             callback(false)
         }
     }
 }
 
+/**
+ * Was: make sure a Firebase (anonymous) user exists. Now: make sure the auth server is reachable by
+ * minting an anonymous token. Passes a non-null marker on success, null on failure.
+ */
 suspend fun getFirebaseUid(callback: (uid: String?) -> Unit) {
-    logd(TAG, "=== getFirebaseUid START ===")
-    val currentUser = Firebase.auth.currentUser
-    logd(TAG, "Current Firebase user: ${currentUser?.uid ?: "null"}")
-    logd(TAG, "Is anonymous: ${currentUser?.isAnonymous ?: "n/a"}")
-
-    val uid = currentUser?.uid
-    if (!uid.isNullOrBlank()) {
-        logd(TAG, "Firebase UID already available: $uid")
-        callback.invoke(uid)
-        return
-    }
-
-    logd(TAG, "No Firebase UID found, attempting to get Firebase JWT")
-    getFirebaseJwt(true)
-
-    val newUid = Firebase.auth.currentUser?.uid
-    logd(TAG, "After getFirebaseJwt - new UID: ${newUid ?: "still null"}")
-    callback.invoke(newUid)
+    val anon = getSigningJwt()
+    callback.invoke(if (anon.isBlank()) null else "anonymous")
 }

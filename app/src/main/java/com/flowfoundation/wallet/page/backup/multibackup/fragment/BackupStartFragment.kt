@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.databinding.FragmentBackupStartBinding
+import com.flowfoundation.wallet.manager.drive.GoogleDriveFlags
 import com.flowfoundation.wallet.page.backup.BackupListManager
 import com.flowfoundation.wallet.page.backup.model.BackupType
 import com.flowfoundation.wallet.page.backup.multibackup.dialog.BackupAboutDialog
@@ -41,7 +42,11 @@ class BackupStartFragment : Fragment() {
             tvLearnMore.setOnClickListener {
                 BackupAboutDialog().show(childFragmentManager, BackupAbout.ABOUT_MULTI_BACKUP)
             }
-            if (BackupListManager.hadBackupOption(BackupType.GOOGLE_DRIVE)) {
+            val driveEnabled = GoogleDriveFlags.backupEnabled
+            oiGoogleDrive.setVisible(driveEnabled)
+            if (!driveEnabled) {
+                // Hidden: the Drive sign-in client is gone (GOOGLE_DRIVE_BACKUP_ENABLED=false).
+            } else if (BackupListManager.hadBackupOption(BackupType.GOOGLE_DRIVE)) {
                 oiGoogleDrive.changeItemStatus(true)
             } else {
                 oiGoogleDrive.setOnClickListener {
@@ -72,8 +77,10 @@ class BackupStartFragment : Fragment() {
                 }
             }
             if (backupViewModel.getBackupOptionList().isEmpty() && BackupListManager.backupCount() == 0) {
-                backupViewModel.selectOption(BackupOption.BACKUP_WITH_GOOGLE_DRIVE) { isSelected ->
-                    oiGoogleDrive.changeItemStatus(isSelected)
+                if (driveEnabled) {
+                    backupViewModel.selectOption(BackupOption.BACKUP_WITH_GOOGLE_DRIVE) { isSelected ->
+                        oiGoogleDrive.changeItemStatus(isSelected)
+                    }
                 }
                 backupViewModel.selectOption(BackupOption.BACKUP_WITH_RECOVERY_PHRASE) { isSelected ->
                     oiRecoveryPhrase.changeItemStatus(isSelected)

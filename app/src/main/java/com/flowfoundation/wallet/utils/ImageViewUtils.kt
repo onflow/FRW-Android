@@ -22,13 +22,13 @@ fun ImageView.loadAvatar(url: String, placeholderEnable: Boolean = true, transfo
 }
 
 fun String.svgToPng(): String {
-    return "https://lilico.app/api/svg2png?url=${URLEncoder.encode(this, "UTF-8")}"
+    return "${com.flowfoundation.wallet.network.BASE_HOST}/api/svg2png?url=${URLEncoder.encode(this, "UTF-8")}"
 }
 
 fun String.parseBoringAvatar(): String {
     val uriHost = Uri.parse(this).host ?: ""
     if (uriHost.contains("boringavatars")) {
-        return this.replace(uriHost, "lilico.app/api/avatar")
+        return this.replace(uriHost, "${android.net.Uri.parse(com.flowfoundation.wallet.network.BASE_HOST).host}/api/avatar")
     }
     return this
 }

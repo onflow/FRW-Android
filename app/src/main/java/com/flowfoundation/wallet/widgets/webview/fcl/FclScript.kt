@@ -56,8 +56,8 @@ private val FCL_AUTHN_RESPONSE = """
               "description": "Flow Wallet is built from the ground up for Flow Blockchain!",
               "color": "#41CC5D",
               "supportEmail": "wallet@flow.com",
-              "website": "https://frw-link.lilico.app/wc",
-              "icon": "https://lilico.app/logo_mobile.png"
+              "website": "https://link.wallet.flow.com/wc",
+              "icon": "https://link.wallet.flow.com/logo.png"
             }
           },
           $PRE_AUTHZ_REPLACEMENT
@@ -321,7 +321,7 @@ private suspend fun generateAuthnPreAuthz(): String {
                 "f_vsn": "1.0.0",
                 "type": "pre-authz",
                 "uid": "frw#pre-authz",
-                "endpoint": "android://pre-authz.lilico.app",
+                "endpoint": "android://pre-authz.wallet.flow.com",
                 "method": "EXT/RPC",
                 "data": {
                     "address": "${payerInfo.address()}",

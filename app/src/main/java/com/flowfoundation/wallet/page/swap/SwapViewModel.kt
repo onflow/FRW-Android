@@ -133,7 +133,7 @@ class SwapViewModel : ViewModel(), FungibleTokenUpdateListener {
         onEstimateLoading.value = true
         viewModelIOScope(this) {
             val response = kotlin.runCatching {
-                retrofitWithHost("https://lilico.app").create(ApiService::class.java).getSwapEstimate(
+                retrofitWithHost(com.flowfoundation.wallet.network.BASE_HOST).create(ApiService::class.java).getSwapEstimate(
                     network = chainNetWorkString(),
                     inToken = fromCoin()!!.contractId(),
                     outToken = toCoin()!!.contractId(),
