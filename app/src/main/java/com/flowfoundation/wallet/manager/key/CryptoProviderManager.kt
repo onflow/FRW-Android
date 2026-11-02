@@ -125,7 +125,7 @@ object CryptoProviderManager {
 
             // Handle keystore-based accounts
             if (!account.keyStoreInfo.isNullOrBlank()) {
-                logd(TAG, "  Branch: Keystore-based account. Info (first 100 chars): ${account.keyStoreInfo!!.take(100)}")
+                logd(TAG, "  Branch: Keystore-based account.")
                 val provider = PrivateKeyStoreCryptoProvider(account.keyStoreInfo!!)
                 // Log the algorithms the provider determined from the keystore info
                 logd(TAG, "  Keystore-based: Provider initialized with actual signAlgo: ${provider.getSignatureAlgorithm()}, actual hashAlgo: ${provider.getHashAlgorithm()} (from keystore info)")

@@ -125,7 +125,7 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
         logd("BackupSeedPhraseVM", "WalletManager.selectedWalletAddress(): '$selectedAddress'")
 
         val account = AccountManager.get()
-        logd("BackupSeedPhraseVM", "AccountManager.get(): $account")
+        logd("BackupSeedPhraseVM", "AccountManager.get(): username=${account?.userInfo?.username}, hasKeyStoreInfo=${!account?.keyStoreInfo.isNullOrBlank()}")
 
         // Debug current account's crypto provider
         val currentCryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()

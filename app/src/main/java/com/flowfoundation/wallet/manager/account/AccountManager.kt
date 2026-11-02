@@ -590,12 +590,10 @@ object AccountManager {
 
             // Debug signature generation step by step
             logd(TAG, "Starting signature generation...")
-            logd(TAG, "  JWT (first 50 chars): ${jwt.take(50)}...")
 
             val signature = cryptoProvider.getUserSignature(jwt)
 
             logd(TAG, "Signature generation completed:")
-            logd(TAG, "  Generated signature: $signature")
             logd(TAG, "  Signature length: ${signature.length} chars (${signature.length / 2} bytes)")
 
             val accountKey = AccountKey(
@@ -751,12 +749,10 @@ object AccountManager {
 
             // Debug signature generation step by step
             logd(TAG, "Starting signature generation...")
-            logd(TAG, "  JWT (first 50 chars): ${jwt.take(50)}...")
 
             val signature = cryptoProvider.getUserSignature(jwt)
 
             logd(TAG, "Signature generation completed:")
-            logd(TAG, "  Generated signature: $signature")
             logd(TAG, "  Signature length: ${signature.length} chars (${signature.length / 2} bytes)")
 
             val accountKey = AccountKey(

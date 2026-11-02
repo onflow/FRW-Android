@@ -37,7 +37,7 @@ private fun setupAppCheck() {
         }
         setTokenAutoRefreshEnabled(true)
         addAppCheckListener { token ->
-            logd(TAG, "AppCheck token: $token")
+            logd(TAG, "AppCheck token refreshed")
         }
     }
 }

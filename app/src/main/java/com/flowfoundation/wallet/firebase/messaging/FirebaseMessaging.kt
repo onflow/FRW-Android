@@ -26,7 +26,7 @@ fun getFirebaseMessagingToken() {
             return@addOnCompleteListener
         }
         val token = task.result
-        logd(TAG, "token:$token")
+        logd(TAG, "push token received: ${!token.isNullOrEmpty()}")
         updatePushToken(token)
     }
 }
@@ -58,7 +58,7 @@ fun uploadPushToken(isNewToken: Boolean = false) {
             "token" to getPushToken(),
             "address" to address,
         )
-        logd(TAG, "uploadPushToken => params:$params")
+        logd(TAG, "uploadPushToken => address:$address")
 
         val resp = service.uploadPushToken(params)
         logd(TAG, resp)

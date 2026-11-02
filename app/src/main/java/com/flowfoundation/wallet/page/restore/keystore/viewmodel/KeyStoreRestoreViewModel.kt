@@ -634,13 +634,13 @@ class KeyStoreRestoreViewModel : ViewModel() {
     fun importWithUsername(username: String) {
         logd("KeyStoreRestoreViewModel", "=== importWithUsername START ===")
         logd("KeyStoreRestoreViewModel", "Username: $username")
-        logd("KeyStoreRestoreViewModel", "currentKeyStoreAddress: $currentKeyStoreAddress")
+        logd("KeyStoreRestoreViewModel", "currentKeyStoreAddress: ${currentKeyStoreAddress?.address}")
 
         if (currentKeyStoreAddress == null || username.isEmpty()
             || currentKeyStoreAddress?.address.isNullOrEmpty()
             || currentKeyStoreAddress?.address == "0x"
         ) {
-            logd("KeyStoreRestoreViewModel", "ERROR: Validation failed - currentKeyStoreAddress=$currentKeyStoreAddress, username=$username")
+            logd("KeyStoreRestoreViewModel", "ERROR: Validation failed - currentKeyStoreAddress=${currentKeyStoreAddress?.address}, username=$username")
             loadingLiveData.postValue(false)
             toast(msgRes = R.string.login_failure)
             return
@@ -981,7 +981,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                             signAlgo = determinedSignAlgo,
                                             encryptedMnemonic = encryptedMnemonic(userId),
                                         )
-                                        logd("KeyStoreRestoreViewModel", "Created KeystoreAddress: $keystoreAddress")
+                                        logd("KeyStoreRestoreViewModel", "Created KeystoreAddress for ${keystoreAddress.address}")
 
                                         val userAccount = Account(
                                             userInfo = userInfo,
@@ -1198,7 +1198,6 @@ class KeyStoreRestoreViewModel : ViewModel() {
 
         val signature = signatureBytes.joinToString("") { "%02x".format(it) }
 
-        logd("KeyStoreRestoreViewModel", "Generated signature: $signature")
         logd("KeyStoreRestoreViewModel", "Signature length: ${signature.length}")
 
         return signature

@@ -44,12 +44,16 @@ private suspend fun executeHttp(host: String, functionName: String, data: Any? =
         readTimeout(10, TimeUnit.SECONDS)
         writeTimeout(10, TimeUnit.SECONDS)
 
+        // Luciq records the request it receives, so it runs before the Authorization header is added
+        addInterceptor(LuciqOkHttpInterceptor())
         addInterceptor(HeaderInterceptor())
         addInterceptor(PayerServiceInterceptor())
-        addInterceptor(LuciqOkHttpInterceptor())
         eventListenerFactory(LuciqOkHttpEventListener.Factory())
         if (isTesting()) {
-            addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY })
+            addInterceptor(HttpLoggingInterceptor().apply {
+                level = HttpLoggingInterceptor.Level.BODY
+                redactHeader("Authorization")
+            })
         }
     }.build()
     val body = if (data == null) data else (data as? String ?: GsonBuilder().serializeNulls().create().toJson(data))
